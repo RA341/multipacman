@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MULTI-PACMAN</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="/lobby/lobby_style.css"/>
+    <link rel="stylesheet" type="text/css" href="../index/index.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/lobby/lobby_scripts.js"></script>
+</head>
+<body>
+
+<div class="main-container">
+  <div id="user">
+    <form action="/api/updateProfileImage" method="post" enctype="multipart/form-data">
+      <label for="profileImage">
+        <img src="../images/default_profile.jpeg" class="profileImage" alt="User profile image" />
+      </label>
+      <input type="file" id="profileImage" name="avatar" style="display: none;" />
+    </form>
+    <p id="tootip" class="tooltiptext">Click icon to add image</p>
+    <p id="username" class="text"></p>
+    <button id="logout_button" onclick="logout()">Logout</button>
+  </div>
+  <h2 class="header">LOBBIES</h2>
+
+  <div class="create-lobby-form">
+    <label>
+      <p class="text">Create Lobby:</p>
+      <input class="input" id="lobby-text-box" type="text" placeholder="Lobby Name" maxlength="50">
+    </label>
+    <button class="button" id=create-button" onclick="createLobby()">Create</button>
+  </div>
+  <div class="lobby-container">
+    <script>
+      async function fetchLobbiesAndRender() {
+          try {
+              //CONSTANTS INITIALIZED
+              const lobbies = await fetchLobbies();
+              const currentUser = await fetchUsername();
+              const lobbyTable = document.createElement('table');
+              const lobbyListContainer = document.querySelector('.lobby-container');
+              const numRows = Math.ceil(lobbies.length / 4)
+              lobbyListContainer.innerHTML = '';
+              //NOW WE MAKE THE TABLE
+              for (let i = 0; i < numRows; i++) {
+                  const row = lobbyTable.insertRow(); // Insert a new row
+                  for (let j = 0; j < 4; j++) {
+                      const index = i * 4 + j;
+                      if (index < lobbies.length) {
+                          const cell = row.insertCell(); // Insert a new cell in the row
+                          const lobby = lobbies[index];
+                          const theDate = new Date(lobby.created_at)
+                          const formedDate = theDate.toLocaleString()
+                          const countResp = await fetch(`/api/lobby/${lobby.id}/players`)
+                          const countData = await countResp.json()
+                          const isCreator = lobby.username === currentUser
+                          let deleteButtonHtml = ``
+
+                          if (isCreator) {
+                              deleteButtonHtml = `<button id="delete" class="join-button" onclick="deleteLobby(${lobby.id})">Delete</button>`;
+                          }
+
+                          cell.innerHTML = `
+                          <div class="lobby-box">
+                              <div class="lobby-name">
+                                  <p class="small-text">${formedDate}</p>
+                                  <hr>
+                                  <p class="text">Lobby: ${lobby.lobby_name}</p>
+                                  <img src="${lobby.profile_image_url ? lobby.profile_image_url : '../images/default_profile.jpeg'}" alt="Lobby owner profile image" class="lobbyProfileImage"/>
+                                  <p class="text">Owner: ${lobby.username}</p>
+                              </div>
+                              <div class="lobby-count">
+                                  <p class="text">Players: ${countData[4]}/4</p>
+                              </div>
+                              <div class="lobby-buttons">
+                                ${deleteButtonHtml}
+                                ${lobby.joinable && `<button id="${lobby.lobby_id}-join" class="join-button" onclick="goToGame('/game/play?lobby=${lobby.id}')">Join</button>`}
+                                <div id="${lobby.lobby_id}-progress">
+                                  ${lobby.joinable ? '' : `<p class="text">Game in progress!</p>`}
+                                </div>
+                              </div>
+                              <div id="${lobby.lobby_id}-timer"></div>
+                          </div>
+                          `;
+                      }
+                  }
+              }
+              lobbyListContainer.appendChild(lobbyTable)
+          } catch (error) {
+              console.error('Error fetching and rendering lobbies:', error);
+          }
+      }
+
+      // Function to fetch the username.
+      async function fetchUsername() {
+          try {
+              const response = await fetch('/api/me');
+              if (!response.ok) {
+                  throw new Error('Failed to fetch username');
+              }
+              const data = await response.json();
+              const username = data.username;
+              console.log('Data:', data);
+              document.getElementById('username').textContent = `User: ${username}`;
+              return username
+          } catch (error) {
+              console.error('Error fetching username:', error);
+              return null;
+          }
+      }
+
+      // Function to fetch the profile image.
+      async function fetchProfileImage() {
+          try {
+              const response = await fetch('/api/me');
+              if (!response.ok) {
+                throw new Error('Failed to fetch profile image');
+              }
+              const data = await response.json();
+              const profileImage = data.profileImageUrl;
+              if (profileImage) {
+                  document.querySelector('.profileImage').src = profileImage;
+              }
+          } catch (error) {
+              console.error('Error fetching profile image:', error);
+          }
+      }
+
+      // Submits the form when a new profile image is selected.
+      document.getElementById('profileImage').addEventListener('change', function() {
+          this.form.submit();
+      });
+
+      // Call the function to fetch and render lobbies when the page loads
+      window.onload = function () {
+          fetchUsername();
+          fetchProfileImage();
+          fetchLobbiesAndRender();
+      };
+  </script>
+  </div>
+  <img src="../images/ghost-orange.png" alt="Orange Ghost" width="150" height="150" id="orange-ghost">
+  <img src="../images/ghost-red.png" alt="Red Ghost" width="150" height="150" id="red-ghost">
+  <img src="../images/ghost-blue.png" alt="Blue Ghost" width="150" height="150" id="blue-ghost">
+  <img src="../images/ghost-pink.png" alt="Pink Ghost" width="150" height="150" id="pink-ghost">
+</div>
+
+
+</body>
+</html>
