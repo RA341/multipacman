@@ -20,7 +20,6 @@ let ws = new WebSocket(url);
 
 ws.onerror = function (event) {
     console.log('WebSocket Error: ', event);
-
 }
 
 ws.onmessage = function (msg) {
@@ -248,29 +247,29 @@ const config = {
     }
 };
 
+/////////////////////////////////////////////
+// main phaser stuff
 function preload() {
+    const assetsPath = "static/game/assets"
     // sprite sheets
-    this.load.spritesheet("pacman", "assets/pacmanSpriteSheet.png", {
+    this.load.spritesheet("pacman", `${assetsPath}/pacmanSpriteSheet.png`, {
         frameWidth: 50,
         frameHeight: 50,
     });
-    this.load.spritesheet("ghosts", "assets/ghosts.png", {
+    this.load.spritesheet("ghosts", `${assetsPath}/ghosts.png`, {
         frameWidth: 50,
         frameHeight: 50,
     });
-    this.load.spritesheet("fruits", "assets/fruits.png", {
+    this.load.spritesheet("fruits", `${assetsPath}/fruits.png`, {
         frameWidth: 50,
         frameHeight: 50,
     });
-    this.load.image('secondTile', 'assets/secondTile.png')
-    this.load.image('forthTile', 'assets/forthTile.png')
-    this.load.image('centrepoint', 'assets/centrepoint.png')
-    this.load.image('power-up', 'assets/powercent.png')
-
-    this.load.tilemapTiledJSON('map', "assets/map.json");
+    this.load.image('secondTile', `${assetsPath}/secondTile.png`)
+    this.load.image('forthTile', `${assetsPath}/forthTile.png`)
+    this.load.image('centrepoint', `${assetsPath}/centrepoint.png`)
+    this.load.image('power-up', `${assetsPath}/powercent.png`)
+    this.load.tilemapTiledJSON('map', `${assetsPath}/map.json`);
 }
-
-const delay = ms => new Promise(res => setTimeout(res, ms));
 
 function create() {
     // keyboard detect
@@ -354,27 +353,7 @@ function create() {
     }
 }
 
-function powerUpCheck() {
-    if (playerSprites['pcm'].isPoweredUp > 0 || playerSprites['pcm'].isPoweredUp > 1200) {
-        // time left till powerup
-        playerSprites['pcm'].isPoweredUp -= 1
-        playerSprites['pcm'].playerInfo.tint = 0xff0000;
-        playerSprites['pcm'].movementSpeed = -160
-    } else {
-        playerSprites['pcm'].playerInfo.tint = 0xffffff; // Reset tint to white (no tint)
-        playerSprites['pcm'].movementSpeed = -200
-    }
-}
-
-function movePlayer(currentPlayerSpriteType, x = 0, y = 0) {
-    if (playerSprites[currentPlayerSpriteType].playerInfo.active) {
-        playerSprites[currentPlayerSpriteType].playerInfo.setVelocityY(y);
-        playerSprites[currentPlayerSpriteType].playerInfo.setVelocityX(x);
-    }
-}
-
 function update() {
-
     if (gameEnd) {
         // Show the "Game Ended" text
         gameOverText.visible = true;
@@ -454,6 +433,27 @@ function update() {
     allPlayers[userId].spriteAnim = curAnim
 
     socket.emit('pos', JSON.stringify(allPlayers[userId]))
+}
+/////////////////////////////////////////////
+// utility functions
+
+function powerUpCheck() {
+    if (playerSprites['pcm'].isPoweredUp > 0 || playerSprites['pcm'].isPoweredUp > 1200) {
+        // time left till powerup
+        playerSprites['pcm'].isPoweredUp -= 1
+        playerSprites['pcm'].playerInfo.tint = 0xff0000;
+        playerSprites['pcm'].movementSpeed = -160
+    } else {
+        playerSprites['pcm'].playerInfo.tint = 0xffffff; // Reset tint to white (no tint)
+        playerSprites['pcm'].movementSpeed = -200
+    }
+}
+
+function movePlayer(currentPlayerSpriteType, x = 0, y = 0) {
+    if (playerSprites[currentPlayerSpriteType].playerInfo.active) {
+        playerSprites[currentPlayerSpriteType].playerInfo.setVelocityY(y);
+        playerSprites[currentPlayerSpriteType].playerInfo.setVelocityX(x);
+    }
 }
 
 function setSpriteAnim(sprite, anim, loop = true) {
@@ -566,3 +566,5 @@ function ghostsAnimInit(ctx) {
         })
     }
 }
+
+const delay = ms => new Promise(res => setTimeout(res, ms));

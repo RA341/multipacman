@@ -7,7 +7,6 @@ import (
 	"github.com/olahol/melody"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -18,6 +17,7 @@ func main() {
 	router := chi.NewRouter()
 	m := melody.New()
 
+	// middlewares
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
@@ -38,7 +38,6 @@ func main() {
 			return
 		}
 	})
-
 	initMelody(m)
 
 	router.Get("/static/*", func(writer http.ResponseWriter, request *http.Request) {
@@ -62,12 +61,12 @@ func main() {
 	})
 
 	router.Get("/login", func(writer http.ResponseWriter, request *http.Request) {
-		filepath := "./client/auth/login.html"
+		filepath := "client/auth/login.html"
 		handleHtmlPath(writer, request, filepath)
 	})
 
 	router.Get("/register", func(writer http.ResponseWriter, request *http.Request) {
-		filepath := "./client/auth/register.html"
+		filepath := "client/auth/register.html"
 		handleHtmlPath(writer, request, filepath)
 	})
 
@@ -78,7 +77,7 @@ func main() {
 			http.Redirect(writer, request, "/login", http.StatusFound)
 			return
 		}
-		filepath := "./client/lobby/lobby_page.html"
+		filepath := "client/lobby/lobby_page.html"
 		handleHtmlPath(writer, request, filepath)
 	})
 
@@ -104,22 +103,4 @@ func main() {
 	if err != nil {
 		return
 	}
-}
-
-func replaceIds(userID string, lobbyId string) []byte {
-	assetPath := "client/game/game.html"
-	fileContents, err := embeddedFs.ReadFile(assetPath)
-	if err != nil {
-		log.Printf("Failed to read" + assetPath)
-	}
-
-	// replace ids in html
-	// convert to string
-	tmp := string(fileContents)
-	tmp = strings.Replace(tmp, "{UserToken}", userID, 1)
-	tmp = strings.Replace(tmp, "{LobbyToken}", lobbyId, 1)
-
-	// convert back to bytes
-	fileContents = []byte(tmp)
-	return fileContents
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,21 +25,37 @@ func getServerPort() string {
 
 // File related
 
-// FileExists checks if a file exists and is not a directory
-func FileExists(filename string) bool {
-	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
-		log.Printf("File does not exist")
-		return false
+func replaceIds(userID string, lobbyId string) []byte {
+	assetPath := "client/game/game.html"
+	fileContents, err := embeddedFs.ReadFile(assetPath)
+	if err != nil {
+		log.Printf("Failed to read" + assetPath)
 	}
-	return true
+
+	// replace ids in html
+	// convert to string
+	tmp := string(fileContents)
+	tmp = strings.Replace(tmp, "{UserToken}", userID, 1)
+	tmp = strings.Replace(tmp, "{LobbyToken}", lobbyId, 1)
+
+	// convert back to bytes
+	fileContents = []byte(tmp)
+	return fileContents
 }
 
-func handleHtmlPath(writer http.ResponseWriter, request *http.Request, filepath string) {
-	if !FileExists(filepath) {
-		http.NotFound(writer, request)
+func handleHtmlPath(writer http.ResponseWriter, _ *http.Request, filepath string) {
+	fileContents, err := embeddedFs.ReadFile(filepath)
+	if err != nil {
+		log.Printf("Failed to read" + filepath)
+	}
+
+	writer.Header().Add("Content-Type", "text/html")
+
+	_, err = writer.Write(fileContents)
+	if err != nil {
+		log.Printf("Failed to write" + filepath)
 		return
 	}
-	http.ServeFile(writer, request, filepath)
 }
 
 func DetectContentType(assetPath string, fileContents []byte) string {
