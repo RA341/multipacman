@@ -7,6 +7,7 @@ import (
 	"github.com/olahol/melody"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -83,8 +84,17 @@ func main() {
 
 	router.Get("/game", func(writer http.ResponseWriter, request *http.Request) {
 		// TODO add auth once game is complete
-		filepath := "./client/lobby/lobby_page.html"
-		handleHtmlPath(writer, request, filepath)
+		userID := "asdhkajlsd"
+		lobbyId := "asdsad"
+
+		fileContents := replaceIds(userID, lobbyId)
+		writer.Header().Add("Content-Type", "text/html")
+
+		_, err := writer.Write(fileContents)
+		if err != nil {
+			log.Printf("Failed to write game.html")
+			return
+		}
 	})
 
 	// router for login
@@ -94,4 +104,22 @@ func main() {
 	if err != nil {
 		return
 	}
+}
+
+func replaceIds(userID string, lobbyId string) []byte {
+	assetPath := "client/game/game.html"
+	fileContents, err := embeddedFs.ReadFile(assetPath)
+	if err != nil {
+		log.Printf("Failed to read" + assetPath)
+	}
+
+	// replace ids in html
+	// convert to string
+	tmp := string(fileContents)
+	tmp = strings.Replace(tmp, "{UserToken}", userID, 1)
+	tmp = strings.Replace(tmp, "{LobbyToken}", lobbyId, 1)
+
+	// convert back to bytes
+	fileContents = []byte(tmp)
+	return fileContents
 }
