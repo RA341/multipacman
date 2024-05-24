@@ -5,12 +5,12 @@
     <title>MULTI-PACMAN</title>
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <link rel="stylesheet" type="text/css" href="/lobby/lobby_style.css"/>
-    <link rel="stylesheet" type="text/css" href="../index/index.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/auth/login.css"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="/lobby/lobby_scripts.js"></script>
+    <script src="/static/lobby/lobby_scripts.js"></script>
 </head>
 <body>
 
@@ -18,7 +18,7 @@
   <div id="user">
     <form action="/api/updateProfileImage" method="post" enctype="multipart/form-data">
       <label for="profileImage">
-        <img src="../images/default_profile.jpeg" class="profileImage" alt="User profile image" />
+        <img src="/static/images/default_profile.jpeg" class="profileImage" alt="User profile image" />
       </label>
       <input type="file" id="profileImage" name="avatar" style="display: none;" />
     </form>
@@ -71,7 +71,7 @@
                                   <p class="small-text">${formedDate}</p>
                                   <hr>
                                   <p class="text">Lobby: ${lobby.lobby_name}</p>
-                                  <img src="${lobby.profile_image_url ? lobby.profile_image_url : '../images/default_profile.jpeg'}" alt="Lobby owner profile image" class="lobbyProfileImage"/>
+                                  <img src="${lobby.profile_image_url ? lobby.profile_image_url : '/static/images/default_profile.jpeg'}" alt="Lobby owner profile image" class="lobbyProfileImage"/>
                                   <p class="text">Owner: ${lobby.username}</p>
                               </div>
                               <div class="lobby-count">
@@ -144,10 +144,10 @@
       };
   </script>
   </div>
-  <img src="../images/ghost-orange.png" alt="Orange Ghost" width="150" height="150" id="orange-ghost">
-  <img src="../images/ghost-red.png" alt="Red Ghost" width="150" height="150" id="red-ghost">
-  <img src="../images/ghost-blue.png" alt="Blue Ghost" width="150" height="150" id="blue-ghost">
-  <img src="../images/ghost-pink.png" alt="Pink Ghost" width="150" height="150" id="pink-ghost">
+  <img src="/static/images/ghost-orange.png" alt="Orange Ghost" width="150" height="150" id="orange-ghost">
+  <img src="/static/images/ghost-red.png" alt="Red Ghost" width="150" height="150" id="red-ghost">
+  <img src="/static/images/ghost-blue.png" alt="Blue Ghost" width="150" height="150" id="blue-ghost">
+  <img src="/static/images/ghost-pink.png" alt="Pink Ghost" width="150" height="150" id="pink-ghost">
 </div>
 
 
