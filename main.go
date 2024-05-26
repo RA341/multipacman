@@ -7,15 +7,20 @@ import (
 	"github.com/olahol/melody"
 	"log"
 	"net/http"
+	entities "server/entities"
 	"time"
 )
 
 //go:embed client/*
 var embeddedFs embed.FS
 
+var LobbyList map[string]*entities.LobbyModel
+
 func main() {
 	router := chi.NewRouter()
 	m := melody.New()
+	// init variable
+	LobbyList = make(map[string]*entities.LobbyModel)
 
 	// middlewares
 	router.Use(middleware.RequestID)
@@ -27,6 +32,10 @@ func main() {
 
 	router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
 		http.Redirect(writer, request, "/lobby", http.StatusFound)
+	})
+
+	router.Get("/full", func(writer http.ResponseWriter, request *http.Request) {
+		log.Print(writer.Write([]byte("Lobby is full, choose a new lobby")))
 	})
 
 	// ws handler
@@ -83,7 +92,13 @@ func main() {
 
 	router.Get("/game", func(writer http.ResponseWriter, request *http.Request) {
 		// TODO add auth once game is complete
-		userID := "asdhkajlsd"
+		userID := request.URL.Query().Get("user")
+
+		if userID == "" {
+			http.Error(writer, "No user id found in query params check the url", http.StatusNotFound)
+			return
+		}
+
 		lobbyId := "asdsad"
 
 		fileContents := replaceIds(userID, lobbyId)
@@ -103,4 +118,9 @@ func main() {
 	if err != nil {
 		return
 	}
+}
+
+func AddToLobbyList(name string, lobby *entities.LobbyModel) {
+	// Add a new lobby to the lobbyList map
+	LobbyList[name] = lobby
 }

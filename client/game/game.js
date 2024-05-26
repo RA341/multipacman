@@ -1,15 +1,16 @@
-const url = "ws://" + window.location.host + "/ws/game";
-let ws = new WebSocket(url);
-
 document.addEventListener('DOMContentLoaded', (event) => {
-    const lobbyId = document.getElementById('userToken').value;
-    const userId = document.getElementById('lobbyToken').value;
+    const userId = document.getElementById('userToken').value;
+    const lobbyId = document.getElementById('lobbyToken').value;
 
     if (!lobbyId || !userId || lobbyId === '{LobbyToken}' || userId === '{UserToken}') {
         console.log('User token or the lobby token are invalid')
         showError()
         return
     }
+
+    const url = "ws://" + window.location.host + `/ws/game?user=${userId}&lobby=${lobbyId}`;
+    let ws = new WebSocket(url);
+
 
     let allPlayers = {};
 
@@ -27,12 +28,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
         try {
             const json = JSON.parse(msg.data);
+            if (json.redirect){
+                // if lobby is full redirect to home page
+                window.location = json.redirect
+                return;
+            }
             if (json.type === 'join') {
                 handleNewPlayerJoin(json)
             } else if (json.type === 'pos') {
                 handlePosMessage(json)
             } else if (json.type === 'dis') {
                 handleDisconnect(json)
+            } else if (json.type === 'state') {
+                handleGameStateMessage(json)
+            } else if (json.type === 'pellet') {
+                handlePellet(json)
+            } else if (json.type === 'power') {
+                handlePowerPellet(json)
+            } else if (json.type === 'pacded') {
+                handlePacmanDead(json)
             } else {
                 console.log("Unknown info type: " + json.type)
             }
@@ -42,9 +56,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     };
 
-    // possible not needed
     function handleConnect() {
-        socket.emit('join', {'lobbyId': lobbyId, 'userId': userId})
+        // socket.emit('join', {'lobbyId': lobbyId, 'userId': userId})
         console.log('Connected')
     }
 
@@ -157,12 +170,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         sendWsMessage('pacded', {user: userId, id: ghost.id})
     }
 
-    function sendPosMessage(player){
+    function sendPosMessage(player) {
         sendWsMessage('pos', player)
     }
 
-    function sendWsMessage(messageType ,data){
-        data.messageType = messageType
+    function sendWsMessage(messageType, data) {
+        data.type = messageType
         ws.send(JSON.stringify(data))
     }
 
@@ -571,18 +584,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 })
 
 function showError() {
-    const errorMessage = document.createElement('div');
-    errorMessage.innerHTML = `
-            <p>There was an error connecting to the server. Please try again later.</p>
-            <a href="/">Back to Home</a>
-        `;
-    errorMessage.style.color = 'red';
-    errorMessage.style.fontSize = '20px';
-    errorMessage.style.textAlign = 'center';
-    errorMessage.style.marginTop = '20px';
-
-    // Append error message to the body or a specific container
-    document.body.appendChild(errorMessage);
+    window.location = "/static/game/error.html"
 }
 
 const delay = ms => new Promise(res => setTimeout(res, ms));

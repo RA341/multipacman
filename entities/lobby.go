@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -8,29 +9,29 @@ import (
 )
 
 type LobbyModel struct {
-	matchStarted     bool
-	charactersList   []string
-	connectedPlayers map[string]*Player
-	playerActualIds  map[string][]string
-	pelletsEaten     [][]string
-	powerUpsEaten    [][]string
-	ghostsEaten      []string
+	MatchStarted     bool
+	CharactersList   []string
+	ConnectedPlayers map[string]*PlayerEntity
+	PelletsEaten     [][]string
+	PowerUpsEaten    [][]string
+	GhostsEaten      []string
 	mu               sync.Mutex
 }
 
 func NewLobbyModel() *LobbyModel {
-	return &LobbyModel{
-		matchStarted:     false,
-		charactersList:   []string{"gh1", "gh2", "gh3", "pcm"},
-		connectedPlayers: make(map[string]*Player),
-		playerActualIds:  make(map[string][]string),
-		pelletsEaten:     [][]string{},
-		powerUpsEaten:    [][]string{},
-		ghostsEaten:      []string{},
+	// Create a new LobbyModel instance
+	lobby := &LobbyModel{
+		MatchStarted:     false,
+		CharactersList:   []string{"gh1", "gh2", "gh3", "pcm"},
+		ConnectedPlayers: make(map[string]*PlayerEntity),
+		PelletsEaten:     [][]string{},
+		PowerUpsEaten:    [][]string{},
+		GhostsEaten:      []string{},
 	}
+	return lobby
 }
 
-func (l *LobbyModel) Join(playerTmpId, username, playerActualID, lobbyActualId string) bool {
+func (l *LobbyModel) Join(player *PlayerEntity) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -39,74 +40,71 @@ func (l *LobbyModel) Join(playerTmpId, username, playerActualID, lobbyActualId s
 		return false
 	}
 
-	for playerUUID, ids := range l.playerActualIds {
-		if ids[0] == playerActualID {
-			l.Leave(playerUUID)
-			fmt.Println("Stale information found, Resetting player info")
-		}
-	}
-
-	l.playerActualIds[playerTmpId] = []string{playerActualID, lobbyActualId}
-
-	if len(l.charactersList) == 0 {
+	if len(l.CharactersList) == 0 {
 		fmt.Println("No available sprites, this should never happen dumbass")
 		return false
 	}
 
-	spriteId := l.charactersList[len(l.charactersList)-1]
-	l.charactersList = l.charactersList[:len(l.charactersList)-1]
+	// assign the last available sprite in sprite list
+	spriteId := l.CharactersList[len(l.CharactersList)-1]
+	player.SpriteType = spriteId
+	// pop this sprite
+	l.CharactersList = l.CharactersList[:len(l.CharactersList)-1]
 
-	l.connectedPlayers[playerTmpId] = &Player{
-		ID:         playerTmpId,
-		Username:   username,
-		SpriteType: spriteId,
-		X:          "0",
-		Y:          "0",
-	}
+	// assign new player to lobby
+	l.ConnectedPlayers[player.PlayerId] = player
+
 	return true
 }
 
-func (l *LobbyModel) Leave(playerTmpId string) []string {
+func (l *LobbyModel) Leave(player *PlayerEntity) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	id := player.PlayerId
 
-	player, exists := l.connectedPlayers[playerTmpId]
+	player, exists := l.ConnectedPlayers[id]
 	if !exists {
-		return nil
+		return
 	}
 
-	l.charactersList = append(l.charactersList, player.SpriteType)
+	l.CharactersList = append(l.CharactersList, player.SpriteType)
 
-	if len(l.charactersList) == 4 {
-		l.ghostsEaten = []string{}
-		l.pelletsEaten = [][]string{}
-		l.powerUpsEaten = [][]string{}
+	if len(l.CharactersList) == 4 {
+		l.GhostsEaten = []string{}
+		l.PelletsEaten = [][]string{}
+		l.PowerUpsEaten = [][]string{}
 	}
 
-	delete(l.connectedPlayers, playerTmpId)
-	returnData := l.playerActualIds[playerTmpId]
-	delete(l.playerActualIds, playerTmpId)
-	return returnData
+	delete(l.ConnectedPlayers, id)
 }
 
-func (l *LobbyModel) GetGameStateReport() map[string]interface{} {
+func (l *LobbyModel) GetGameStateReport() []byte {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	return map[string]interface{}{
-		"ghostsEaten":   l.ghostsEaten,
-		"pelletsEaten":  l.pelletsEaten,
-		"powerUpsEaten": l.powerUpsEaten,
+	data := map[string]interface{}{
+		"type":          "state",
+		"ghostsEaten":   l.GhostsEaten,
+		"pelletsEaten":  l.PelletsEaten,
+		"powerUpsEaten": l.PowerUpsEaten,
 	}
+
+	// Convert map to JSON bytes
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("Error marshaling game state json:", err)
+		return nil
+	}
+	return jsonData
 }
 
 func (l *LobbyModel) checkIfLobbyIsFull() bool {
-	return len(l.charactersList) == 0
+	return len(l.CharactersList) == 0
 }
 
 func (l *LobbyModel) StartMatchTimer(duration int, callBackFunc func(int), endFunc func()) {
 	l.mu.Lock()
-	l.matchStarted = true
+	l.MatchStarted = true
 	l.mu.Unlock()
 
 	go func() {
@@ -133,21 +131,21 @@ func (l *LobbyModel) PelletEatenAction(x, y string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.pelletsEaten = append(l.pelletsEaten, []string{x, y})
+	l.PelletsEaten = append(l.PelletsEaten, []string{x, y})
 }
 
 func (l *LobbyModel) PowerUpEatenAction(x, y string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.powerUpsEaten = append(l.powerUpsEaten, []string{x, y})
+	l.PowerUpsEaten = append(l.PowerUpsEaten, []string{x, y})
 }
 
 func (l *LobbyModel) GhostEatenAction(ghostID string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.ghostsEaten = append(l.ghostsEaten, ghostID)
+	l.GhostsEaten = append(l.GhostsEaten, ghostID)
 }
 
 func shuffleArray(array []string) []string {
