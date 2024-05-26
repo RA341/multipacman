@@ -1,9 +1,12 @@
 package main
 
 import (
+	"database/sql"
+	_ "database/sql"
 	"embed"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/olahol/melody"
 	"log"
 	"net/http"
@@ -17,24 +20,15 @@ var embeddedFs embed.FS
 var LobbyList map[string]*entities.LobbyModel
 
 func main() {
-	//loadEnv()
-	//url := os.Getenv("TURSO_DATABASE_URL") + "?" + os.Getenv("TURSO_AUTH_TOKEN")
-	//
-	//db, err := sql.Open("libsql", url)
-	//if err != nil {
-	//	_, err := fmt.Fprintf(os.Stderr, "failed to open db %s: %s", url, err)
-	//	if err != nil {
-	//		log.Fatal("failed to open db")
-	//		return
-	//	}
-	//	os.Exit(1)
-	//}
-	//defer func(db *sql.DB) {
-	//	err := db.Close()
-	//	if err != nil {
-	//		log.Fatal("failed to close db")
-	//	}
-	//}(db)
+	db, _ := sql.Open("sqlite3", "./multipacman.db")
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal("Error while closing database connection")
+		}
+	}(db)
+
+	SetupDatabase(db)
 
 	router := chi.NewRouter()
 	m := melody.New()

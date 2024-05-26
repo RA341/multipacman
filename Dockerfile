@@ -1,30 +1,40 @@
-FROM golang:1.17-alpine AS builder
+# Stage 1: Minify JavaScript files
+FROM node:18-alpine AS minifier
 
-# Set the Current Working Directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Copy go mod and sum files
-COPY go.mod ./server/go.sum ./
+# Copy the JavaScript files to the working directory
+COPY . .
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod download
+# Install a JavaScript minifier (e.g., uglify-js)
+RUN npm install uglify-js -g
 
-# Copy the source code from the current directory to the Working Directory inside the container
-COPY ../server/ .
+# Find all JavaScript files and minify them in place
+RUN find . -name '*.js' -exec sh -c 'uglifyjs "$1" --compress --mangle --output "$1"' _ {} \;
 
-# Build the Go app
-RUN go build -o main .
+# Stage 2: Build the Go application
+FROM golang:1.22-alpine AS builder
 
-# Start a new stage to ignore unneeded go source files
+# Set the working directory
+WORKDIR /app
+
+# Copy the source files from the previous stage
+COPY --from=minifier /app /app
+
+# Build the Go application
+RUN go build -o app
+
+# Stage 3: Final stage - copy the Go binary to a minimal image
 FROM alpine:latest
 
 WORKDIR /root/
 
-COPY --from=builder /app/main .
+# Copy the built Go binary from the builder stage
+COPY --from=builder /app/app .
 
-COPY server/assets ./assets
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
+RUN chmod +x /wait
 
-COPY client/ref ./client
-
-# Command to run the executable
-CMD ["./main"]
+# Command to run the Go application
+CMD ["./app"]
