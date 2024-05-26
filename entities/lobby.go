@@ -3,15 +3,15 @@ package entities
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/olahol/melody"
 	"math/rand"
 	"sync"
-	"time"
 )
 
 type LobbyModel struct {
 	MatchStarted     bool
 	CharactersList   []string
-	ConnectedPlayers map[string]*PlayerEntity
+	ConnectedPlayers map[string]*melody.Session
 	PelletsEaten     [][]float64
 	PowerUpsEaten    [][]float64
 	GhostsEaten      []string
@@ -23,7 +23,7 @@ func NewLobbyModel() *LobbyModel {
 	lobby := &LobbyModel{
 		MatchStarted:     false,
 		CharactersList:   []string{"gh1", "gh2", "gh3", "pcm"},
-		ConnectedPlayers: make(map[string]*PlayerEntity),
+		ConnectedPlayers: make(map[string]*melody.Session),
 		PelletsEaten:     [][]float64{},
 		PowerUpsEaten:    [][]float64{},
 		GhostsEaten:      []string{},
@@ -31,7 +31,7 @@ func NewLobbyModel() *LobbyModel {
 	return lobby
 }
 
-func (l *LobbyModel) Join(player *PlayerEntity) bool {
+func (l *LobbyModel) Join(player *PlayerEntity, session *melody.Session) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -52,7 +52,7 @@ func (l *LobbyModel) Join(player *PlayerEntity) bool {
 	l.CharactersList = l.CharactersList[:len(l.CharactersList)-1]
 
 	// assign new player to lobby
-	l.ConnectedPlayers[player.PlayerId] = player
+	l.ConnectedPlayers[player.PlayerId] = session
 
 	return true
 }
@@ -62,7 +62,7 @@ func (l *LobbyModel) Leave(player *PlayerEntity) {
 	defer l.mu.Unlock()
 	id := player.PlayerId
 
-	player, exists := l.ConnectedPlayers[id]
+	_, exists := l.ConnectedPlayers[id]
 	if !exists {
 		return
 	}
@@ -100,31 +100,6 @@ func (l *LobbyModel) GetGameStateReport() []byte {
 
 func (l *LobbyModel) checkIfLobbyIsFull() bool {
 	return len(l.CharactersList) == 0
-}
-
-func (l *LobbyModel) StartMatchTimer(duration int, callBackFunc func(int), endFunc func()) {
-	l.mu.Lock()
-	l.MatchStarted = true
-	l.mu.Unlock()
-
-	go func() {
-		timer := duration
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if timer <= 0 {
-				endFunc()
-				return
-			}
-
-			l.mu.Lock()
-			callBackFunc(timer)
-			l.mu.Unlock()
-
-			timer--
-		}
-	}()
 }
 
 func (l *LobbyModel) PelletEatenAction(x, y float64) {

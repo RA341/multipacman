@@ -17,6 +17,25 @@ var embeddedFs embed.FS
 var LobbyList map[string]*entities.LobbyModel
 
 func main() {
+	//loadEnv()
+	//url := os.Getenv("TURSO_DATABASE_URL") + "?" + os.Getenv("TURSO_AUTH_TOKEN")
+	//
+	//db, err := sql.Open("libsql", url)
+	//if err != nil {
+	//	_, err := fmt.Fprintf(os.Stderr, "failed to open db %s: %s", url, err)
+	//	if err != nil {
+	//		log.Fatal("failed to open db")
+	//		return
+	//	}
+	//	os.Exit(1)
+	//}
+	//defer func(db *sql.DB) {
+	//	err := db.Close()
+	//	if err != nil {
+	//		log.Fatal("failed to close db")
+	//	}
+	//}(db)
+
 	router := chi.NewRouter()
 	m := melody.New()
 	// init variable
@@ -38,10 +57,10 @@ func main() {
 	router.Get("/full", func(writer http.ResponseWriter, request *http.Request) {
 		log.Print(writer.Write([]byte("Lobby is full, choose a new lobby")))
 	})
-
 	// ws handler
 	router.Get("/ws/*", func(writer http.ResponseWriter, request *http.Request) {
 		err := m.HandleRequest(writer, request)
+
 		if err != nil {
 			log.Printf("Something went wrong with ws handler")
 			log.Printf(err.Error())
@@ -102,6 +121,16 @@ func main() {
 
 		lobbyId := "asdsad"
 
+		for lobbyKey := range LobbyList {
+			lobby := LobbyList[lobbyKey]
+			test := lobby.ConnectedPlayers[userID]
+			if test != nil {
+				// user tried to enter
+				http.Redirect(writer, request, "/static/lobby/entered.html", http.StatusFound)
+				return
+			}
+		}
+
 		fileContents := replaceIds(userID, lobbyId)
 		writer.Header().Add("Content-Type", "text/html")
 
@@ -119,9 +148,4 @@ func main() {
 	if err != nil {
 		return
 	}
-}
-
-func AddToLobbyList(name string, lobby *entities.LobbyModel) {
-	// Add a new lobby to the lobbyList map
-	LobbyList[name] = lobby
 }

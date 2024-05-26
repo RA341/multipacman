@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         console.log(`Pellet eaten at x:${x}, y:${y}`)
         powerLayer.removeTileAt(x, y)
         // give pacman power up
-        playerSprites['pcm'].isPoweredUp = 1000
+        playerSprites['pcm'].isPoweredUp = 800
     }
 
     // pacman dead
@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 // utility functions
 
     function powerUpCheck() {
-        if (playerSprites['pcm'].isPoweredUp > 0 || playerSprites['pcm'].isPoweredUp > 1200) {
+        if (playerSprites['pcm'].isPoweredUp > 0 || playerSprites['pcm'].isPoweredUp > 800) {
             // time left till powerup
             playerSprites['pcm'].isPoweredUp -= 1
             playerSprites['pcm'].playerInfo.tint = 0xff0000;

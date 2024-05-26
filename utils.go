@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +11,14 @@ import (
 )
 
 // app related
+
+func loadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Failed to read .env file")
+		return
+	}
+}
 
 func getServerPort() string {
 	var port string
