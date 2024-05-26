@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/olahol/melody"
 	"log"
@@ -85,13 +86,13 @@ func HandleConnect(newPlayerSession *melody.Session, m *melody.Melody) {
 		otherPlayer := pInfo.(*entities.PlayerEntity)
 
 		// tell current player about other player
-		json, err := otherPlayer.ToJSON()
+		jsonData, err := otherPlayer.ToJSON()
 		if err != nil {
 			log.Print("Failed to convert PlayerEntity to JSON")
 			return
 		}
 
-		err = newPlayerSession.Write(json)
+		err = newPlayerSession.Write(jsonData)
 		if err != nil {
 			log.Fatal("Failed to send player info" + err.Error())
 			return
@@ -146,13 +147,13 @@ func HandleDisconnect(s *melody.Session, m *melody.Melody) {
 
 	playerInfo.Type = "dis"
 
-	json, err := playerInfo.ToJSON()
+	jsonData, err := playerInfo.ToJSON()
 	if err != nil {
 		log.Print("Failed to convert PlayerEntity to JSON on exit")
 		return
 	}
 
-	err = m.BroadcastOthers(json, s)
+	err = m.BroadcastOthers(jsonData, s)
 	if err != nil {
 		log.Print("Failed to send player info on exit")
 		return
@@ -160,7 +161,85 @@ func HandleDisconnect(s *melody.Session, m *melody.Melody) {
 }
 
 func HandleMessage(s *melody.Session, m *melody.Melody, msg []byte) {
-	err := m.BroadcastOthers(msg, s)
+	var data map[string]interface{}
+
+	err := json.Unmarshal(msg, &data)
+	if err != nil {
+		log.Print("Failed to unmarshal ws msg")
+		return
+	}
+
+	// for these message types broadcast to all clients
+	// included the once who sent this ws request
+	// List of strings
+	broadcastAllMessageTypes := map[string]bool{
+		"pellet": true,
+		"power":  true,
+		"pacded": true,
+	}
+
+	messageType := data["type"].(string)
+
+	switch messageType {
+	case "pellet":
+		lobbyId, x, y := retrieveCoordinates(s, data)
+		if lobbyId == nil {
+			return
+		}
+		LobbyList[lobbyId.(string)].PelletEatenAction(x, y)
+		fmt.Println("Handling " + messageType)
+		broadCastAll(m, msg)
+	case "power":
+		lobbyId, x, y := retrieveCoordinates(s, data)
+		if lobbyId == nil {
+			return
+		}
+		LobbyList[lobbyId.(string)].PowerUpEatenAction(x, y)
+		//fmt.Println("Handling " + messageType)
+		broadCastAll(m, msg)
+	case "pacded":
+		lobbyId, exists := s.Get("LobbyId")
+		if !exists {
+			log.Print("lobby id not found on disconnect")
+			return
+		}
+		ghostId := data["id"].(string)
+		LobbyList[lobbyId.(string)].GhostEatenAction(ghostId)
+		//fmt.Println("Handling " + messageType)
+		broadCastAll(m, msg)
+	default:
+		//fmt.Println("Broadcasting others for type " + messageType)
+		broadCastOthers(m, msg, s)
+	}
+
+	if broadcastAllMessageTypes[messageType] {
+
+		return
+	}
+
+}
+
+func retrieveCoordinates(s *melody.Session, data map[string]interface{}) (any, float64, float64) {
+	lobbyId, exists := s.Get("LobbyId")
+	if !exists {
+		log.Print("lobby id not found on disconnect")
+		return nil, 0, 0
+	}
+	x := data["x"].(float64)
+	y := data["y"].(float64)
+	return lobbyId, x, y
+}
+
+func broadCastAll(m *melody.Melody, msg []byte) {
+	err := m.Broadcast(msg)
+	if err != nil {
+		log.Printf("Failed to send data" + err.Error())
+		return
+	}
+}
+
+func broadCastOthers(m *melody.Melody, msg []byte, session *melody.Session) {
+	err := m.BroadcastOthers(msg, session)
 	if err != nil {
 		log.Fatal("Failed to send data" + err.Error())
 		return

@@ -26,6 +26,7 @@ func main() {
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
+	router.Use(middleware.Compress(5))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.Timeout(60 * time.Second))
 	router.Use(AuthMiddleware)

@@ -50,7 +50,6 @@ func handleHtmlPath(writer http.ResponseWriter, _ *http.Request, filepath string
 	}
 
 	writer.Header().Add("Content-Type", "text/html")
-
 	_, err = writer.Write(fileContents)
 	if err != nil {
 		log.Printf("Failed to write" + filepath)

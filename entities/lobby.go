@@ -12,8 +12,8 @@ type LobbyModel struct {
 	MatchStarted     bool
 	CharactersList   []string
 	ConnectedPlayers map[string]*PlayerEntity
-	PelletsEaten     [][]string
-	PowerUpsEaten    [][]string
+	PelletsEaten     [][]float64
+	PowerUpsEaten    [][]float64
 	GhostsEaten      []string
 	mu               sync.Mutex
 }
@@ -24,8 +24,8 @@ func NewLobbyModel() *LobbyModel {
 		MatchStarted:     false,
 		CharactersList:   []string{"gh1", "gh2", "gh3", "pcm"},
 		ConnectedPlayers: make(map[string]*PlayerEntity),
-		PelletsEaten:     [][]string{},
-		PowerUpsEaten:    [][]string{},
+		PelletsEaten:     [][]float64{},
+		PowerUpsEaten:    [][]float64{},
 		GhostsEaten:      []string{},
 	}
 	return lobby
@@ -71,8 +71,8 @@ func (l *LobbyModel) Leave(player *PlayerEntity) {
 
 	if len(l.CharactersList) == 4 {
 		l.GhostsEaten = []string{}
-		l.PelletsEaten = [][]string{}
-		l.PowerUpsEaten = [][]string{}
+		l.PelletsEaten = [][]float64{}
+		l.PowerUpsEaten = [][]float64{}
 	}
 
 	delete(l.ConnectedPlayers, id)
@@ -127,18 +127,18 @@ func (l *LobbyModel) StartMatchTimer(duration int, callBackFunc func(int), endFu
 	}()
 }
 
-func (l *LobbyModel) PelletEatenAction(x, y string) {
+func (l *LobbyModel) PelletEatenAction(x, y float64) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.PelletsEaten = append(l.PelletsEaten, []string{x, y})
+	l.PelletsEaten = append(l.PelletsEaten, []float64{x, y})
 }
 
-func (l *LobbyModel) PowerUpEatenAction(x, y string) {
+func (l *LobbyModel) PowerUpEatenAction(x, y float64) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.PowerUpsEaten = append(l.PowerUpsEaten, []string{x, y})
+	l.PowerUpsEaten = append(l.PowerUpsEaten, []float64{x, y})
 }
 
 func (l *LobbyModel) GhostEatenAction(ghostID string) {

@@ -56,11 +56,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     };
 
-    function handleConnect() {
-        // socket.emit('join', {'lobbyId': lobbyId, 'userId': userId})
-        console.log('Connected')
-    }
-
     function handleGameStateMessage(msg) {
         prevGameState = msg
         // prevGameState = JSON.parse(msg);
@@ -374,7 +369,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
 
         for (const powerUpId of prevGameState.powerUpsEaten) {
-            pelletLayer.removeTileAt(powerUpId[0], powerUpId[1])
+            powerLayer.removeTileAt(powerUpId[0], powerUpId[1])
         }
 
         for (const ghId of prevGameState.ghostsEaten) {
