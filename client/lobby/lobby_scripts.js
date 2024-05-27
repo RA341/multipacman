@@ -123,7 +123,7 @@ async function fetchLobbiesAndRender(currentUser) {
                               </div>
                               <div class="lobby-buttons">
                                 ${deleteButtonHtml}                                
-                                <button id="${lobby.lobbyId}-join" class="join-button" onclick="goToGame('/game/play?lobby=${lobby.lobbyId}')">Join</button>
+                                <button id="${lobby.lobbyId}-join" class="join-button" onclick="goToGame('/game?lobby=${lobby.lobbyId}')">Join</button>
                               </div>
                           </div>
                           `;

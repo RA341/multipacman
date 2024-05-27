@@ -14,6 +14,7 @@ import (
 	lobby "server/api/lobby"
 	user "server/api/user"
 	entities "server/entities"
+	"strconv"
 	"time"
 )
 
@@ -118,35 +119,45 @@ func initMainPaths(router *chi.Mux, db *sql.DB) {
 		})
 	})
 
-	router.Get("/game", func(writer http.ResponseWriter, request *http.Request) {
-		// TODO add auth once game is complete
-		userID := request.URL.Query().Get("user")
+	router.Route("/game", func(r chi.Router) {
+		r.Use(func(handler http.Handler) http.Handler {
+			return AuthMiddleware(db, handler)
+		})
 
-		if userID == "" {
-			http.Error(writer, "No user id found in query params check the url", http.StatusNotFound)
-			return
-		}
-
-		lobbyId := "asdsad"
-
-		for lobbyKey := range LobbyList {
-			l := LobbyList[lobbyKey]
-			test := l.ConnectedPlayers[userID]
-			if test != nil {
-				// user tried to enter
-				http.Redirect(writer, request, "/static/l/entered.html", http.StatusFound)
+		r.Get("/", func(writer http.ResponseWriter, request *http.Request) {
+			tmp := request.Context().Value("userId")
+			if tmp == nil || tmp == "" {
+				http.Redirect(writer, request, "/login?error=Unauthorized, Please login", http.StatusSeeOther)
 				return
 			}
-		}
 
-		fileContents := replaceIds(userID, lobbyId)
-		writer.Header().Add("Content-Type", "text/html")
+			userID := strconv.Itoa(tmp.(int))
 
-		_, err := writer.Write(fileContents)
-		if err != nil {
-			log.Printf("Failed to write game.html")
-			return
-		}
+			lobbyId := request.URL.Query().Get("lobby")
+			if lobbyId == "" {
+				http.Error(writer, "No user id found in query params check the url", http.StatusNotFound)
+				return
+			}
+
+			for lobbyKey := range LobbyList {
+				l := LobbyList[lobbyKey]
+				test := l.ConnectedPlayers[userID]
+				if test != nil {
+					// user tried to enter a lobby they already joined
+					http.Redirect(writer, request, "/static/l/entered.html", http.StatusFound)
+					return
+				}
+			}
+
+			fileContents := replaceIds(userID, lobbyId)
+			writer.Header().Add("Content-Type", "text/html")
+
+			_, err := writer.Write(fileContents)
+			if err != nil {
+				log.Printf("Failed to write game.html")
+				return
+			}
+		})
 	})
 }
 

@@ -103,7 +103,7 @@ func (l *LobbyModel) checkIfLobbyIsFull() bool {
 }
 
 func (l *LobbyModel) CountPLayers() int {
-	return len(l.CharactersList)
+	return len(l.ConnectedPlayers)
 }
 
 func (l *LobbyModel) PelletEatenAction(x, y float64) {

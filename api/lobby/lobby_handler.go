@@ -70,13 +70,13 @@ func getAllLobbies(db *sql.DB, lobbyList map[int]*entities.LobbyModel, w http.Re
 	}
 	lobbies := retrieveLobbies(db)
 	// add to lobby list
-	for _, data := range lobbies {
+	for ind, data := range lobbies {
 		lob := lobbyList[data.LobbyId]
 		if lob == nil {
 			http.Error(w, "Error creating lobby", http.StatusInternalServerError)
 			return
 		}
-		data.Joined = lob.CountPLayers()
+		lobbies[ind].Joined = lob.CountPLayers()
 	}
 
 	jsonData, err := json.Marshal(lobbies)
