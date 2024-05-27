@@ -6,6 +6,7 @@ import (
 	"github.com/olahol/melody"
 	"log"
 	"server/entities"
+	"strconv"
 )
 
 func initMelody(m *melody.Melody) {
@@ -30,28 +31,21 @@ func HandleConnect(newPlayerSession *melody.Session, m *melody.Melody) {
 
 	// get userid and lobbyid
 	userId := queryParams.Get("user")
-	lobbyId := queryParams.Get("lobby")
-
-	log.Print("New player with id: " + userId + " joined lobby: " + lobbyId)
+	tmp := queryParams.Get("lobby")
+	lobbyId, _ := strconv.Atoi(tmp)
+	log.Print("New player with id: " + userId + " joined lobby:")
 
 	// todo remove once lobby page is implemented
 	// add a tmp lobby
 	if LobbyList[lobbyId] == nil {
-		LobbyList[lobbyId] = entities.NewLobbyModel()
-	}
-
-	// todo check if lobby id and user id exist
-	if lobbyId == "" || userId == "" {
-		// throw error if it doesn't exist
-		log.Print(newPlayerSession.Write([]byte(`{"redirect": "/redirected_page"}`)))
+		log.Print(newPlayerSession.Write([]byte(`{"redirect": "/lobby"}`)))
 		return
 	}
 
 	lobby := LobbyList[lobbyId]
 	// get lobby info if full throw error
 	if len(lobby.ConnectedPlayers) == 4 {
-		fmt.Println("Whoa there more players are not allowed")
-
+		fmt.Println("more players are not allowed")
 		log.Print(newPlayerSession.Write([]byte(`{"redirect": "/static/game/full.html"}`)))
 		return
 	}
@@ -143,7 +137,7 @@ func HandleDisconnect(s *melody.Session, m *melody.Melody) {
 	}
 
 	playerInfo := value.(*entities.PlayerEntity)
-	LobbyList[lobbyId.(string)].Leave(playerInfo)
+	LobbyList[lobbyId.(int)].Leave(playerInfo)
 
 	playerInfo.Type = "dis"
 
@@ -163,12 +157,12 @@ func HandleDisconnect(s *melody.Session, m *melody.Melody) {
 func HandleMessage(s *melody.Session, m *melody.Melody, msg []byte) {
 	var data map[string]interface{}
 
-	lobbyId, exists := s.Get("LobbyId")
+	tmp, exists := s.Get("LobbyId")
 	if !exists {
 		log.Print("lobby id not found on message")
 		return
 	}
-
+	lobbyId := tmp.(int)
 	//LobbyList[lobbyId.(string)].
 
 	err := json.Unmarshal(msg, &data)
@@ -190,25 +184,22 @@ func HandleMessage(s *melody.Session, m *melody.Melody, msg []byte) {
 
 	case "pellet":
 		x, y := retrieveCoordinates(data)
-
-		LobbyList[lobbyId.(string)].PelletEatenAction(x, y)
-		fmt.Println("Handling " + messageType)
-		broadCastAll(m, msg, lobbyId.(string))
-
+		LobbyList[lobbyId].PelletEatenAction(x, y)
+		//fmt.Println("Handling " + messageType)
+		broadCastAll(m, msg, lobbyId)
 	case "power":
 		x, y := retrieveCoordinates(data)
-		LobbyList[lobbyId.(string)].PowerUpEatenAction(x, y)
+		LobbyList[lobbyId].PowerUpEatenAction(x, y)
 		//fmt.Println("Handling " + messageType)
-		broadCastAll(m, msg, lobbyId.(string))
-
+		broadCastAll(m, msg, lobbyId)
 	case "pacded":
 		ghostId := data["id"].(string)
-		LobbyList[lobbyId.(string)].GhostEatenAction(ghostId)
+		LobbyList[lobbyId].GhostEatenAction(ghostId)
 		//fmt.Println("Handling " + messageType)
-		broadCastAll(m, msg, lobbyId.(string))
+		broadCastAll(m, msg, lobbyId)
 	default:
 		//fmt.Println("Broadcasting others for type " + messageType)
-		broadCastOthers(m, msg, s, lobbyId.(string))
+		broadCastOthers(m, msg, s, lobbyId)
 	}
 }
 
@@ -218,7 +209,7 @@ func retrieveCoordinates(data map[string]interface{}) (float64, float64) {
 	return x, y
 }
 
-func broadCastAll(m *melody.Melody, msg []byte, lobbyId string) {
+func broadCastAll(m *melody.Melody, msg []byte, lobbyId int) {
 	var sessionList []*melody.Session
 
 	for session := range LobbyList[lobbyId].ConnectedPlayers {
@@ -232,7 +223,7 @@ func broadCastAll(m *melody.Melody, msg []byte, lobbyId string) {
 	}
 }
 
-func broadCastOthers(m *melody.Melody, msg []byte, session *melody.Session, lobbyId string) {
+func broadCastOthers(m *melody.Melody, msg []byte, session *melody.Session, lobbyId int) {
 	var sessionList []*melody.Session
 
 	for sessionKeys := range LobbyList[lobbyId].ConnectedPlayers {

@@ -102,6 +102,10 @@ func (l *LobbyModel) checkIfLobbyIsFull() bool {
 	return len(l.CharactersList) == 0
 }
 
+func (l *LobbyModel) CountPLayers() int {
+	return len(l.CharactersList)
+}
+
 func (l *LobbyModel) PelletEatenAction(x, y float64) {
 	l.mu.Lock()
 	defer l.mu.Unlock()

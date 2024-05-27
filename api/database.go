@@ -24,7 +24,6 @@ func SetupDatabase(db *sql.DB, dropTables bool) {
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
 				uid INTEGER NOT NULL,
 				lobby_name TEXT NOT NULL,
-				lobby_id TEXT UNIQUE NOT NULL,
 				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 				updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (uid) REFERENCES users(id));`

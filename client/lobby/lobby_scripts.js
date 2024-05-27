@@ -1,32 +1,28 @@
-// Initialize a Socket.IO connection
-const socket = io.connect('http://localhost:8080');
-
-socket.on('lobbyTimer', function(data) {
-  document.getElementById(`${data.lobbyId}-timer`).innerHTML = ` <p class="text">Time Left to Join: ${data.timer}</p>`;
-});
-
-socket.on('inProgress', function(data) {
-  document.getElementById(`${data.lobbyId}-timer`).innerHTML = '';
-  document.getElementById(`${data.lobbyId}-progress`).innerHTML = ` <p class="text">Game in progress!</p>`;
-  const joinButton = document.getElementById(`${data.lobbyId}-join`);
-  
-  // Remove the "join" button
-  if (joinButton) {
-    joinButton.parentNode.removeChild(joinButton);
-  }
-});
+// Function to fetch the username.
+async function fetchUsername() {
+    try {
+        const response = await fetch('/api/user/me');
+        if (!response.ok) {
+            throw new Error('Failed to fetch username');
+        }
+        const data = await response.json();
+        const username = data.username;
+        console.log('Welcome:', username);
+        document.getElementById('username').textContent = `Get ready ${username}`;
+        return username
+    } catch (error) {
+        console.error('Error fetching username:', error);
+        return null;
+    }
+}
 
 async function fetchLobbies() {
     try {
-        const response = await fetch('/api/lobby');
+        const response = await fetch('/api/lobby/lobbies', {method: 'GET'},);
         if (!response.ok) {
             throw new Error('Failed to fetch lobbies');
         }
-        const lobbyResponse = await response.json();
-        return lobbyResponse;
-
-        // Extracting names and IDs from lobbies
-
+        return await response.json();
     } catch (error) {
         console.error('Error fetching lobbies:', error);
         return [];
@@ -42,7 +38,7 @@ const createLobby = () => {
         uid: 1
     }
 
-    fetch('/api/lobby', {
+    fetch('/api/lobby/create', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -51,7 +47,12 @@ const createLobby = () => {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to create lobby');
+                if (response.status === 405){
+                    alert("Lobby limit reached, please delete a existing lobby")
+                    return
+                }
+                alert("Failed to create lobby")
+                return;
             }
             console.log('Lobby Created')
         })
@@ -63,12 +64,14 @@ const createLobby = () => {
 }
 
 const deleteLobby = (lobbyID) => {
-    fetch(`/api/lobby/${lobbyID}`, {
+    fetch(`/api/lobby/remove/${lobbyID}`, {
         method: 'DELETE',
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to delete lobby');
+                console.log(response.statusText)
+                alert('Failed to delete')
+                return
             }
             console.log('Lobby deleted successfully');
             location.reload()
@@ -83,6 +86,56 @@ const deleteLobby = (lobbyID) => {
 function goToGame(lobbyUrl) {
     window.location = lobbyUrl
 }
+
+async function fetchLobbiesAndRender(currentUser) {
+    try {
+        //CONSTANTS INITIALIZED
+        const lobbies = await fetchLobbies();
+        const lobbyTable = document.createElement('table');
+        const lobbyListContainer = document.querySelector('.lobby-container');
+        const numRows = Math.ceil(lobbies.length / 4)
+        lobbyListContainer.innerHTML = '';
+        //NOW WE MAKE THE TABLE
+        for (let i = 0; i < numRows; i++) {
+            const row = lobbyTable.insertRow(); // Insert a new row
+            for (let j = 0; j < 4; j++) {
+                const index = i * 4 + j;
+                if (index < lobbies.length) {
+                    const cell = row.insertCell(); // Insert a new cell in the row
+                    const lobby = lobbies[index];
+                    const formedDate = new Date(lobby.createdAt).toLocaleString()
+
+                    let deleteButtonHtml = ``
+                    if (lobby.user === currentUser) {
+                        deleteButtonHtml = `<button id="delete" class="join-button" onclick="deleteLobby(${lobby.lobbyId})">Delete</button>`;
+                    }
+
+                    cell.innerHTML = `
+                          <div class="lobby-box">
+                              <div class="lobby-name">
+                                  <p class="small-text">${formedDate}</p>
+                                  <hr>
+                                  <p class="text">Lobby: ${lobby.lobbyName}</p>
+                                  <p class="text">Owner: ${lobby.user}</p>
+                              </div>
+                              <div class="lobby-count">
+                                  <p class="text">Players: ${lobby.joined}/4</p>
+                              </div>
+                              <div class="lobby-buttons">
+                                ${deleteButtonHtml}                                
+                                <button id="${lobby.lobbyId}-join" class="join-button" onclick="goToGame('/game/play?lobby=${lobby.lobbyId}')">Join</button>
+                              </div>
+                          </div>
+                          `;
+                }
+            }
+        }
+        lobbyListContainer.appendChild(lobbyTable)
+    } catch (error) {
+        console.error('Error fetching and rendering lobbies:', error);
+    }
+}
+
 
 function logout() {
     fetch('/logout', {

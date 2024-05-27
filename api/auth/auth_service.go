@@ -26,21 +26,21 @@ func updateUserAuthToken(db *sql.DB, authToken string, userId int) bool {
 	return false
 }
 
-func GetUserAuthToken(db *sql.DB, token string) string {
-	stmt := "SELECT username from users where auth_token=?"
+func GetUserAuthToken(db *sql.DB, token string) (string, int) {
+	stmt := "SELECT id,username from users where auth_token=?"
 	token = hashString(token)
 	_, res := database.RunStatements(db, stmt, true, token)
 	user := ""
-
+	id := 0
 	for res.Next() {
-		err := res.Scan(&user)
+		err := res.Scan(&id, &user)
 		if err != nil || user == "" {
 			log.Print("Incorrect auth token" + err.Error())
-			return ""
+			return "", 0
 		}
 	}
 
-	return user
+	return user, id
 }
 
 func retrieveUser(db *sql.DB, username string) entities.User {

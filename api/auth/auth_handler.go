@@ -15,6 +15,9 @@ func SetupAuthRouter(db *sql.DB) *chi.Mux {
 	r.Post("/login", func(writer http.ResponseWriter, request *http.Request) {
 		loginUser(db, writer, request)
 	})
+	r.Get("/logout", func(writer http.ResponseWriter, request *http.Request) {
+		loginUser(db, writer, request)
+	})
 	return r
 }
 
