@@ -28,7 +28,7 @@ func countUserLobbies(db *sql.DB, uid int) bool {
 	}
 
 	// lobby limit of 3 per user
-	if count != 0 && count < 3 {
+	if count < 3 {
 		return true
 	} else {
 		return false

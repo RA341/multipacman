@@ -1,11 +1,12 @@
-# Multi-player pacman
+# Multiplayer pacman
+
+### It's time for the ghosts to fight back 
 
 ## Motivation
 
-We originally wrote this using node and express (repo can be found [here](https://github.com/brocodedude/MULTI-PACMAN), 
-but now I am rewriting it in go because I like go and this is a fun challenge also unverified performance improvements.   
+We originally wrote this using node and express (repo can be found [here](https://github.com/brocodedude/MULTI-PACMAN)).
 
-### Live deployment - TODO  
+Now I am rewriting it in go because I like go. Also, we get ~10MB portable binary that can run anywhere.
 
 ### Stack
 

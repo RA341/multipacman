@@ -29,6 +29,12 @@ func HandleConnect(newPlayerSession *melody.Session, m *melody.Melody) {
 	// Retrieve the http.Request associated with the WebSocket connection
 	queryParams := newPlayerSession.Request.URL.Query()
 
+	tml := newPlayerSession.Request.Context().Value("user")
+	if tml == nil || tml == "" {
+		tml = "Unknown username"
+	}
+	userName := tml.(string)
+
 	// get userid and lobbyid
 	userId := queryParams.Get("user")
 	tmp := queryParams.Get("lobby")
@@ -54,7 +60,7 @@ func HandleConnect(newPlayerSession *melody.Session, m *melody.Melody) {
 	// get current player
 	newPlayer := entities.NewPlayerEntity()
 
-	newPlayer.Username = "TODO username"
+	newPlayer.Username = userName
 	newPlayer.Type = "join"
 	newPlayer.PlayerId = userId
 	lobby.Join(newPlayer, newPlayerSession)
