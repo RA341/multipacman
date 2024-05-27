@@ -8,52 +8,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
-</head>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('login-form')
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            // Retrieve the username and password from the form
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (!username || !password) {
-                alert('Please enter all details')
+    <script>
+        function checkHeader() {
+            const queryString = new URLSearchParams(window.location.search);
+            const error = queryString.get("error")
+            if (error) {
+                // If the header is present, show a popup
+                alert(error);
             }
-
-            const urlEncodedData = new URLSearchParams({'username': username, 'password': password,}).toString();
-
-            // Send the form data using Fetch API
-            fetch('/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: urlEncodedData,
-                redirect: 'follow' // Enable automatic following of redirects
-            }).then(response => {
-                if (response.redirected) {
-                    console.log('Redirecting to ' + response.url)
-                    window.location.href = response.url;
-                } else {
-                    if (response.statusText) {
-                        alert('Error ' + response.statusText)
-                    }
-                }
-            }).catch(error => {
-                console.error('There was a problem sending data to server:', error);
-            });
-
-        })
-    })
-
-</script>
-<body>
+        }
+    </script>
+</head>
+<body onload="checkHeader()">
 <div class="container">
   <h2 class="header">MULTI-PACMAN</h2>
   <img src="/static/images/pacman-original.png" alt="Pacman" width="150" height="150" id="pacman-img">
 
-  <form id="login-form">
+  <form id="login-form" method="post" action="/api/auth/login">
       <label class="label" for="username">Username:</label><br>
       <input class="input" type="text" id="username" name="username" maxlength="50" required><br>
 

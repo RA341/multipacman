@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	_ "database/sql"
 	"embed"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -10,6 +9,8 @@ import (
 	"github.com/olahol/melody"
 	"log"
 	"net/http"
+	"server/api"
+	"server/api/auth"
 	entities "server/entities"
 	"time"
 )
@@ -28,7 +29,7 @@ func main() {
 		}
 	}(db)
 
-	SetupDatabase(db)
+	api.SetupDatabase(db, false)
 
 	router := chi.NewRouter()
 	m := melody.New()
@@ -42,7 +43,9 @@ func main() {
 	router.Use(middleware.Compress(5))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.Timeout(60 * time.Second))
-	router.Use(AuthMiddleware)
+	router.Use(func(handler http.Handler) http.Handler {
+		return AuthMiddleware(db, handler)
+	})
 
 	router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
 		http.Redirect(writer, request, "/lobby", http.StatusFound)
@@ -62,6 +65,10 @@ func main() {
 		}
 	})
 	initMelody(m)
+
+	// api routes
+	router.Mount("/api/auth", auth.SetupAuthRouter(db))
+	//router.Mount("/api/lobby", auth.SetupAuthRouter())
 
 	router.Get("/static/*", func(writer http.ResponseWriter, request *http.Request) {
 		assetPath := "client/" + request.URL.Path[len("/static/"):]
@@ -95,7 +102,7 @@ func main() {
 
 	router.Get("/lobby", func(writer http.ResponseWriter, request *http.Request) {
 		user := request.Context().Value("user")
-		if user == nil {
+		if user == nil || user == "" {
 			log.Printf("User not found in context")
 			http.Redirect(writer, request, "/login", http.StatusFound)
 			return

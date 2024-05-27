@@ -8,13 +8,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script>
+        function checkHeader() {
+            const queryString = new URLSearchParams(window.location.search);
+            const error = queryString.get("error")
+            if (error) {
+                // If the header is present, show a popup
+                alert(error);
+            }
+        }
+    </script>
 </head>
-<body>
+<body onload="checkHeader()">
   <div class="container">
     <h2 class="header">MULTI-PACMAN</h2>
     <img src="/static/images/pacman-original.png" alt="Pacman" width="150" height="150" id="pacman-img">
 
-    <form action="/account-reg" method="post">
+    <form action="/api/auth/register" method="post">
       <label class="label" for="username">Username:</label><br>
       <input class="input" type="text" id="username" name="username" maxlength="50" required><br>
   
