@@ -1,9 +1,11 @@
 services:
-  go-server:
+  multipacman:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-        - "8080:5000" 
+        - "8080:5000"
+    volumes:
+      - ./appdata/:/root/db/
     restart: unless-stopped
 

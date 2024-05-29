@@ -28,6 +28,8 @@ RUN apk update && \
 # Copy the source files from the previous stage
 COPY --from=minifier /app /app
 
+RUN go get
+
 # Build the Go application
 RUN go build -ldflags "-s -w" -o app
 

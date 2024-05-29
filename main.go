@@ -9,6 +9,8 @@ import (
 	"github.com/olahol/melody"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"server/api"
 	"server/api/auth"
 	lobby "server/api/lobby"
@@ -24,7 +26,13 @@ var embeddedFs embed.FS
 var LobbyList map[int]*entities.LobbyModel
 
 func main() {
-	db, _ := sql.Open("sqlite3", "./multipacman.db")
+	newpath := filepath.Join(".", "db")
+	err := os.MkdirAll(newpath, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db, _ := sql.Open("sqlite3", "./db/multipacman.db")
 	defer func(db *sql.DB) {
 		err := db.Close()
 		if err != nil {
@@ -57,7 +65,7 @@ func main() {
 	// router for login
 	port := getServerPort()
 
-	err := http.ListenAndServe(":"+port, router)
+	err = http.ListenAndServe(":"+port, router)
 	if err != nil {
 		return
 	}
