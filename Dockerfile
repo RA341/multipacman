@@ -19,11 +19,17 @@ FROM golang:1.22-alpine AS builder
 # Set the working directory
 WORKDIR /app
 
+ENV CGO_ENABLED=1
+
+# Install gcc
+RUN apk update && \
+    apk add --no-cache gcc musl-dev
+
 # Copy the source files from the previous stage
 COPY --from=minifier /app /app
 
 # Build the Go application
-RUN go build -o app
+RUN go build -ldflags "-s -w" -o app
 
 # Stage 3: Final stage - copy the Go binary to a minimal image
 FROM alpine:latest

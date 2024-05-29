@@ -1,8 +1,18 @@
 # Multiplayer pacman
 
-### It's time for the ghosts to fight back 
+## Screenshots
 
-## Motivation
+Lobby
+
+![lobby.png](.github/screenshots/lobby.png)
+
+
+Game with 2 players joined
+
+![lobby.png](.github/screenshots/game.png)
+
+
+### Motivation
 
 We originally wrote this using node and express (repo can be found [here](https://github.com/brocodedude/MULTI-PACMAN)).
 
@@ -14,4 +24,4 @@ Backend: Go
 
 Frontend: Vanilla HTML, CSS, JS
 
-Db: SQLITE
+Db: SQLite
