@@ -2,10 +2,7 @@ name: Release
 on:
   push:
     branches:
-      - master # or main
-
-permissions:
-  contents: read # for checkout
+      - release # or main
 
 env:
   # database stuff
