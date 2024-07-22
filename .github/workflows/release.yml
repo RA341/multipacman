@@ -67,7 +67,7 @@ jobs:
         run: go mod tidy
 
       - name: Build
-        run: go build -ldflags "-w -s" -o ctrl_linux_${{ steps.tagName.outputs.tag }}
+        run: go build -ldflags "-w -s" -o multipacman_linux_${{ steps.tagName.outputs.tag }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
@@ -120,7 +120,7 @@ jobs:
         run: go mod tidy
 
       - name: Build
-        run: go build -ldflags "-w -s" -o ctrl_windows_${{ steps.tagName.outputs.tag }}
+        run: go build -ldflags "-w -s" -o multipacman_windows_${{ steps.tagName.outputs.tag }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
