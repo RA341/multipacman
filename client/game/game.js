@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         return
     }
 
-    const url = "ws://" + window.location.host + `/ws/game?user=${userId}&lobby=${lobbyId}`;
+    let wssProtocol = `${window.location.protocol === 'https:' ? 'wss://' : 'ws://'}`
+    const url = wssProtocol + window.location.host + `/ws/game?user=${userId}&lobby=${lobbyId}`;
     let ws = new WebSocket(url);
 
 
