@@ -17,7 +17,6 @@ class AuthRequest extends $pb.GeneratedMessage {
   factory AuthRequest({
     $core.String? username,
     $core.String? password,
-    $core.String? passwordVerify,
   }) {
     final $result = create();
     if (username != null) {
@@ -25,9 +24,6 @@ class AuthRequest extends $pb.GeneratedMessage {
     }
     if (password != null) {
       $result.password = password;
-    }
-    if (passwordVerify != null) {
-      $result.passwordVerify = passwordVerify;
     }
     return $result;
   }
@@ -38,7 +34,6 @@ class AuthRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AuthRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'username')
     ..aOS(2, _omitFieldNames ? '' : 'password')
-    ..aOS(3, _omitFieldNames ? '' : 'passwordVerify', protoName: 'passwordVerify')
     ..hasRequiredFields = false
   ;
 
@@ -80,15 +75,6 @@ class AuthRequest extends $pb.GeneratedMessage {
   $core.bool hasPassword() => $_has(1);
   @$pb.TagNumber(2)
   void clearPassword() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get passwordVerify => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set passwordVerify($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasPasswordVerify() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearPasswordVerify() => clearField(3);
 }
 
 class AuthResponse extends $pb.GeneratedMessage {
@@ -173,10 +159,11 @@ class TestResponse extends $pb.GeneratedMessage {
   static TestResponse? _defaultInstance;
 }
 
-class NewUserReq extends $pb.GeneratedMessage {
-  factory NewUserReq({
+class RegisterUserRequest extends $pb.GeneratedMessage {
+  factory RegisterUserRequest({
     $core.String? username,
     $core.String? password,
+    $core.String? passwordVerify,
   }) {
     final $result = create();
     if (username != null) {
@@ -185,15 +172,19 @@ class NewUserReq extends $pb.GeneratedMessage {
     if (password != null) {
       $result.password = password;
     }
+    if (passwordVerify != null) {
+      $result.passwordVerify = passwordVerify;
+    }
     return $result;
   }
-  NewUserReq._() : super();
-  factory NewUserReq.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory NewUserReq.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  RegisterUserRequest._() : super();
+  factory RegisterUserRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegisterUserRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NewUserReq', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegisterUserRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'username')
     ..aOS(2, _omitFieldNames ? '' : 'password')
+    ..aOS(3, _omitFieldNames ? '' : 'passwordVerify', protoName: 'passwordVerify')
     ..hasRequiredFields = false
   ;
 
@@ -201,22 +192,22 @@ class NewUserReq extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  NewUserReq clone() => NewUserReq()..mergeFromMessage(this);
+  RegisterUserRequest clone() => RegisterUserRequest()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  NewUserReq copyWith(void Function(NewUserReq) updates) => super.copyWith((message) => updates(message as NewUserReq)) as NewUserReq;
+  RegisterUserRequest copyWith(void Function(RegisterUserRequest) updates) => super.copyWith((message) => updates(message as RegisterUserRequest)) as RegisterUserRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static NewUserReq create() => NewUserReq._();
-  NewUserReq createEmptyInstance() => create();
-  static $pb.PbList<NewUserReq> createRepeated() => $pb.PbList<NewUserReq>();
+  static RegisterUserRequest create() => RegisterUserRequest._();
+  RegisterUserRequest createEmptyInstance() => create();
+  static $pb.PbList<RegisterUserRequest> createRepeated() => $pb.PbList<RegisterUserRequest>();
   @$core.pragma('dart2js:noInline')
-  static NewUserReq getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NewUserReq>(create);
-  static NewUserReq? _defaultInstance;
+  static RegisterUserRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterUserRequest>(create);
+  static RegisterUserRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get username => $_getSZ(0);
@@ -235,15 +226,24 @@ class NewUserReq extends $pb.GeneratedMessage {
   $core.bool hasPassword() => $_has(1);
   @$pb.TagNumber(2)
   void clearPassword() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get passwordVerify => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set passwordVerify($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPasswordVerify() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPasswordVerify() => clearField(3);
 }
 
-class NewUserRes extends $pb.GeneratedMessage {
-  factory NewUserRes() => create();
-  NewUserRes._() : super();
-  factory NewUserRes.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory NewUserRes.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+class RegisterUserResponse extends $pb.GeneratedMessage {
+  factory RegisterUserResponse() => create();
+  RegisterUserResponse._() : super();
+  factory RegisterUserResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegisterUserResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NewUserRes', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegisterUserResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
@@ -251,22 +251,22 @@ class NewUserRes extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  NewUserRes clone() => NewUserRes()..mergeFromMessage(this);
+  RegisterUserResponse clone() => RegisterUserResponse()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  NewUserRes copyWith(void Function(NewUserRes) updates) => super.copyWith((message) => updates(message as NewUserRes)) as NewUserRes;
+  RegisterUserResponse copyWith(void Function(RegisterUserResponse) updates) => super.copyWith((message) => updates(message as RegisterUserResponse)) as RegisterUserResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static NewUserRes create() => NewUserRes._();
-  NewUserRes createEmptyInstance() => create();
-  static $pb.PbList<NewUserRes> createRepeated() => $pb.PbList<NewUserRes>();
+  static RegisterUserResponse create() => RegisterUserResponse._();
+  RegisterUserResponse createEmptyInstance() => create();
+  static $pb.PbList<RegisterUserResponse> createRepeated() => $pb.PbList<RegisterUserResponse>();
   @$core.pragma('dart2js:noInline')
-  static NewUserRes getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NewUserRes>(create);
-  static NewUserRes? _defaultInstance;
+  static RegisterUserResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterUserResponse>(create);
+  static RegisterUserResponse? _defaultInstance;
 }
 
 

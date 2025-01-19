@@ -25,10 +25,10 @@ class AuthServiceClient extends $grpc.Client {
       '/auth.v1.AuthService/Authenticate',
       ($0.AuthRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.AuthResponse.fromBuffer(value));
-  static final _$newUser = $grpc.ClientMethod<$0.NewUserReq, $0.NewUserRes>(
-      '/auth.v1.AuthService/NewUser',
-      ($0.NewUserReq value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.NewUserRes.fromBuffer(value));
+  static final _$registerUser = $grpc.ClientMethod<$0.RegisterUserRequest, $0.RegisterUserResponse>(
+      '/auth.v1.AuthService/RegisterUser',
+      ($0.RegisterUserRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RegisterUserResponse.fromBuffer(value));
   static final _$test = $grpc.ClientMethod<$0.AuthResponse, $0.TestResponse>(
       '/auth.v1.AuthService/Test',
       ($0.AuthResponse value) => value.writeToBuffer(),
@@ -44,8 +44,8 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$authenticate, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.NewUserRes> newUser($0.NewUserReq request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$newUser, request, options: options);
+  $grpc.ResponseFuture<$0.RegisterUserResponse> registerUser($0.RegisterUserRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$registerUser, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.TestResponse> test($0.AuthResponse request, {$grpc.CallOptions? options}) {
@@ -65,13 +65,13 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.AuthRequest.fromBuffer(value),
         ($0.AuthResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.NewUserReq, $0.NewUserRes>(
-        'NewUser',
-        newUser_Pre,
+    $addMethod($grpc.ServiceMethod<$0.RegisterUserRequest, $0.RegisterUserResponse>(
+        'RegisterUser',
+        registerUser_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.NewUserReq.fromBuffer(value),
-        ($0.NewUserRes value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $0.RegisterUserRequest.fromBuffer(value),
+        ($0.RegisterUserResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AuthResponse, $0.TestResponse>(
         'Test',
         test_Pre,
@@ -85,8 +85,8 @@ abstract class AuthServiceBase extends $grpc.Service {
     return authenticate(call, await request);
   }
 
-  $async.Future<$0.NewUserRes> newUser_Pre($grpc.ServiceCall call, $async.Future<$0.NewUserReq> request) async {
-    return newUser(call, await request);
+  $async.Future<$0.RegisterUserResponse> registerUser_Pre($grpc.ServiceCall call, $async.Future<$0.RegisterUserRequest> request) async {
+    return registerUser(call, await request);
   }
 
   $async.Future<$0.TestResponse> test_Pre($grpc.ServiceCall call, $async.Future<$0.AuthResponse> request) async {
@@ -94,6 +94,6 @@ abstract class AuthServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.AuthResponse> authenticate($grpc.ServiceCall call, $0.AuthRequest request);
-  $async.Future<$0.NewUserRes> newUser($grpc.ServiceCall call, $0.NewUserReq request);
+  $async.Future<$0.RegisterUserResponse> registerUser($grpc.ServiceCall call, $0.RegisterUserRequest request);
   $async.Future<$0.TestResponse> test($grpc.ServiceCall call, $0.AuthResponse request);
 }

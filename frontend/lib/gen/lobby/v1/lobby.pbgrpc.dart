@@ -19,22 +19,22 @@ import 'lobby.pb.dart' as $1;
 
 export 'lobby.pb.dart';
 
-@$pb.GrpcServiceName('lobby.v1.CategoryService')
-class CategoryServiceClient extends $grpc.Client {
+@$pb.GrpcServiceName('lobby.v1.LobbyService')
+class LobbyServiceClient extends $grpc.Client {
   static final _$listLobbies = $grpc.ClientMethod<$1.ListLobbiesRequest, $1.ListLobbiesResponse>(
-      '/lobby.v1.CategoryService/ListLobbies',
+      '/lobby.v1.LobbyService/ListLobbies',
       ($1.ListLobbiesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $1.ListLobbiesResponse.fromBuffer(value));
   static final _$addLobby = $grpc.ClientMethod<$1.AddLobbiesRequest, $1.AddLobbiesResponse>(
-      '/lobby.v1.CategoryService/AddLobby',
+      '/lobby.v1.LobbyService/AddLobby',
       ($1.AddLobbiesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $1.AddLobbiesResponse.fromBuffer(value));
   static final _$deleteLobby = $grpc.ClientMethod<$1.DelLobbiesRequest, $1.DelLobbiesResponse>(
-      '/lobby.v1.CategoryService/DeleteLobby',
+      '/lobby.v1.LobbyService/DeleteLobby',
       ($1.DelLobbiesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $1.DelLobbiesResponse.fromBuffer(value));
 
-  CategoryServiceClient($grpc.ClientChannel channel,
+  LobbyServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options,
@@ -53,11 +53,11 @@ class CategoryServiceClient extends $grpc.Client {
   }
 }
 
-@$pb.GrpcServiceName('lobby.v1.CategoryService')
-abstract class CategoryServiceBase extends $grpc.Service {
-  $core.String get $name => 'lobby.v1.CategoryService';
+@$pb.GrpcServiceName('lobby.v1.LobbyService')
+abstract class LobbyServiceBase extends $grpc.Service {
+  $core.String get $name => 'lobby.v1.LobbyService';
 
-  CategoryServiceBase() {
+  LobbyServiceBase() {
     $addMethod($grpc.ServiceMethod<$1.ListLobbiesRequest, $1.ListLobbiesResponse>(
         'ListLobbies',
         listLobbies_Pre,

@@ -19,14 +19,13 @@ const AuthRequest$json = {
   '2': [
     {'1': 'username', '3': 1, '4': 1, '5': 9, '10': 'username'},
     {'1': 'password', '3': 2, '4': 1, '5': 9, '10': 'password'},
-    {'1': 'passwordVerify', '3': 3, '4': 1, '5': 9, '10': 'passwordVerify'},
   ],
 };
 
 /// Descriptor for `AuthRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List authRequestDescriptor = $convert.base64Decode(
     'CgtBdXRoUmVxdWVzdBIaCgh1c2VybmFtZRgBIAEoCVIIdXNlcm5hbWUSGgoIcGFzc3dvcmQYAi'
-    'ABKAlSCHBhc3N3b3JkEiYKDnBhc3N3b3JkVmVyaWZ5GAMgASgJUg5wYXNzd29yZFZlcmlmeQ==');
+    'ABKAlSCHBhc3N3b3Jk');
 
 @$core.Deprecated('Use authResponseDescriptor instead')
 const AuthResponse$json = {
@@ -49,26 +48,28 @@ const TestResponse$json = {
 final $typed_data.Uint8List testResponseDescriptor = $convert.base64Decode(
     'CgxUZXN0UmVzcG9uc2U=');
 
-@$core.Deprecated('Use newUserReqDescriptor instead')
-const NewUserReq$json = {
-  '1': 'NewUserReq',
+@$core.Deprecated('Use registerUserRequestDescriptor instead')
+const RegisterUserRequest$json = {
+  '1': 'RegisterUserRequest',
   '2': [
     {'1': 'username', '3': 1, '4': 1, '5': 9, '10': 'username'},
     {'1': 'password', '3': 2, '4': 1, '5': 9, '10': 'password'},
+    {'1': 'passwordVerify', '3': 3, '4': 1, '5': 9, '10': 'passwordVerify'},
   ],
 };
 
-/// Descriptor for `NewUserReq`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List newUserReqDescriptor = $convert.base64Decode(
-    'CgpOZXdVc2VyUmVxEhoKCHVzZXJuYW1lGAEgASgJUgh1c2VybmFtZRIaCghwYXNzd29yZBgCIA'
-    'EoCVIIcGFzc3dvcmQ=');
+/// Descriptor for `RegisterUserRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List registerUserRequestDescriptor = $convert.base64Decode(
+    'ChNSZWdpc3RlclVzZXJSZXF1ZXN0EhoKCHVzZXJuYW1lGAEgASgJUgh1c2VybmFtZRIaCghwYX'
+    'Nzd29yZBgCIAEoCVIIcGFzc3dvcmQSJgoOcGFzc3dvcmRWZXJpZnkYAyABKAlSDnBhc3N3b3Jk'
+    'VmVyaWZ5');
 
-@$core.Deprecated('Use newUserResDescriptor instead')
-const NewUserRes$json = {
-  '1': 'NewUserRes',
+@$core.Deprecated('Use registerUserResponseDescriptor instead')
+const RegisterUserResponse$json = {
+  '1': 'RegisterUserResponse',
 };
 
-/// Descriptor for `NewUserRes`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List newUserResDescriptor = $convert.base64Decode(
-    'CgpOZXdVc2VyUmVz');
+/// Descriptor for `RegisterUserResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List registerUserResponseDescriptor = $convert.base64Decode(
+    'ChRSZWdpc3RlclVzZXJSZXNwb25zZQ==');
 
