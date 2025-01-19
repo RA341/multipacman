@@ -1,27 +1,41 @@
-package auth
+package api
 
 import (
+	connect "connectrpc.com/connect"
+	context "context"
 	"database/sql"
-	"github.com/go-chi/chi/v5"
+	v1 "github.com/RA341/multipacman/gen/auth/v1"
+	"github.com/RA341/multipacman/service"
 	"net/http"
 	"net/url"
 )
 
-func SetupAuthRouter(db *sql.DB) *chi.Mux {
-	r := chi.NewRouter()
-	r.Post("/register", func(writer http.ResponseWriter, request *http.Request) {
-		registerUser(db, writer, request)
-	})
-	r.Post("/login", func(writer http.ResponseWriter, request *http.Request) {
-		loginUser(db, writer, request)
-	})
-	r.Get("/logout", func(writer http.ResponseWriter, request *http.Request) {
-		loginUser(db, writer, request)
-	})
-	return r
+type AuthHandler struct {
+	auth *service.AuthService
 }
 
-func registerUser(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+func (a AuthHandler) Authenticate(ctx context.Context, c *connect.Request[v1.AuthRequest]) (*connect.Response[v1.AuthResponse], error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (a AuthHandler) NewUser(ctx context.Context, c *connect.Request[v1.NewUserReq]) (*connect.Response[v1.NewUserRes], error) {
+	//if c.Msg.Username == "" || c.Msg.Password == "" || c.Msg. == "" {
+	//
+	//}
+
+	registerUser(a.auth, c)
+
+	//TODO implement me
+	panic("implement me")
+}
+
+func (a AuthHandler) Test(ctx context.Context, c *connect.Request[v1.AuthResponse]) (*connect.Response[v1.TestResponse], error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func registerUser(auth *service.AuthService, req *connect.Request[v1.NewUserReq]) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

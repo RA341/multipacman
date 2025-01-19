@@ -3,19 +3,20 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"github.com/RA341/multipacman/api"
+	"github.com/RA341/multipacman/api/auth"
+	lobby "github.com/RA341/multipacman/api/lobby"
+	user "github.com/RA341/multipacman/api/user"
+	entities "github.com/RA341/multipacman/entities"
+	"github.com/RA341/multipacman/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/olahol/melody"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"server/api"
-	"server/api/auth"
-	lobby "server/api/lobby"
-	user "server/api/user"
-	entities "server/entities"
 	"strconv"
 	"time"
 )
@@ -23,22 +24,10 @@ import (
 //go:embed client/*
 var embeddedFs embed.FS
 
-var LobbyList map[int]*entities.LobbyModel
+var LobbyList map[int]*entities.Lobby
 
 func main() {
-	newpath := filepath.Join(".", "db")
-	err := os.MkdirAll(newpath, os.ModePerm)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db, _ := sql.Open("sqlite3", "./db/multipacman.db")
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			log.Fatal("Error while closing database connection")
-		}
-	}(db)
+	log.Logger = service.ConsoleLogger()
 
 	api.SetupDatabase(db, false)
 	// routers and websocket
@@ -46,7 +35,7 @@ func main() {
 	m := melody.New()
 	// init lobby list
 	ids := lobby.RetrieveLobbyIds(db)
-	LobbyList = make(map[int]*entities.LobbyModel)
+	LobbyList = make(map[int]*entities.Lobby)
 	for _, data := range ids {
 		LobbyList[data] = entities.NewLobbyModel()
 	}

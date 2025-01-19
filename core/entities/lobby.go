@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-type LobbyModel struct {
+type Lobby struct {
 	MatchStarted     bool
 	CharactersList   []string
 	ConnectedPlayers map[string]*melody.Session
@@ -18,9 +18,9 @@ type LobbyModel struct {
 	mu               sync.Mutex
 }
 
-func NewLobbyModel() *LobbyModel {
-	// Create a new LobbyModel instance
-	lobby := &LobbyModel{
+func NewLobbyModel() *Lobby {
+	// Create a new Lobby instance
+	lobby := &Lobby{
 		MatchStarted:     false,
 		CharactersList:   []string{"gh1", "gh2", "gh3", "pcm"},
 		ConnectedPlayers: make(map[string]*melody.Session),
@@ -31,7 +31,7 @@ func NewLobbyModel() *LobbyModel {
 	return lobby
 }
 
-func (l *LobbyModel) Join(player *PlayerEntity, session *melody.Session) bool {
+func (l *Lobby) Join(player *PlayerEntity, session *melody.Session) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -57,7 +57,7 @@ func (l *LobbyModel) Join(player *PlayerEntity, session *melody.Session) bool {
 	return true
 }
 
-func (l *LobbyModel) Leave(player *PlayerEntity) {
+func (l *Lobby) Leave(player *PlayerEntity) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	id := player.PlayerId
@@ -78,7 +78,7 @@ func (l *LobbyModel) Leave(player *PlayerEntity) {
 	delete(l.ConnectedPlayers, id)
 }
 
-func (l *LobbyModel) GetGameStateReport() []byte {
+func (l *Lobby) GetGameStateReport() []byte {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -98,29 +98,29 @@ func (l *LobbyModel) GetGameStateReport() []byte {
 	return jsonData
 }
 
-func (l *LobbyModel) checkIfLobbyIsFull() bool {
+func (l *Lobby) checkIfLobbyIsFull() bool {
 	return len(l.CharactersList) == 0
 }
 
-func (l *LobbyModel) CountPLayers() int {
+func (l *Lobby) CountPLayers() int {
 	return len(l.ConnectedPlayers)
 }
 
-func (l *LobbyModel) PelletEatenAction(x, y float64) {
+func (l *Lobby) PelletEatenAction(x, y float64) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	l.PelletsEaten = append(l.PelletsEaten, []float64{x, y})
 }
 
-func (l *LobbyModel) PowerUpEatenAction(x, y float64) {
+func (l *Lobby) PowerUpEatenAction(x, y float64) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	l.PowerUpsEaten = append(l.PowerUpsEaten, []float64{x, y})
 }
 
-func (l *LobbyModel) GhostEatenAction(ghostID string) {
+func (l *Lobby) GhostEatenAction(ghostID string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -136,7 +136,7 @@ func shuffleArray(array []string) []string {
 }
 
 //func main() {
-//	// Example usage of LobbyModel
+//	// Example usage of Lobby
 //	lobby := NewLobbyModel()
 //	fmt.Println(lobby.Join("tmp1", "user1", "actual1", "lobby1"))
 //	fmt.Println(lobby.Join("tmp2", "user2", "actual2", "lobby2"))

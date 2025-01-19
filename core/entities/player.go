@@ -38,11 +38,3 @@ func NewPlayerEntity() *PlayerEntity {
 		ExtraInfo:  "",
 	}
 }
-
-// User storing user data for non-game uses
-type User struct {
-	ID       int
-	Username string
-	Password string
-	Token    string
-}
