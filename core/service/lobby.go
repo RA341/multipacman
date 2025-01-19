@@ -12,15 +12,16 @@ type LobbyService struct {
 	Db *gorm.DB
 }
 
-func (lobbyService *LobbyService) CreateLobby(name string, userId uint) error {
+func (lobbyService *LobbyService) CreateLobby(lobbyName, username string, userId uint) error {
 	err := lobbyService.countUserLobbies(userId)
 	if err != nil {
 		return err
 	}
 
 	lobby := &models.Lobby{
-		LobbyName: name,
+		LobbyName: lobbyName,
 		UserID:    int64(userId),
+		Username:  username,
 	}
 
 	result := lobbyService.Db.Create(lobby)
@@ -63,7 +64,7 @@ func (lobbyService *LobbyService) countUserLobbies(uid uint) error {
 	var count int64
 	result := lobbyService.Db.
 		Model(&models.Lobby{}).
-		Where("id = ?", uid).
+		Where("user_id = ?", uid).
 		Count(&count)
 
 	if result.Error != nil {
@@ -72,7 +73,7 @@ func (lobbyService *LobbyService) countUserLobbies(uid uint) error {
 	}
 
 	// limit of 3 per user
-	if count <= 3 {
+	if count+1 <= 3 {
 		return nil
 	} else {
 		return fmt.Errorf("user has 3 lobbies: %d", uid)

@@ -45,7 +45,7 @@ const (
 
 // LobbyServiceClient is a client for the lobby.v1.LobbyService service.
 type LobbyServiceClient interface {
-	ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error)
+	ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.ServerStreamForClient[v1.ListLobbiesResponse], error)
 	AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error)
 	DeleteLobby(context.Context, *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error)
 }
@@ -90,8 +90,8 @@ type lobbyServiceClient struct {
 }
 
 // ListLobbies calls lobby.v1.LobbyService.ListLobbies.
-func (c *lobbyServiceClient) ListLobbies(ctx context.Context, req *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error) {
-	return c.listLobbies.CallUnary(ctx, req)
+func (c *lobbyServiceClient) ListLobbies(ctx context.Context, req *connect.Request[v1.ListLobbiesRequest]) (*connect.ServerStreamForClient[v1.ListLobbiesResponse], error) {
+	return c.listLobbies.CallServerStream(ctx, req)
 }
 
 // AddLobby calls lobby.v1.LobbyService.AddLobby.
@@ -106,7 +106,7 @@ func (c *lobbyServiceClient) DeleteLobby(ctx context.Context, req *connect.Reque
 
 // LobbyServiceHandler is an implementation of the lobby.v1.LobbyService service.
 type LobbyServiceHandler interface {
-	ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error)
+	ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest], *connect.ServerStream[v1.ListLobbiesResponse]) error
 	AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error)
 	DeleteLobby(context.Context, *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error)
 }
@@ -118,7 +118,7 @@ type LobbyServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewLobbyServiceHandler(svc LobbyServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	lobbyServiceMethods := v1.File_lobby_v1_lobby_proto.Services().ByName("LobbyService").Methods()
-	lobbyServiceListLobbiesHandler := connect.NewUnaryHandler(
+	lobbyServiceListLobbiesHandler := connect.NewServerStreamHandler(
 		LobbyServiceListLobbiesProcedure,
 		svc.ListLobbies,
 		connect.WithSchema(lobbyServiceMethods.ByName("ListLobbies")),
@@ -153,8 +153,8 @@ func NewLobbyServiceHandler(svc LobbyServiceHandler, opts ...connect.HandlerOpti
 // UnimplementedLobbyServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedLobbyServiceHandler struct{}
 
-func (UnimplementedLobbyServiceHandler) ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("lobby.v1.LobbyService.ListLobbies is not implemented"))
+func (UnimplementedLobbyServiceHandler) ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest], *connect.ServerStream[v1.ListLobbiesResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("lobby.v1.LobbyService.ListLobbies is not implemented"))
 }
 
 func (UnimplementedLobbyServiceHandler) AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error) {

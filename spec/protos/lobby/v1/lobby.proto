@@ -4,8 +4,8 @@ package lobby.v1;
 
 option go_package = "github.com/RA341/multipacman/generated/lobby/v1";
 
-service CategoryService {
-  rpc ListLobbies(ListLobbiesRequest) returns (ListLobbiesResponse) {}
+service LobbyService {
+  rpc ListLobbies(ListLobbiesRequest) returns (stream ListLobbiesResponse) {}
   rpc AddLobby(AddLobbiesRequest) returns (AddLobbiesResponse) {}
   rpc DeleteLobby(DelLobbiesRequest) returns (DelLobbiesResponse) {}
 }
@@ -32,4 +32,7 @@ message DelLobbiesResponse {}
 message Lobby {
   uint64 ID = 1;
   string lobby_name = 2;
+  string ownerName = 4;
+  uint64 ownerId = 5;
+  string created_at = 3;
 }

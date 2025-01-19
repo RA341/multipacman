@@ -26,7 +26,8 @@ func InitHandlers(database *gorm.DB) *http.ServeMux {
 		},
 		// lobbies
 		func() (string, http.Handler) {
-			return lobby.NewLobbyServiceHandler(&LobbyHandler{lobbyService: lobbyService}, authInterceptor)
+			handler := &LobbyHandler{lobbyService: lobbyService, lobbyChannel: make(chan bool)}
+			return lobby.NewLobbyServiceHandler(handler, authInterceptor)
 		},
 	}
 
@@ -55,7 +56,7 @@ func NewAuthInterceptor(authService *service.AuthService) connect.UnaryIntercept
 			}
 
 			// add user value to subsequent requests
-			ctx = context.WithValue(ctx, "user", &user)
+			ctx = context.WithValue(ctx, "user", user)
 
 			return next(ctx, req)
 		}

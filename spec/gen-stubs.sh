@@ -5,7 +5,7 @@ export NVM_DIR="/root/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # Create output directories
-mkdir -p generated/dart generated/go generated/web
+mkdir -p generated/dart generated/go
 
 # Generate Dart gRPC stubs
 protoc \

@@ -5,15 +5,20 @@ package auth.v1;
 option go_package = "github.com/RA341/multipacman/generated/auth/v1";
 
 service AuthService {
-  rpc Authenticate(AuthRequest) returns (AuthResponse) {}
-  rpc NewUser(NewUserReq) returns (NewUserRes) {}
-  rpc Test(AuthResponse) returns (TestResponse) {}
+  rpc Login(AuthRequest) returns (UserResponse) {}
+  rpc Register(RegisterUserRequest) returns (RegisterUserResponse) {}
+  rpc Test(AuthResponse) returns (UserResponse) {}
 }
 
 message AuthRequest {
   string username = 1;
   string password = 2;
-  string passwordVerify = 3;
+}
+
+message UserResponse {
+  uint64 ID = 1;
+  string username = 2;
+  string authToken = 3;
 }
 
 message AuthResponse {
@@ -22,9 +27,10 @@ message AuthResponse {
 
 message TestResponse {}
 
-message NewUserReq {
+message RegisterUserRequest {
   string username = 1;
   string password = 2;
+  string passwordVerify = 3;
 }
 
-message NewUserRes {}
+message RegisterUserResponse {}

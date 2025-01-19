@@ -13,7 +13,3 @@ plugins:
     out: generated/go
     opt: paths=source_relative
 
-  - local: protoc-gen-es
-    out: generated/web
-    include_imports: true
-    opt: target=ts
