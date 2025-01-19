@@ -1,4 +1,4 @@
-FROM node:18-alpine AS minifier
+FROM node:23-alpine AS minifier
 
 WORKDIR /app
 

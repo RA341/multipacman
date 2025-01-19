@@ -4,3 +4,4 @@
 .env
 multipacman.db
 spec/generated
+core/web
