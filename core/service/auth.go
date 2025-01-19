@@ -13,54 +13,95 @@ import (
 )
 
 type AuthService struct {
-	db *gorm.DB
+	Db *gorm.DB
 }
 
-func (auth *AuthService) createUser(username string, password string, authToken string) error {
+func (auth *AuthService) Register(username, password string) error {
 	user := models.User{
 		Username: username,
-		Password: hashString(password),
-		Token:    authToken,
+		Password: encryptPassword([]byte(password)),
+		Token:    "",
 	}
 
-	res := auth.db.Create(&user)
+	res := auth.Db.Create(&user)
 	if res.Error != nil {
 		log.Error().Err(res.Error).Msg("Failed to create user")
 		return res.Error
 	}
 
+	log.Info().Any("user", user).Msg("Created user")
+
 	return nil
 }
 
-func (auth *AuthService) updateUserAuthToken(authToken string, userId int) error {
-	result := auth.db.Model(&models.User{}).Where("id = ?", userId).Update("auth_token", authToken)
+func (auth *AuthService) Login(username, inputPassword string) (*models.User, error) {
+	var user models.User
+	result := auth.Db.
+		Where("username = ?", username).
+		First(&user)
+
+	if result.Error != nil || user.Username == "" {
+		log.Error().Err(result.Error).Any("user", user).Msg("Failed to login")
+		return &models.User{}, fmt.Errorf("failed retrive user info")
+	}
+
+	if !checkPassword(inputPassword, user.Password) {
+		log.Error().Err(result.Error).Msg("invalid user/password")
+		return &models.User{}, fmt.Errorf("invalid user/password")
+	}
+
+	finalUser, err := auth.updateUserAuthToken(user.ID)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update user token")
+		return &models.User{}, fmt.Errorf("failed update user token")
+	}
+
+	return finalUser, nil
+}
+func (auth *AuthService) updateUserAuthToken(userId uint) (*models.User, error) {
+	token := createAuthToken(32)
+
+	var user models.User
+	result := auth.Db.
+		Model(&user).
+		Where("id = ?", userId).
+		Update("token", hashString(token)).
+		Find(&user)
+
 	if result.Error != nil {
 		log.Error().Err(result.Error).Msg("Failed to update auth token")
-		return result.Error
+		return &models.User{}, result.Error
 	}
-	return nil
+	// return un-hashed token
+	user.Token = token
+	return &user, nil
 }
 
-func (auth *AuthService) GetUserAuthToken(token string) (models.User, error) {
+func (auth *AuthService) VerifyToken(token string) (*models.User, error) {
 	user := models.User{}
 
-	result := auth.db.Select("id, username").Where("auth_token = ?", token).Find(&user)
+	result := auth.Db.
+		Where("token = ?", hashString(token)).
+		Find(&user)
+
 	if result.Error != nil {
 		log.Error().Err(result.Error).Msg("Failed to update auth token")
-		return models.User{}, errors.New("unable to update token")
+		return &models.User{}, errors.New("unable to update token")
 	}
 
 	if user.ID == 0 || user.Username == "" {
 		log.Error().Msg("Invalid token")
-		return models.User{}, errors.New("invalid token")
+		return &models.User{}, errors.New("invalid token")
 	}
 
-	return user, nil
+	// return un-hashed token
+	user.Token = token
+	return &user, nil
 }
 
 func (auth *AuthService) retrieveUser(username string) (models.User, error) {
 	var user models.User
-	result := auth.db.Where("username = ?", username).First(&user)
+	result := auth.Db.Where("username = ?", username).First(&user)
 
 	// Check if the query was successful
 	if result.Error != nil {
@@ -80,7 +121,7 @@ func createAuthToken(length int) string {
 		randomString = append(randomString, characters[randomIndex.Int64()])
 	}
 
-	return encryptPassword(randomString)
+	return string(randomString)
 }
 
 func checkPassword(inputPassword string, hashedPassword string) bool {
@@ -91,6 +132,7 @@ func checkPassword(inputPassword string, hashedPassword string) bool {
 	}
 	return true
 }
+
 func encryptPassword(password []byte) string {
 	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	if err != nil {

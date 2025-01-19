@@ -33,7 +33,7 @@ func InitConfig() {
 		log.Fatal().Err(err).Msg("could not read config file")
 	}
 
-	log.Info().Msg("watching config file")
+	log.Info().Msg("Connected and watching config file")
 	viper.WatchConfig()
 
 	// maybe create viper instance and return from this function

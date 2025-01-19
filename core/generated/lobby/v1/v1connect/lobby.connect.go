@@ -21,8 +21,8 @@ import (
 const _ = connect.IsAtLeastVersion1_13_0
 
 const (
-	// CategoryServiceName is the fully-qualified name of the CategoryService service.
-	CategoryServiceName = "lobby.v1.CategoryService"
+	// LobbyServiceName is the fully-qualified name of the LobbyService service.
+	LobbyServiceName = "lobby.v1.LobbyService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -33,135 +33,134 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// CategoryServiceListLobbiesProcedure is the fully-qualified name of the CategoryService's
-	// ListLobbies RPC.
-	CategoryServiceListLobbiesProcedure = "/lobby.v1.CategoryService/ListLobbies"
-	// CategoryServiceAddLobbyProcedure is the fully-qualified name of the CategoryService's AddLobby
+	// LobbyServiceListLobbiesProcedure is the fully-qualified name of the LobbyService's ListLobbies
 	// RPC.
-	CategoryServiceAddLobbyProcedure = "/lobby.v1.CategoryService/AddLobby"
-	// CategoryServiceDeleteLobbyProcedure is the fully-qualified name of the CategoryService's
-	// DeleteLobby RPC.
-	CategoryServiceDeleteLobbyProcedure = "/lobby.v1.CategoryService/DeleteLobby"
+	LobbyServiceListLobbiesProcedure = "/lobby.v1.LobbyService/ListLobbies"
+	// LobbyServiceAddLobbyProcedure is the fully-qualified name of the LobbyService's AddLobby RPC.
+	LobbyServiceAddLobbyProcedure = "/lobby.v1.LobbyService/AddLobby"
+	// LobbyServiceDeleteLobbyProcedure is the fully-qualified name of the LobbyService's DeleteLobby
+	// RPC.
+	LobbyServiceDeleteLobbyProcedure = "/lobby.v1.LobbyService/DeleteLobby"
 )
 
-// CategoryServiceClient is a client for the lobby.v1.CategoryService service.
-type CategoryServiceClient interface {
+// LobbyServiceClient is a client for the lobby.v1.LobbyService service.
+type LobbyServiceClient interface {
 	ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error)
 	AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error)
 	DeleteLobby(context.Context, *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error)
 }
 
-// NewCategoryServiceClient constructs a client for the lobby.v1.CategoryService service. By
-// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
-// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
-// connect.WithGRPC() or connect.WithGRPCWeb() options.
+// NewLobbyServiceClient constructs a client for the lobby.v1.LobbyService service. By default, it
+// uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
+// uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
+// connect.WithGRPCWeb() options.
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewCategoryServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) CategoryServiceClient {
+func NewLobbyServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) LobbyServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
-	categoryServiceMethods := v1.File_lobby_v1_lobby_proto.Services().ByName("CategoryService").Methods()
-	return &categoryServiceClient{
+	lobbyServiceMethods := v1.File_lobby_v1_lobby_proto.Services().ByName("LobbyService").Methods()
+	return &lobbyServiceClient{
 		listLobbies: connect.NewClient[v1.ListLobbiesRequest, v1.ListLobbiesResponse](
 			httpClient,
-			baseURL+CategoryServiceListLobbiesProcedure,
-			connect.WithSchema(categoryServiceMethods.ByName("ListLobbies")),
+			baseURL+LobbyServiceListLobbiesProcedure,
+			connect.WithSchema(lobbyServiceMethods.ByName("ListLobbies")),
 			connect.WithClientOptions(opts...),
 		),
 		addLobby: connect.NewClient[v1.AddLobbiesRequest, v1.AddLobbiesResponse](
 			httpClient,
-			baseURL+CategoryServiceAddLobbyProcedure,
-			connect.WithSchema(categoryServiceMethods.ByName("AddLobby")),
+			baseURL+LobbyServiceAddLobbyProcedure,
+			connect.WithSchema(lobbyServiceMethods.ByName("AddLobby")),
 			connect.WithClientOptions(opts...),
 		),
 		deleteLobby: connect.NewClient[v1.DelLobbiesRequest, v1.DelLobbiesResponse](
 			httpClient,
-			baseURL+CategoryServiceDeleteLobbyProcedure,
-			connect.WithSchema(categoryServiceMethods.ByName("DeleteLobby")),
+			baseURL+LobbyServiceDeleteLobbyProcedure,
+			connect.WithSchema(lobbyServiceMethods.ByName("DeleteLobby")),
 			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
-// categoryServiceClient implements CategoryServiceClient.
-type categoryServiceClient struct {
+// lobbyServiceClient implements LobbyServiceClient.
+type lobbyServiceClient struct {
 	listLobbies *connect.Client[v1.ListLobbiesRequest, v1.ListLobbiesResponse]
 	addLobby    *connect.Client[v1.AddLobbiesRequest, v1.AddLobbiesResponse]
 	deleteLobby *connect.Client[v1.DelLobbiesRequest, v1.DelLobbiesResponse]
 }
 
-// ListLobbies calls lobby.v1.CategoryService.ListLobbies.
-func (c *categoryServiceClient) ListLobbies(ctx context.Context, req *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error) {
+// ListLobbies calls lobby.v1.LobbyService.ListLobbies.
+func (c *lobbyServiceClient) ListLobbies(ctx context.Context, req *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error) {
 	return c.listLobbies.CallUnary(ctx, req)
 }
 
-// AddLobby calls lobby.v1.CategoryService.AddLobby.
-func (c *categoryServiceClient) AddLobby(ctx context.Context, req *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error) {
+// AddLobby calls lobby.v1.LobbyService.AddLobby.
+func (c *lobbyServiceClient) AddLobby(ctx context.Context, req *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error) {
 	return c.addLobby.CallUnary(ctx, req)
 }
 
-// DeleteLobby calls lobby.v1.CategoryService.DeleteLobby.
-func (c *categoryServiceClient) DeleteLobby(ctx context.Context, req *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error) {
+// DeleteLobby calls lobby.v1.LobbyService.DeleteLobby.
+func (c *lobbyServiceClient) DeleteLobby(ctx context.Context, req *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error) {
 	return c.deleteLobby.CallUnary(ctx, req)
 }
 
-// CategoryServiceHandler is an implementation of the lobby.v1.CategoryService service.
-type CategoryServiceHandler interface {
+// LobbyServiceHandler is an implementation of the lobby.v1.LobbyService service.
+type LobbyServiceHandler interface {
 	ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error)
 	AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error)
 	DeleteLobby(context.Context, *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error)
 }
 
-// NewCategoryServiceHandler builds an HTTP handler from the service implementation. It returns the
+// NewLobbyServiceHandler builds an HTTP handler from the service implementation. It returns the
 // path on which to mount the handler and the handler itself.
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewCategoryServiceHandler(svc CategoryServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	categoryServiceMethods := v1.File_lobby_v1_lobby_proto.Services().ByName("CategoryService").Methods()
-	categoryServiceListLobbiesHandler := connect.NewUnaryHandler(
-		CategoryServiceListLobbiesProcedure,
+func NewLobbyServiceHandler(svc LobbyServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	lobbyServiceMethods := v1.File_lobby_v1_lobby_proto.Services().ByName("LobbyService").Methods()
+	lobbyServiceListLobbiesHandler := connect.NewUnaryHandler(
+		LobbyServiceListLobbiesProcedure,
 		svc.ListLobbies,
-		connect.WithSchema(categoryServiceMethods.ByName("ListLobbies")),
+		connect.WithSchema(lobbyServiceMethods.ByName("ListLobbies")),
 		connect.WithHandlerOptions(opts...),
 	)
-	categoryServiceAddLobbyHandler := connect.NewUnaryHandler(
-		CategoryServiceAddLobbyProcedure,
+	lobbyServiceAddLobbyHandler := connect.NewUnaryHandler(
+		LobbyServiceAddLobbyProcedure,
 		svc.AddLobby,
-		connect.WithSchema(categoryServiceMethods.ByName("AddLobby")),
+		connect.WithSchema(lobbyServiceMethods.ByName("AddLobby")),
 		connect.WithHandlerOptions(opts...),
 	)
-	categoryServiceDeleteLobbyHandler := connect.NewUnaryHandler(
-		CategoryServiceDeleteLobbyProcedure,
+	lobbyServiceDeleteLobbyHandler := connect.NewUnaryHandler(
+		LobbyServiceDeleteLobbyProcedure,
 		svc.DeleteLobby,
-		connect.WithSchema(categoryServiceMethods.ByName("DeleteLobby")),
+		connect.WithSchema(lobbyServiceMethods.ByName("DeleteLobby")),
 		connect.WithHandlerOptions(opts...),
 	)
-	return "/lobby.v1.CategoryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return "/lobby.v1.LobbyService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case CategoryServiceListLobbiesProcedure:
-			categoryServiceListLobbiesHandler.ServeHTTP(w, r)
-		case CategoryServiceAddLobbyProcedure:
-			categoryServiceAddLobbyHandler.ServeHTTP(w, r)
-		case CategoryServiceDeleteLobbyProcedure:
-			categoryServiceDeleteLobbyHandler.ServeHTTP(w, r)
+		case LobbyServiceListLobbiesProcedure:
+			lobbyServiceListLobbiesHandler.ServeHTTP(w, r)
+		case LobbyServiceAddLobbyProcedure:
+			lobbyServiceAddLobbyHandler.ServeHTTP(w, r)
+		case LobbyServiceDeleteLobbyProcedure:
+			lobbyServiceDeleteLobbyHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
 	})
 }
 
-// UnimplementedCategoryServiceHandler returns CodeUnimplemented from all methods.
-type UnimplementedCategoryServiceHandler struct{}
+// UnimplementedLobbyServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedLobbyServiceHandler struct{}
 
-func (UnimplementedCategoryServiceHandler) ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("lobby.v1.CategoryService.ListLobbies is not implemented"))
+func (UnimplementedLobbyServiceHandler) ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.Response[v1.ListLobbiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("lobby.v1.LobbyService.ListLobbies is not implemented"))
 }
 
-func (UnimplementedCategoryServiceHandler) AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("lobby.v1.CategoryService.AddLobby is not implemented"))
+func (UnimplementedLobbyServiceHandler) AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("lobby.v1.LobbyService.AddLobby is not implemented"))
 }
 
-func (UnimplementedCategoryServiceHandler) DeleteLobby(context.Context, *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("lobby.v1.CategoryService.DeleteLobby is not implemented"))
+func (UnimplementedLobbyServiceHandler) DeleteLobby(context.Context, *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("lobby.v1.LobbyService.DeleteLobby is not implemented"))
 }

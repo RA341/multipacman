@@ -1,22 +1,67 @@
 package service
 
 import (
-	"database/sql"
 	"fmt"
+	rpc "github.com/RA341/multipacman/generated/lobby/v1"
 	"github.com/RA341/multipacman/models"
-	database "github.com/RA341/multipacman/utils"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
-	"time"
 )
 
 type LobbyService struct {
-	db *gorm.DB
+	Db *gorm.DB
 }
 
-func (lobbyService *LobbyService) countUserLobbies(uid int) error {
+func (lobbyService *LobbyService) CreateLobby(name string, userId uint) error {
+	err := lobbyService.countUserLobbies(userId)
+	if err != nil {
+		return err
+	}
+
+	lobby := &models.Lobby{
+		LobbyName: name,
+		UserID:    int64(userId),
+	}
+
+	result := lobbyService.Db.Create(lobby)
+	if result.Error != nil {
+		log.Error().Err(result.Error).Msg("unable to create lobby")
+		return fmt.Errorf("unable to create lobby")
+	}
+
+	return nil
+}
+
+func (lobbyService *LobbyService) DeleteLobby(lobbyId uint64, userId uint) error {
+	res := lobbyService.Db.Where("user_id", userId).Delete(&models.Lobby{}, lobbyId)
+	if res.Error != nil {
+		log.Error().Err(res.Error).Msg("unable to delete lobby")
+		return fmt.Errorf("unable to delete lobby")
+	}
+
+	return nil
+}
+
+func (lobbyService *LobbyService) RetrieveLobbies() ([]*rpc.Lobby, error) {
+	var lobbies []models.Lobby
+
+	res := lobbyService.Db.Find(&lobbies)
+	if res.Error != nil {
+		log.Error().Err(res.Error).Msg("unable to query lobbies")
+		return []*rpc.Lobby{}, fmt.Errorf("unable to find lobbies")
+	}
+
+	var result []*rpc.Lobby
+	for _, lobby := range lobbies {
+		result = append(result, lobby.ToRPC())
+	}
+
+	return result, nil
+}
+
+func (lobbyService *LobbyService) countUserLobbies(uid uint) error {
 	var count int64
-	result := lobbyService.db.
+	result := lobbyService.Db.
 		Model(&models.Lobby{}).
 		Where("id = ?", uid).
 		Count(&count)
@@ -32,89 +77,4 @@ func (lobbyService *LobbyService) countUserLobbies(uid int) error {
 	} else {
 		return fmt.Errorf("user has 3 lobbies: %d", uid)
 	}
-}
-
-func (lobbyService *LobbyService) createLobby(name string, userId int) error {
-	err := lobbyService.countUserLobbies(userId)
-	if err != nil {
-		return err
-	}
-
-	lobby := &models.Lobby{
-		LobbyName: name,
-		UserID:    int64(userId),
-	}
-
-	result := lobbyService.db.Create(lobby)
-	if result.Error != nil {
-		log.Error().Err(result.Error).Msg("unable to create lobby")
-		return fmt.Errorf("unable to create lobby")
-	}
-
-	return nil
-}
-
-func (lobbyService *LobbyService) retrieveLobbies() []DbLobby {
-	stmt := `
-	SELECT l.id, l.lobby_name, u.username, l.created_at
-	FROM lobbies AS l
-	JOIN users AS u ON l.uid = u.id;
-	`
-	_, res := database.RunStatements(db, stmt, true)
-
-	allLobbies := make([]DbLobby, 0)
-	var lobbyId int
-	var lobbyName string
-	var userName string
-	var createdA time.Time
-
-	for res.Next() {
-		err := res.Scan(&lobbyId, &lobbyName, &userName, &createdA)
-		if err != nil {
-			return []DbLobby{}
-		}
-		// insert data
-		allLobbies = append(allLobbies, DbLobby{
-			LobbyId:   lobbyId,
-			LobbyName: lobbyName,
-			UserName:  userName,
-			CreatedAt: createdA,
-		})
-	}
-
-	return allLobbies
-}
-
-func (lobbyService *LobbyService) RetrieveLobbyIds() []int {
-	stmt := "SELECT id FROM lobbies"
-	_, res := database.RunStatements(db, stmt, true)
-
-	allLobbies := []int{}
-	var uid int
-
-	for res.Next() {
-		err := res.Scan(&uid)
-		if err != nil {
-			return []int{}
-		}
-		// insert data
-		allLobbies = append(allLobbies, uid)
-	}
-
-	return allLobbies
-}
-
-func (lobbyService *LobbyService) deleteLobby(lobbyId int, userId int) bool {
-	stmt := "DELETE FROM lobbies WHERE uid = ? AND id = ?"
-	res, _ := database.RunStatements(db, stmt, false, userId, lobbyId)
-	affected, err := res.RowsAffected()
-
-	if err != nil {
-		log.Print(err)
-		return false
-	}
-	if affected != 0 {
-		return true
-	}
-	return false
 }

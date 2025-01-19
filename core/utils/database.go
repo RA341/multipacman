@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func InitDB() {
+func InitDB() *gorm.DB {
 	dbPath := viper.GetString("db_path")
 	if dbPath == "" {
 		log.Fatal().Msgf("db_path is empty")
@@ -25,10 +25,12 @@ func InitDB() {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(models.User{})
+	err = db.AutoMigrate(models.User{}, models.Lobby{})
 	if err != nil {
 		log.Fatal().Err(err).Msgf("failed to migrate database")
 	}
 
 	log.Info().Msgf("successfully connected to database: %s", dbPath)
+
+	return db
 }
