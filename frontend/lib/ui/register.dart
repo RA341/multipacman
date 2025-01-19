@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:multipacman/clients/auth_api.dart';
+import 'package:multipacman/grpc/api.dart';
 import 'package:multipacman/ui/components/action_button.dart';
 import 'package:multipacman/ui/components/register_button.dart';
 import 'package:multipacman/ui/components/utils.dart';
@@ -47,7 +48,16 @@ class RegisterPage extends HookConsumerWidget {
                   );
                 }
 
-                authApi.login(user: username.text, pass: password.text);
+                await runGrpcRequest(
+                  context,
+                  () => authApi.register(
+                    user: username.text,
+                    pass: password.text,
+                    passVerify: verifyPassword.text,
+                  ),
+                );
+
+                ref.read(goToRegisterProvider.notifier).state = false;
               },
               'Register',
             ),

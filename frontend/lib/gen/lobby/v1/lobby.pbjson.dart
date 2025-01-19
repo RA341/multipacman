@@ -84,10 +84,15 @@ const Lobby$json = {
   '2': [
     {'1': 'ID', '3': 1, '4': 1, '5': 4, '10': 'ID'},
     {'1': 'lobby_name', '3': 2, '4': 1, '5': 9, '10': 'lobbyName'},
+    {'1': 'ownerName', '3': 4, '4': 1, '5': 9, '10': 'ownerName'},
+    {'1': 'ownerId', '3': 5, '4': 1, '5': 4, '10': 'ownerId'},
+    {'1': 'created_at', '3': 3, '4': 1, '5': 9, '10': 'createdAt'},
   ],
 };
 
 /// Descriptor for `Lobby`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List lobbyDescriptor = $convert.base64Decode(
-    'CgVMb2JieRIOCgJJRBgBIAEoBFICSUQSHQoKbG9iYnlfbmFtZRgCIAEoCVIJbG9iYnlOYW1l');
+    'CgVMb2JieRIOCgJJRBgBIAEoBFICSUQSHQoKbG9iYnlfbmFtZRgCIAEoCVIJbG9iYnlOYW1lEh'
+    'wKCW93bmVyTmFtZRgEIAEoCVIJb3duZXJOYW1lEhgKB293bmVySWQYBSABKARSB293bmVySWQS'
+    'HQoKY3JlYXRlZF9hdBgDIAEoCVIJY3JlYXRlZEF0');
 

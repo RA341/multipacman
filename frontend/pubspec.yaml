@@ -52,6 +52,7 @@ dependencies:
   url_launcher:
   fixnum: ^1.1.1
   logger: ^2.5.0
+  connectrpc: ^0.1.0
 
 dev_dependencies:
   flutter_test:

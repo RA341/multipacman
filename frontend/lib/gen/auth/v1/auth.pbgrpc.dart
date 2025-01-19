@@ -21,18 +21,18 @@ export 'auth.pb.dart';
 
 @$pb.GrpcServiceName('auth.v1.AuthService')
 class AuthServiceClient extends $grpc.Client {
-  static final _$authenticate = $grpc.ClientMethod<$0.AuthRequest, $0.AuthResponse>(
-      '/auth.v1.AuthService/Authenticate',
+  static final _$login = $grpc.ClientMethod<$0.AuthRequest, $0.UserResponse>(
+      '/auth.v1.AuthService/Login',
       ($0.AuthRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.AuthResponse.fromBuffer(value));
-  static final _$registerUser = $grpc.ClientMethod<$0.RegisterUserRequest, $0.RegisterUserResponse>(
-      '/auth.v1.AuthService/RegisterUser',
+      ($core.List<$core.int> value) => $0.UserResponse.fromBuffer(value));
+  static final _$register = $grpc.ClientMethod<$0.RegisterUserRequest, $0.RegisterUserResponse>(
+      '/auth.v1.AuthService/Register',
       ($0.RegisterUserRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.RegisterUserResponse.fromBuffer(value));
-  static final _$test = $grpc.ClientMethod<$0.AuthResponse, $0.TestResponse>(
+  static final _$test = $grpc.ClientMethod<$0.AuthResponse, $0.UserResponse>(
       '/auth.v1.AuthService/Test',
       ($0.AuthResponse value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.TestResponse.fromBuffer(value));
+      ($core.List<$core.int> value) => $0.UserResponse.fromBuffer(value));
 
   AuthServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -40,15 +40,15 @@ class AuthServiceClient extends $grpc.Client {
       : super(channel, options: options,
         interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.AuthResponse> authenticate($0.AuthRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$authenticate, request, options: options);
+  $grpc.ResponseFuture<$0.UserResponse> login($0.AuthRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$login, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.RegisterUserResponse> registerUser($0.RegisterUserRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$registerUser, request, options: options);
+  $grpc.ResponseFuture<$0.RegisterUserResponse> register($0.RegisterUserRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$register, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.TestResponse> test($0.AuthResponse request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.UserResponse> test($0.AuthResponse request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$test, request, options: options);
   }
 }
@@ -58,42 +58,42 @@ abstract class AuthServiceBase extends $grpc.Service {
   $core.String get $name => 'auth.v1.AuthService';
 
   AuthServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.AuthRequest, $0.AuthResponse>(
-        'Authenticate',
-        authenticate_Pre,
+    $addMethod($grpc.ServiceMethod<$0.AuthRequest, $0.UserResponse>(
+        'Login',
+        login_Pre,
         false,
         false,
         ($core.List<$core.int> value) => $0.AuthRequest.fromBuffer(value),
-        ($0.AuthResponse value) => value.writeToBuffer()));
+        ($0.UserResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RegisterUserRequest, $0.RegisterUserResponse>(
-        'RegisterUser',
-        registerUser_Pre,
+        'Register',
+        register_Pre,
         false,
         false,
         ($core.List<$core.int> value) => $0.RegisterUserRequest.fromBuffer(value),
         ($0.RegisterUserResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.AuthResponse, $0.TestResponse>(
+    $addMethod($grpc.ServiceMethod<$0.AuthResponse, $0.UserResponse>(
         'Test',
         test_Pre,
         false,
         false,
         ($core.List<$core.int> value) => $0.AuthResponse.fromBuffer(value),
-        ($0.TestResponse value) => value.writeToBuffer()));
+        ($0.UserResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.AuthResponse> authenticate_Pre($grpc.ServiceCall call, $async.Future<$0.AuthRequest> request) async {
-    return authenticate(call, await request);
+  $async.Future<$0.UserResponse> login_Pre($grpc.ServiceCall call, $async.Future<$0.AuthRequest> request) async {
+    return login(call, await request);
   }
 
-  $async.Future<$0.RegisterUserResponse> registerUser_Pre($grpc.ServiceCall call, $async.Future<$0.RegisterUserRequest> request) async {
-    return registerUser(call, await request);
+  $async.Future<$0.RegisterUserResponse> register_Pre($grpc.ServiceCall call, $async.Future<$0.RegisterUserRequest> request) async {
+    return register(call, await request);
   }
 
-  $async.Future<$0.TestResponse> test_Pre($grpc.ServiceCall call, $async.Future<$0.AuthResponse> request) async {
+  $async.Future<$0.UserResponse> test_Pre($grpc.ServiceCall call, $async.Future<$0.AuthResponse> request) async {
     return test(call, await request);
   }
 
-  $async.Future<$0.AuthResponse> authenticate($grpc.ServiceCall call, $0.AuthRequest request);
-  $async.Future<$0.RegisterUserResponse> registerUser($grpc.ServiceCall call, $0.RegisterUserRequest request);
-  $async.Future<$0.TestResponse> test($grpc.ServiceCall call, $0.AuthResponse request);
+  $async.Future<$0.UserResponse> login($grpc.ServiceCall call, $0.AuthRequest request);
+  $async.Future<$0.RegisterUserResponse> register($grpc.ServiceCall call, $0.RegisterUserRequest request);
+  $async.Future<$0.UserResponse> test($grpc.ServiceCall call, $0.AuthResponse request);
 }

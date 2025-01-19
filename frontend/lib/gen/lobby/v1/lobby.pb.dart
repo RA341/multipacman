@@ -260,6 +260,9 @@ class Lobby extends $pb.GeneratedMessage {
   factory Lobby({
     $fixnum.Int64? iD,
     $core.String? lobbyName,
+    $core.String? createdAt,
+    $core.String? ownerName,
+    $fixnum.Int64? ownerId,
   }) {
     final $result = create();
     if (iD != null) {
@@ -267,6 +270,15 @@ class Lobby extends $pb.GeneratedMessage {
     }
     if (lobbyName != null) {
       $result.lobbyName = lobbyName;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    if (ownerName != null) {
+      $result.ownerName = ownerName;
+    }
+    if (ownerId != null) {
+      $result.ownerId = ownerId;
     }
     return $result;
   }
@@ -277,6 +289,9 @@ class Lobby extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Lobby', package: const $pb.PackageName(_omitMessageNames ? '' : 'lobby.v1'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'ID', $pb.PbFieldType.OU6, protoName: 'ID', defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(2, _omitFieldNames ? '' : 'lobbyName')
+    ..aOS(3, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(4, _omitFieldNames ? '' : 'ownerName', protoName: 'ownerName')
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'ownerId', $pb.PbFieldType.OU6, protoName: 'ownerId', defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
   ;
 
@@ -318,6 +333,33 @@ class Lobby extends $pb.GeneratedMessage {
   $core.bool hasLobbyName() => $_has(1);
   @$pb.TagNumber(2)
   void clearLobbyName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get createdAt => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set createdAt($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCreatedAt() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCreatedAt() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get ownerName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set ownerName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasOwnerName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOwnerName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get ownerId => $_getI64(4);
+  @$pb.TagNumber(5)
+  set ownerId($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasOwnerId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearOwnerId() => clearField(5);
 }
 
 

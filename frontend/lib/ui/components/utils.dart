@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grpc/grpc_or_grpcweb.dart';
 
 void showErrorDialog(
   BuildContext context,
@@ -121,4 +122,34 @@ Widget createDropDown2(
       );
     }).toList(),
   );
+}
+
+Future<void> runGrpcRequest(
+  BuildContext context,
+  Future<void> Function() onPress,
+) async {
+  try {
+    await onPress();
+  } on GrpcError catch (e) {
+    if (!context.mounted) return;
+    showErrorDialog(
+      context,
+      e.message ?? "Unknown error",
+      message: e.details
+              ?.fold<String>(
+                '',
+                (value, element) => value = '$value\n${element.toString()}',
+              )
+              .toString() ??
+          "",
+      errorMessage: e.toString(),
+    );
+  } catch (e) {
+    if (!context.mounted) return;
+    showErrorDialog(
+      context,
+      "An unexpected error occurred",
+      errorMessage: e.toString(),
+    );
+  }
 }

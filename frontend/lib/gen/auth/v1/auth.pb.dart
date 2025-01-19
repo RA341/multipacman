@@ -11,6 +11,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class AuthRequest extends $pb.GeneratedMessage {
@@ -75,6 +76,84 @@ class AuthRequest extends $pb.GeneratedMessage {
   $core.bool hasPassword() => $_has(1);
   @$pb.TagNumber(2)
   void clearPassword() => clearField(2);
+}
+
+class UserResponse extends $pb.GeneratedMessage {
+  factory UserResponse({
+    $fixnum.Int64? iD,
+    $core.String? username,
+    $core.String? authToken,
+  }) {
+    final $result = create();
+    if (iD != null) {
+      $result.iD = iD;
+    }
+    if (username != null) {
+      $result.username = username;
+    }
+    if (authToken != null) {
+      $result.authToken = authToken;
+    }
+    return $result;
+  }
+  UserResponse._() : super();
+  factory UserResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UserResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'ID', $pb.PbFieldType.OU6, protoName: 'ID', defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'username')
+    ..aOS(3, _omitFieldNames ? '' : 'authToken', protoName: 'authToken')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UserResponse clone() => UserResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UserResponse copyWith(void Function(UserResponse) updates) => super.copyWith((message) => updates(message as UserResponse)) as UserResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UserResponse create() => UserResponse._();
+  UserResponse createEmptyInstance() => create();
+  static $pb.PbList<UserResponse> createRepeated() => $pb.PbList<UserResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UserResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserResponse>(create);
+  static UserResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get iD => $_getI64(0);
+  @$pb.TagNumber(1)
+  set iD($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasID() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearID() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get username => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set username($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUsername() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUsername() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get authToken => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set authToken($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAuthToken() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAuthToken() => clearField(3);
 }
 
 class AuthResponse extends $pb.GeneratedMessage {

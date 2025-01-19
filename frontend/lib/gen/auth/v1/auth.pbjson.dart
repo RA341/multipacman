@@ -27,6 +27,21 @@ final $typed_data.Uint8List authRequestDescriptor = $convert.base64Decode(
     'CgtBdXRoUmVxdWVzdBIaCgh1c2VybmFtZRgBIAEoCVIIdXNlcm5hbWUSGgoIcGFzc3dvcmQYAi'
     'ABKAlSCHBhc3N3b3Jk');
 
+@$core.Deprecated('Use userResponseDescriptor instead')
+const UserResponse$json = {
+  '1': 'UserResponse',
+  '2': [
+    {'1': 'ID', '3': 1, '4': 1, '5': 4, '10': 'ID'},
+    {'1': 'username', '3': 2, '4': 1, '5': 9, '10': 'username'},
+    {'1': 'authToken', '3': 3, '4': 1, '5': 9, '10': 'authToken'},
+  ],
+};
+
+/// Descriptor for `UserResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List userResponseDescriptor = $convert.base64Decode(
+    'CgxVc2VyUmVzcG9uc2USDgoCSUQYASABKARSAklEEhoKCHVzZXJuYW1lGAIgASgJUgh1c2Vybm'
+    'FtZRIcCglhdXRoVG9rZW4YAyABKAlSCWF1dGhUb2tlbg==');
+
 @$core.Deprecated('Use authResponseDescriptor instead')
 const AuthResponse$json = {
   '1': 'AuthResponse',

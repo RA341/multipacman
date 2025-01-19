@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-final prefs = PreferencesService.instance.preferences;
+final prefService = PreferencesService.instance;
+final prefs = prefService.preferences;
 
 class PreferencesService {
   static PreferencesService? _instance;

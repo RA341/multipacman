@@ -110,6 +110,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.0"
+  connectrpc:
+    dependency: "direct main"
+    description:
+      name: connectrpc
+      sha256: "39d61194f48657b0f8a8c62b987cff47d80c9e08e0c249356abba7b46234c225"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   convert:
     dependency: transitive
     description:

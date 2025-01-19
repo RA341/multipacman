@@ -18,12 +18,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.deepPurple, brightness: Brightness.dark),
         useMaterial3: true,
       ),
-      home: Scaffold(body: const Root()),
+      home: const Root(),
     );
   }
 }
@@ -33,20 +34,22 @@ class Root extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authStatus = ref.watch(authStatusProvider);
+    final authStatus = ref.watch(userDataProvider);
 
-    return authStatus.when(
-      data: (status) => status ? LobbyPage() : AuthPage(),
-      error: (error, stackTrace) => Center(
-        child: Column(
-          children: [
-            Text('Unable to verify authentication status'),
-            SizedBox(height: 50),
-            Text(error.toString()),
-          ],
+    return Scaffold(
+      body: authStatus.when(
+        data: (status) => status != null ? LobbyPage() : AuthPage(),
+        error: (error, stackTrace) => Center(
+          child: Column(
+            children: [
+              Text('Unable to verify authentication status'),
+              SizedBox(height: 50),
+              Text(error.toString()),
+            ],
+          ),
         ),
+        loading: () => Center(child: CircularProgressIndicator()),
       ),
-      loading: () => Center(child: CircularProgressIndicator()),
     );
   }
 }
