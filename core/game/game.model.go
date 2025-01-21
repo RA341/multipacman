@@ -1,6 +1,18 @@
-package entities
+package game
 
 import "encoding/json"
+
+func NewPlayerEntity() *PlayerEntity {
+	return &PlayerEntity{
+		Type:       "",
+		PlayerId:   "",
+		Username:   "",
+		SpriteType: "",
+		X:          0,
+		Y:          0,
+		ExtraInfo:  "",
+	}
+}
 
 // PlayerEntity represents a player in the game
 type PlayerEntity struct {
@@ -25,16 +37,4 @@ func (p *PlayerEntity) ToJSON() ([]byte, error) {
 // FromJSON populates the PlayerEntity from a JSON string
 func (p *PlayerEntity) FromJSON(jsonStr string) error {
 	return json.Unmarshal([]byte(jsonStr), p)
-}
-
-func NewPlayerEntity() *PlayerEntity {
-	return &PlayerEntity{
-		Type:       "",
-		PlayerId:   "",
-		Username:   "",
-		SpriteType: "",
-		X:          0,
-		Y:          0,
-		ExtraInfo:  "",
-	}
 }

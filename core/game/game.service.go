@@ -1,10 +1,9 @@
-package entities
+package game
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/olahol/melody"
-	"math/rand"
 	"sync"
 )
 
@@ -125,14 +124,6 @@ func (l *Lobby) GhostEatenAction(ghostID string) {
 	defer l.mu.Unlock()
 
 	l.GhostsEaten = append(l.GhostsEaten, ghostID)
-}
-
-func shuffleArray(array []string) []string {
-	for i := len(array) - 1; i > 0; i-- {
-		j := rand.Intn(i + 1)
-		array[i], array[j] = array[j], array[i]
-	}
-	return array
 }
 
 //func main() {
