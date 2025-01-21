@@ -37,7 +37,10 @@ class LoginPage extends HookConsumerWidget {
 
                 await runGrpcRequest(
                   context,
-                  () => authApi.login(user: username.text, pass: password.text),
+                  () async {
+                    await authApi.login(
+                        user: username.text, pass: password.text);
+                  },
                 );
                 ref.invalidate(apiTokenProvider);
               },

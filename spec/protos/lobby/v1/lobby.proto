@@ -5,6 +5,7 @@ package lobby.v1;
 option go_package = "github.com/RA341/multipacman/generated/lobby/v1";
 
 service LobbyService {
+  // todo figure out lobby streaming
   rpc ListLobbies(ListLobbiesRequest) returns (stream ListLobbiesResponse) {}
   rpc AddLobby(AddLobbiesRequest) returns (AddLobbiesResponse) {}
   rpc DeleteLobby(DelLobbiesRequest) returns (DelLobbiesResponse) {}

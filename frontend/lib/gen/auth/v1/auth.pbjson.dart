@@ -88,3 +88,28 @@ const RegisterUserResponse$json = {
 final $typed_data.Uint8List registerUserResponseDescriptor = $convert.base64Decode(
     'ChRSZWdpc3RlclVzZXJSZXNwb25zZQ==');
 
+const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
+  '1': 'AuthService',
+  '2': [
+    {'1': 'Login', '2': '.auth.v1.AuthRequest', '3': '.auth.v1.UserResponse', '4': {}},
+    {'1': 'Register', '2': '.auth.v1.RegisterUserRequest', '3': '.auth.v1.RegisterUserResponse', '4': {}},
+    {'1': 'Test', '2': '.auth.v1.AuthResponse', '3': '.auth.v1.UserResponse', '4': {}},
+  ],
+};
+
+@$core.Deprecated('Use authServiceDescriptor instead')
+const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> AuthServiceBase$messageJson = {
+  '.auth.v1.AuthRequest': AuthRequest$json,
+  '.auth.v1.UserResponse': UserResponse$json,
+  '.auth.v1.RegisterUserRequest': RegisterUserRequest$json,
+  '.auth.v1.RegisterUserResponse': RegisterUserResponse$json,
+  '.auth.v1.AuthResponse': AuthResponse$json,
+};
+
+/// Descriptor for `AuthService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
+final $typed_data.Uint8List authServiceDescriptor = $convert.base64Decode(
+    'CgtBdXRoU2VydmljZRI2CgVMb2dpbhIULmF1dGgudjEuQXV0aFJlcXVlc3QaFS5hdXRoLnYxLl'
+    'VzZXJSZXNwb25zZSIAEkkKCFJlZ2lzdGVyEhwuYXV0aC52MS5SZWdpc3RlclVzZXJSZXF1ZXN0'
+    'Gh0uYXV0aC52MS5SZWdpc3RlclVzZXJSZXNwb25zZSIAEjYKBFRlc3QSFS5hdXRoLnYxLkF1dG'
+    'hSZXNwb25zZRoVLmF1dGgudjEuVXNlclJlc3BvbnNlIgA=');
+

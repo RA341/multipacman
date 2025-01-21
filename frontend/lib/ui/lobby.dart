@@ -66,7 +66,8 @@ class AddLobbyBar extends HookConsumerWidget {
               },
             );
 
-            ref.invalidate(lobbyListProvider);
+            lobbyName.clear();
+            // ref.invalidate(lobbyListProvider);
           },
           'Add lobby',
         )

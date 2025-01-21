@@ -13,6 +13,12 @@ type AuthHandler struct {
 	auth *service.AuthService
 }
 
+func InitAuthHandler(auth *service.AuthService) *AuthHandler {
+	return &AuthHandler{
+		auth: auth,
+	}
+}
+
 func (a AuthHandler) Register(_ context.Context, c *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error) {
 	username, password, passwordVerify := c.Msg.Username, c.Msg.Password, c.Msg.PasswordVerify
 

@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/config.dart';
-import 'package:multipacman/gen/auth/v1/auth.pbgrpc.dart';
+import 'package:multipacman/gen/auth/v1/auth.connect.client.dart';
+import 'package:multipacman/gen/auth/v1/auth.pb.dart';
 import 'package:multipacman/grpc/api.dart';
 import 'package:multipacman/utils.dart';
 

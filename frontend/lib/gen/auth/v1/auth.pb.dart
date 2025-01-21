@@ -9,6 +9,7 @@
 // ignore_for_file: non_constant_identifier_names, prefer_final_fields
 // ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
+import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
@@ -346,6 +347,21 @@ class RegisterUserResponse extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static RegisterUserResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterUserResponse>(create);
   static RegisterUserResponse? _defaultInstance;
+}
+
+class AuthServiceApi {
+  $pb.RpcClient _client;
+  AuthServiceApi(this._client);
+
+  $async.Future<UserResponse> login($pb.ClientContext? ctx, AuthRequest request) =>
+    _client.invoke<UserResponse>(ctx, 'AuthService', 'Login', request, UserResponse())
+  ;
+  $async.Future<RegisterUserResponse> register($pb.ClientContext? ctx, RegisterUserRequest request) =>
+    _client.invoke<RegisterUserResponse>(ctx, 'AuthService', 'Register', request, RegisterUserResponse())
+  ;
+  $async.Future<UserResponse> test($pb.ClientContext? ctx, AuthResponse request) =>
+    _client.invoke<UserResponse>(ctx, 'AuthService', 'Test', request, UserResponse())
+  ;
 }
 
 

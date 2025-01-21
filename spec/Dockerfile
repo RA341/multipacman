@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install essential tools and dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
     curl \
     git \
     wget \
@@ -39,7 +39,7 @@ ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
 # Install Dart SDK
-RUN apt-get update && apt-get install -y apt-transport-https
+RUN apt-get update && apt-get  --no-install-recommends -y install apt-transport-https
 RUN wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dart.gpg
 RUN echo 'deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main' | tee /etc/apt/sources.list.d/dart_stable.list
 RUN apt-get update && apt-get install -y dart
@@ -55,9 +55,9 @@ RUN . $NVM_DIR/nvm.sh && \
     @bufbuild/protoc-gen-es
 
 # Install Go tools
-RUN go install github.com/bufbuild/buf/cmd/buf@latest
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-RUN go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
+RUN go install github.com/bufbuild/buf/cmd/buf@latest && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
+    go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
 
 # Set up PATH for tools
 ENV PATH="/root/.pub-cache/bin:${PATH}"

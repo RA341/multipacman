@@ -9,6 +9,7 @@
 // ignore_for_file: non_constant_identifier_names, prefer_final_fields
 // ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
+import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
@@ -360,6 +361,21 @@ class Lobby extends $pb.GeneratedMessage {
   $core.bool hasOwnerId() => $_has(4);
   @$pb.TagNumber(5)
   void clearOwnerId() => clearField(5);
+}
+
+class LobbyServiceApi {
+  $pb.RpcClient _client;
+  LobbyServiceApi(this._client);
+
+  $async.Future<ListLobbiesResponse> listLobbies($pb.ClientContext? ctx, ListLobbiesRequest request) =>
+    _client.invoke<ListLobbiesResponse>(ctx, 'LobbyService', 'ListLobbies', request, ListLobbiesResponse())
+  ;
+  $async.Future<AddLobbiesResponse> addLobby($pb.ClientContext? ctx, AddLobbiesRequest request) =>
+    _client.invoke<AddLobbiesResponse>(ctx, 'LobbyService', 'AddLobby', request, AddLobbiesResponse())
+  ;
+  $async.Future<DelLobbiesResponse> deleteLobby($pb.ClientContext? ctx, DelLobbiesRequest request) =>
+    _client.invoke<DelLobbiesResponse>(ctx, 'LobbyService', 'DeleteLobby', request, DelLobbiesResponse())
+  ;
 }
 
 
