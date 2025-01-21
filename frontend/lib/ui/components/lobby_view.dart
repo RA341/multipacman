@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/clients/lobby_api.dart';
 import 'package:multipacman/gen/lobby/v1/lobby.pb.dart';
+import 'package:multipacman/providers.dart';
 import 'package:multipacman/ui/components/lobby_grid_view_if.dart';
 import 'package:multipacman/ui/components/utils.dart';
 
@@ -44,24 +45,25 @@ class LobbyActionBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    final user = ref.watch(userDataProvider).value;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        IconButton(
-          onPressed: () async {
-            await runGrpcRequest(
-              context,
-              () async {
-                await ref.read(lobbyApiProvider).deleteLobby(
-                      DelLobbiesRequest(lobby: item),
-                    );
-
-                // ref.invalidate(lobbyListProvider);
-              },
-            );
-          },
-          icon: Icon(Icons.delete),
-        ),
+        if (user?.username == item.ownerName)
+          IconButton(
+            onPressed: () async {
+              await runGrpcRequest(
+                context,
+                () async {
+                  await ref.read(lobbyApiProvider).deleteLobby(
+                        DelLobbiesRequest(lobby: item),
+                      );
+                },
+              );
+            },
+            icon: Icon(Icons.delete),
+          ),
         ElevatedButton(
           onPressed: () {},
           child: Text('Join'),

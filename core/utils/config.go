@@ -56,7 +56,7 @@ func setupConfigOptions(configDir string) error {
 	// create log directory
 	viper.SetDefault("log_file", fmt.Sprintf("%s/logs/gouda.log", configDir))
 	// Set general settings
-	viper.SetDefault("server.port", "9862")
+	viper.SetDefault("server.port", "11200")
 
 	return nil
 }
