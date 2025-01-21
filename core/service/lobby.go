@@ -1,8 +1,9 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
-	rpc "github.com/RA341/multipacman/generated/lobby/v1"
+	v1 "github.com/RA341/multipacman/generated/lobby/v1"
 	"github.com/RA341/multipacman/models"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
@@ -43,21 +44,45 @@ func (lobbyService *LobbyService) DeleteLobby(lobbyId uint64, userId uint) error
 	return nil
 }
 
-func (lobbyService *LobbyService) RetrieveLobbies() ([]*rpc.Lobby, error) {
+func (lobbyService *LobbyService) RetrieveLobbies() ([]models.Lobby, error) {
 	var lobbies []models.Lobby
 
 	res := lobbyService.Db.Find(&lobbies)
 	if res.Error != nil {
 		log.Error().Err(res.Error).Msg("unable to query lobbies")
-		return []*rpc.Lobby{}, fmt.Errorf("unable to find lobbies")
+		return []models.Lobby{}, fmt.Errorf("unable to find lobbies")
 	}
 
-	var result []*rpc.Lobby
+	return lobbies, nil
+}
+
+func (lobbyService *LobbyService) GetGrpcLobbies() ([]*v1.Lobby, error) {
+	lobbies, err := lobbyService.RetrieveLobbies()
+	if err != nil {
+		log.Error().Err(err).Msg("unable to get lobbies")
+		return nil, err
+	}
+
+	var grpcLobbies []*v1.Lobby
 	for _, lobby := range lobbies {
-		result = append(result, lobby.ToRPC())
+		grpcLobbies = append(grpcLobbies, lobby.ToRPC())
 	}
 
-	return result, nil
+	return grpcLobbies, nil
+}
+
+func (lobbyService *LobbyService) GetAndParseLobbies() ([]byte, error) {
+	lobbies, err := lobbyService.RetrieveLobbies()
+	if err != nil {
+		log.Error().Err(err).Msg("error retrieving lobbies")
+	}
+
+	jsonData, err := json.Marshal(lobbies)
+	if err != nil {
+		log.Error().Err(err).Msg("error marshalling lobbies")
+	}
+
+	return jsonData, err
 }
 
 func (lobbyService *LobbyService) countUserLobbies(uid uint) error {

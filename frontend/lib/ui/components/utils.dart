@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grpc/grpc_or_grpcweb.dart';
+import 'package:multipacman/utils.dart';
 
 void showErrorDialog(
   BuildContext context,
@@ -132,6 +133,11 @@ Future<void> runGrpcRequest(
     await onPress();
   } on GrpcError catch (e) {
     if (!context.mounted) return;
+    logger.e(
+      "Error while making a grpc request",
+      error: e,
+    );
+
     showErrorDialog(
       context,
       e.message ?? "Unknown error",
@@ -146,6 +152,10 @@ Future<void> runGrpcRequest(
     );
   } catch (e) {
     if (!context.mounted) return;
+    logger.e(
+      "Unknown error",
+      error: e,
+    );
     showErrorDialog(
       context,
       "An unexpected error occurred",

@@ -5,7 +5,6 @@ go 1.23
 require (
 	connectrpc.com/connect v1.18.1
 	connectrpc.com/cors v0.1.0
-	github.com/go-chi/chi/v5 v5.2.0
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/olahol/melody v1.2.1
 	github.com/rs/cors v1.11.1

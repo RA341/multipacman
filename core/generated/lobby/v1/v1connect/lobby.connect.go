@@ -45,6 +45,7 @@ const (
 
 // LobbyServiceClient is a client for the lobby.v1.LobbyService service.
 type LobbyServiceClient interface {
+	// todo figure out lobby streaming
 	ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest]) (*connect.ServerStreamForClient[v1.ListLobbiesResponse], error)
 	AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error)
 	DeleteLobby(context.Context, *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error)
@@ -106,6 +107,7 @@ func (c *lobbyServiceClient) DeleteLobby(ctx context.Context, req *connect.Reque
 
 // LobbyServiceHandler is an implementation of the lobby.v1.LobbyService service.
 type LobbyServiceHandler interface {
+	// todo figure out lobby streaming
 	ListLobbies(context.Context, *connect.Request[v1.ListLobbiesRequest], *connect.ServerStream[v1.ListLobbiesResponse]) error
 	AddLobby(context.Context, *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error)
 	DeleteLobby(context.Context, *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error)

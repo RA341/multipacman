@@ -5,14 +5,7 @@ export NVM_DIR="/root/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # Create output directories
-mkdir -p generated/dart generated/go
-
-# Generate Dart gRPC stubs
-protoc \
-  --proto_path=./protos/ \
-  -I./protos \
-  --dart_out=grpc:./generated/dart \
-  $(find protos/ -name "*.proto")
+mkdir -p generated/dart generated/go generated/dart
 
 # Generate Connect-RPC stubs using buf
 buf generate

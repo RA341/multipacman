@@ -13,3 +13,11 @@ plugins:
     out: generated/go
     opt: paths=source_relative
 
+  - remote: buf.build/connectrpc/dart
+    out: generated/dart
+
+  - remote: buf.build/protocolbuffers/dart
+    out: generated/dart
+    include_wkt: true
+    include_imports: true
+

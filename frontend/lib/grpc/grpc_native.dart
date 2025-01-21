@@ -1,16 +1,14 @@
-import 'package:grpc/grpc.dart';
+import 'package:connectrpc/connect.dart';
+import 'package:connectrpc/http2.dart';
+import 'package:connectrpc/protobuf.dart';
+import 'package:connectrpc/protocol/connect.dart' as protocol;
 
-typedef Channel = ClientChannel;
-
-Channel setupClientChannel(String basePath) {
-  final split = Uri.parse(basePath);
-  return ClientChannel(
-    split.host,
-    port: split.port,
-    options: ChannelOptions(
-      credentials: split.scheme == 'https'
-          ? ChannelCredentials.secure()
-          : ChannelCredentials.insecure(),
-    ),
+Transport setupClientChannel(String basePath, Interceptor auth) {
+  return protocol.Transport(
+    baseUrl: basePath,
+    codec: const ProtoCodec(),
+    httpClient: createHttpClient(),
+    // statusParser: StatusParser(), // This is required for gRPC and gRPC-Web
+    interceptors: [auth],
   );
 }

@@ -1,6 +1,6 @@
+import 'package:connectrpc/connect.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:grpc/grpc.dart';
 import 'package:multipacman/config.dart';
 import 'package:multipacman/utils.dart';
 import 'package:universal_html/html.dart' as html;
@@ -15,51 +15,26 @@ final basePathProvider = Provider<String>((ref) {
   // setup for future feature to modify base path from within the client
   final basePath = prefs.getString('basePath');
 
-  final finalPath = basePath ??
-      (kIsWeb ? html.window.location.toString() : 'http://localhost:9862');
+  final finalPath = kDebugMode
+      ? 'http://localhost:9862'
+      : basePath ??
+          (kIsWeb ? html.window.location.toString() : 'http://localhost:9862');
 
   logger.i('Base path is: $finalPath');
 
   return finalPath;
 });
 
-final grpcChannelProvider = Provider<Channel>((ref) {
+final grpcChannelProvider = Provider<Transport>((ref) {
   final apiBasePath = ref.watch(basePathProvider);
-  final channel = setupClientChannel(apiBasePath);
+  final auth = ref.watch(apiTokenProvider);
 
-  return channel;
+  final Interceptor logger = <I extends Object, O extends Object>(next) {
+    return (req) {
+      req.headers.add('Authorization', auth);
+      return next(req);
+    };
+  };
+
+  return setupClientChannel(apiBasePath, logger);
 });
-
-final authInterceptorProvider = Provider<AuthInterceptor>((ref) {
-  final token = ref.watch(apiTokenProvider);
-  return AuthInterceptor(token);
-});
-
-class AuthInterceptor implements ClientInterceptor {
-  final String authToken;
-
-  AuthInterceptor(this.authToken);
-
-  @override
-  ResponseStream<R> interceptStreaming<Q, R>(
-    ClientMethod<Q, R> method,
-    Stream<Q> requests,
-    CallOptions options,
-    ClientStreamingInvoker<Q, R> invoker,
-  ) {
-    return invoker(method, requests, options);
-  }
-
-  @override
-  ResponseFuture<R> interceptUnary<Q, R>(ClientMethod<Q, R> method, Q request,
-      CallOptions options, ClientUnaryInvoker<Q, R> invoker) {
-    final metadata = Map<String, String>.from(options.metadata);
-    metadata['Authorization'] = authToken;
-
-    final newOptions = options.mergedWith(
-      CallOptions(metadata: metadata),
-    );
-
-    return invoker(method, request, newOptions);
-  }
-}

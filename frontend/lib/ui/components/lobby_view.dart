@@ -10,7 +10,7 @@ class LobbyGridView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lobbyList = ref.watch(lobbyListProvider);
+    final lobbyList = ref.watch(grpcLobbyListProvider);
 
     return lobbyList.when(
       data: (data) => LobbyGridViewIf(data: data),
@@ -23,7 +23,7 @@ class LobbyGridView extends ConsumerWidget {
         ),
       ),
       loading: () {
-        final val = ref.read(lobbyListProvider).valueOrNull;
+        final val = ref.read(grpcLobbyListProvider).valueOrNull;
         if (val != null) {
           return LobbyGridViewIf(data: val);
         }
@@ -52,11 +52,11 @@ class LobbyActionBar extends ConsumerWidget {
             await runGrpcRequest(
               context,
               () async {
-                await ref
-                    .read(lobbyApiProvider)
-                    .deleteLobby(DelLobbiesRequest(lobby: item));
+                await ref.read(lobbyApiProvider).deleteLobby(
+                      DelLobbiesRequest(lobby: item),
+                    );
 
-                ref.invalidate(lobbyListProvider);
+                // ref.invalidate(lobbyListProvider);
               },
             );
           },
