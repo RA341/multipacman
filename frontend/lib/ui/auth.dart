@@ -4,8 +4,8 @@ import 'package:multipacman/ui/components/register_button.dart';
 import 'package:multipacman/ui/login.dart';
 import 'package:multipacman/ui/register.dart';
 
-class AuthPage extends ConsumerWidget {
-  const AuthPage({super.key});
+class AuthContainerPage extends ConsumerWidget {
+  const AuthContainerPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

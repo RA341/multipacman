@@ -1,25 +1,39 @@
 package game
 
 import (
+	"fmt"
 	"github.com/RA341/multipacman/models"
 	"github.com/RA341/multipacman/service"
+	"github.com/RA341/multipacman/utils"
 	"github.com/olahol/melody"
 	"github.com/rs/zerolog/log"
 	"net/http"
-	"sync"
+	"strconv"
 )
 
-// game websocket handler
-
-var (
-	mu2           = sync.RWMutex{}
-	connections2  = map[uint]*melody.Session{}
-	updateChannel = make(chan bool)
+const (
+	userEntityKey = "userEntity"
+	userInfKey    = "userInf"
+	lobbyIdKey    = "lobby"
 )
 
-func initLobbyWsHandler(mux *http.ServeMux, authService *service.AuthService, lobbyService *service.LobbyService) {
+type Manager struct {
+	lobbyService  *service.LobbyService
+	activeLobbies map[uint]*LobbyState
+	mel           *melody.Melody
+}
+
+func InitGameWsHandler(mux *http.ServeMux, authService *service.AuthService, lobbyService *service.LobbyService) {
 	m := melody.New()
-	InitLobbyWs(m, lobbyService)
+	manager := Manager{
+		lobbyService:  lobbyService,
+		activeLobbies: make(map[uint]*LobbyState),
+		mel:           m,
+	}
+
+	manager.mel.HandleConnect(manager.HandleConnect)
+	manager.mel.HandleMessage(manager.HandleMessage)
+	manager.mel.HandleDisconnect(manager.HandleDisconnect)
 
 	wsHandler := func(w http.ResponseWriter, r *http.Request) {
 		err := m.HandleRequest(w, r)
@@ -29,267 +43,222 @@ func initLobbyWsHandler(mux *http.ServeMux, authService *service.AuthService, lo
 		}
 	}
 
-	mux.Handle("/api/lobbies", AuthMiddleware(authService, http.HandlerFunc(wsHandler)))
-	go sendLobbyUpdates(lobbyService)
+	mux.Handle("/api/game", AuthMiddleware(authService, http.HandlerFunc(wsHandler)))
 }
 
-func InitLobbyWs(m *melody.Melody, lobbyService *service.LobbyService) {
-	m.HandleConnect(func(session *melody.Session) {
-		HandleConnect(session, m, lobbyService)
-	})
+////////////////////////////
+// main handlers
 
-	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		HandleMessage(s, m, msg)
-	})
+func (manager *Manager) HandleConnect(newPlayerSession *melody.Session) {
+	user, lobby, err := manager.getUserAndLobbyInfo(newPlayerSession)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to find lobby or user info")
+		return
+	}
 
-	m.HandleDisconnect(func(s *melody.Session) {
-		HandleDisconnect(s, m)
-	})
-}
-
-func HandleConnect(newPlayerSession *melody.Session, m *melody.Melody, lobbyService *service.LobbyService) {
-	user := newPlayerSession.Request.Context().Value("user")
-	if user == nil {
-		log.Error().Msg("No user found in context")
-		err := newPlayerSession.CloseWithMsg([]byte("Unable to determine user info"))
+	lobbyEntity, err := manager.getLobbyEntityFromLobbyModel(lobby)
+	if err != nil {
+		err := newPlayerSession.Write([]byte(`{"error": "lobby is full"}`))
 		if err != nil {
-			log.Error().Err(err).Msg("Unable close connection")
+			log.Error().Err(err).Msg("Unable to write lobby info")
+			return
 		}
 		return
 	}
 
-	verifiedUser := user.(*models.User)
-	newPlayerSession.Set("user", verifiedUser)
+	playerEntity := NewPlayerEntity(user.ID, user.Username)
 
-	mu2.Lock()
-	defer mu2.Unlock()
-	connections2[verifiedUser.ID] = newPlayerSession
-
-	log.Info().
-		Str("username", verifiedUser.Username).
-		Uint("id", verifiedUser.ID).
-		Msg("client connected")
-
-	// initial data
-	jsonData, err := lobbyService.GetAndParseLobbies()
+	err = lobbyEntity.Join(playerEntity, newPlayerSession)
 	if err != nil {
-		return
-	}
+		log.Error().Err(err).Msg("Unable to join lobby")
 
-	err = newPlayerSession.Write(jsonData)
-	if err != nil {
-		log.Error().Err(err).Msg("Unable to send lobby data")
-	}
-}
-
-func HandleDisconnect(s *melody.Session, m *melody.Melody) {
-	user, status := s.Get("user")
-	if status != true {
-		log.Warn().Msg("no value associated with user key")
-		return
-	}
-
-	id, username := user.(*models.User).ID, user.(*models.User).Username
-	connection := connections2[id]
-	if connection == nil {
-		log.Warn().Uint("id", id).Msg("no connection found for id")
-		return
-	}
-	// remove from connection
-	delete(connections2, id)
-
-	err := connection.Close()
-	if err != nil {
-		log.Error().Err(err).Msg("err while close connection")
-		return
-	}
-
-	log.Info().Str("username", username).Msg("client disconnected")
-}
-
-func sendLobbyUpdates(lobby *service.LobbyService) {
-	log.Info().Msg("starting channel watcher")
-
-	for msg := range updateChannel {
-		log.Info().Bool("message", msg).Msg("received message")
-
-		jsonData, err := lobby.GetAndParseLobbies()
+		err := newPlayerSession.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
 		if err != nil {
+			log.Error().Err(err).Msg("Unable to write lobby info")
+			return
+		}
+
+		return
+	}
+
+	newPlayerJson, err := playerEntity.ToJSON()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to convert player to JSON")
+		return
+	}
+
+	// store session info
+	newPlayerSession.Set(userEntityKey, playerEntity)
+	newPlayerSession.Set(lobbyIdKey, lobby.ID)
+	newPlayerSession.Set(userInfKey, user)
+
+	// we now have the new player, the lobby joined
+
+	lobbyEntity.mu.Lock()
+	for _, otherPlayerSession := range lobbyEntity.ConnectedPlayers {
+		otherPlayerEntity := manager.getPlayerInfoFromSession(otherPlayerSession)
+		if otherPlayerEntity == nil {
 			continue
 		}
 
-		for _, session := range connections2 {
-			err = session.Write(jsonData)
+		if otherPlayerEntity.PlayerId == playerEntity.PlayerId {
+			// sending player info to self
+			err = newPlayerSession.Write(newPlayerJson)
 			if err != nil {
-				log.Error().Err(err).Msg("Unable to write to session")
+				log.Error().Err(err).Msg("Unable to send new player info")
+				return
 			}
+			continue
+		}
+
+		// inform other players about this player
+		if manager.informPlayerAboutOtherPlayer(otherPlayerSession, playerEntity) {
+			return
+		}
+
+		// inform this player about other players
+		if manager.informPlayerAboutOtherPlayer(newPlayerSession, otherPlayerEntity) {
+			return
 		}
 	}
+	lobbyEntity.mu.Unlock()
+
+	log.Info().Any("user info", *user).Any("lobby", lobby).Msgf("New player joined lobby")
+
+	// inform new player about current game state
+	if manager.sendGameStateInfo(newPlayerSession, lobbyEntity) {
+		return
+	}
+
+	log.Debug().Msg("Refreshing lobbies")
+	manager.lobbyService.UpdateLobbies()
 }
 
-// HandleMessage no need to handle message for lobbies
-func HandleMessage(s *melody.Session, m *melody.Melody, msg []byte) {}
+func (manager *Manager) HandleDisconnect(s *melody.Session) {
+	exitingPlayer := manager.getPlayerInfoFromSession(s)
+	if exitingPlayer == nil {
+		log.Warn().Msg("Player info not found in session, on disconnect")
+		return
+	}
 
-//import (
-//	"encoding/json"
-//	"fmt"
-//	"github.com/olahol/melody"
-//	"log"
-//	"server/entities"
-//	"strconv"
-//)
-//
-//func initMelody(m *melody.Melody) {
-//	// Set up Melody event handlers
-//	m.HandleConnect(func(session *melody.Session) {
-//		HandleConnect(session, m)
-//	})
-//
-//	m.HandleMessage(func(s *melody.Session, msg []byte) {
-//		HandleMessage(s, m, msg)
-//	})
-//
-//	m.HandleDisconnect(func(s *melody.Session) {
-//		HandleDisconnect(s, m)
-//	})
-//}
-//
-//// HandleConnect websocket stuff
-//func HandleConnect(newPlayerSession *melody.Session, m *melody.Melody) {
-//	// Retrieve the http.Request associated with the WebSocket connection
-//	queryParams := newPlayerSession.Request.URL.Query()
-//
-//	tml := newPlayerSession.Request.Context().Value("user")
-//	if tml == nil || tml == "" {
-//		tml = "Unknown username"
-//	}
-//	userName := tml.(string)
-//
-//	// get userid and lobbyid
-//	userId := queryParams.Get("user")
-//	tmp := queryParams.Get("lobby")
-//	lobbyId, _ := strconv.Atoi(tmp)
-//	log.Print("New player with id: " + userId + " joined lobby:")
-//
-//	// todo remove once lobby page is implemented
-//	// add a tmp lobby
-//	if LobbyList[lobbyId] == nil {
-//		log.Print(newPlayerSession.Write([]byte(`{"redirect": "/lobby"}`)))
-//		return
-//	}
-//
-//	lobby := LobbyList[lobbyId]
-//	// get lobby info if full throw error
-//	if len(lobby.ConnectedPlayers) == 4 {
-//		fmt.Println("more players are not allowed")
-//		log.Print(newPlayerSession.Write([]byte(`{"redirect": "/static/game/full.html"}`)))
-//		return
-//	}
-//
-//	// get user info
-//	// get current player
-//	newPlayer := entities.NewPlayerEntity()
-//
-//	newPlayer.Username = userName
-//	newPlayer.Type = "join"
-//	newPlayer.PlayerId = userId
-//	lobby.Join(newPlayer, newPlayerSession)
-//
-//	newPlayerJson, err := newPlayer.ToJSON()
-//	if err != nil {
-//		log.Fatal("Failed to send player info" + err.Error())
-//		return
-//	}
-//
-//	// sending new player info
-//	allSessions, _ := m.Sessions()
-//
-//	// tell new player about current players
-//	for _, otherPlayerSession := range allSessions {
-//		pInfo, exists := otherPlayerSession.Get("info")
-//
-//		if !exists {
-//			fmt.Println("PlayerEntity does not exist")
-//			continue
-//		}
-//
-//		otherPlayer := pInfo.(*entities.PlayerEntity)
-//
-//		// tell current player about other player
-//		jsonData, err := otherPlayer.ToJSON()
-//		if err != nil {
-//			log.Print("Failed to convert PlayerEntity to JSON")
-//			return
-//		}
-//
-//		err = newPlayerSession.Write(jsonData)
-//		if err != nil {
-//			log.Fatal("Failed to send player info" + err.Error())
-//			return
-//		}
-//	}
-//
-//	// store session info
-//	newPlayerSession.Set("info", newPlayer)
-//	newPlayerSession.Set("LobbyId", lobbyId)
-//
-//	// tell other players about joined player
-//	err = m.BroadcastOthers(newPlayerJson, newPlayerSession)
-//	if err != nil {
-//		log.Fatal("Failed to send player info" + err.Error())
-//		return
-//	}
-//	// sending player info to self
-//	err = newPlayerSession.Write(newPlayerJson)
-//	if err != nil {
-//		log.Fatal("Failed to send player info" + err.Error())
-//		return
-//	}
-//
-//	gameState := LobbyList[lobbyId].GetGameStateReport()
-//	if err != nil {
-//		log.Fatal("Failed to marshal game state" + err.Error())
-//		return
-//	}
-//	err = newPlayerSession.Write(gameState)
-//	if err != nil {
-//		log.Fatal("Failed to send game state" + err.Error())
-//		return
-//	}
-//}
-//
-//func HandleDisconnect(s *melody.Session, m *melody.Melody) {
-//	fmt.Println("PlayerEntity exiting")
-//	value, exists := s.Get("info")
-//	if !exists {
-//		log.Print("Player info not found on disconnect")
-//		return
-//	}
-//
-//	lobbyId, exists := s.Get("LobbyId")
-//	if !exists {
-//		log.Print("lobby id not found on disconnect")
-//		return
-//	}
-//
-//	playerInfo := value.(*entities.PlayerEntity)
-//	LobbyList[lobbyId.(int)].Leave(playerInfo)
-//
-//	playerInfo.Type = "dis"
-//
-//	jsonData, err := playerInfo.ToJSON()
-//	if err != nil {
-//		log.Print("Failed to convert PlayerEntity to JSON on exit")
-//		return
-//	}
-//
-//	err = m.BroadcastOthers(jsonData, s)
-//	if err != nil {
-//		log.Print("Failed to send player info on exit")
-//		return
-//	}
-//}
-//
+	lobbyId := manager.getLobbyIdFromSession(s)
+	if lobbyId == 0 {
+		return
+	}
+
+	lobbyState, exists := manager.activeLobbies[lobbyId]
+	if !exists {
+		log.Warn().Msg("Lobby not found in active lobbies")
+		return
+	}
+
+	lobbyState.Leave(exitingPlayer)
+	// set disconnect status
+	exitingPlayer.Type = "dis"
+
+	// inform other players
+	for _, currentPlayers := range lobbyState.ConnectedPlayers {
+		manager.informPlayerAboutOtherPlayer(currentPlayers, exitingPlayer)
+	}
+
+	log.Info().Any("player", *exitingPlayer).Msg("client disconnected")
+}
+
+func (manager *Manager) HandleMessage(s *melody.Session, msg []byte) {}
+
+////////////////////////////
+// Utility functions
+
+func (manager *Manager) getLobbyIdFromSession(s *melody.Session) uint {
+	lobbyId, exists := s.Get(lobbyIdKey)
+	if !exists {
+		log.Warn().Msg("lobby id not found on disconnect")
+		return 0
+	}
+	return lobbyId.(uint)
+}
+
+func (manager *Manager) getPlayerInfoFromSession(playerSession *melody.Session) *PlayerEntity {
+	pInfo, exists := playerSession.Get(userEntityKey)
+	if !exists {
+		log.Info().Msg("Player info not found in sessions")
+		return nil
+	}
+	otherPlayerEntity := pInfo.(*PlayerEntity)
+	return otherPlayerEntity
+}
+
+// informPlayerAboutOtherPlayer sends otherPlayerEntity to playerSession
+func (manager *Manager) informPlayerAboutOtherPlayer(playerSession *melody.Session, otherPlayerEntity *PlayerEntity) bool {
+	jsonData, err := otherPlayerEntity.ToJSON()
+	if err != nil {
+		log.Error().Err(err).Any("other entity", otherPlayerEntity).Msg("Failed to convert PlayerEntity to JSON")
+		return true
+	}
+	err = playerSession.Write(jsonData)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to send player info")
+		return true
+	}
+	return false
+}
+
+func (manager *Manager) sendGameStateInfo(newPlayerSession *melody.Session, lobbyEntity *LobbyState) bool {
+	gameState, err := lobbyEntity.GetGameStateReport()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to marshal game state")
+		return true
+	}
+	err = newPlayerSession.Write(gameState)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to send new player, game state")
+		return true
+	}
+	return false
+}
+
+func (manager *Manager) getLobbyEntityFromLobbyModel(lobby *models.Lobby) (*LobbyState, error) {
+	activeLobby, exists := manager.activeLobbies[lobby.ID]
+	if exists {
+		if activeLobby.IsLobbyFull() {
+			log.Warn().Any("lobby_state", activeLobby).Msgf("lobby is full, more players are not allowed")
+			return nil, fmt.Errorf("lobby is full")
+		}
+	} else {
+		log.Info().Msgf("creating new lobby")
+		manager.activeLobbies[lobby.ID] = NewLobbyStateEntity()
+
+		activeLobby = manager.activeLobbies[lobby.ID]
+	}
+	return activeLobby, nil
+}
+
+func (manager *Manager) getUserAndLobbyInfo(newPlayerSession *melody.Session) (*models.User, *models.Lobby, error) {
+	// user info
+	user, err := utils.GetUserContext(newPlayerSession.Request.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("User context error")
+		return nil, nil, fmt.Errorf("no user info found")
+	}
+
+	// get lobby id
+	queryParams := newPlayerSession.Request.URL.Query()
+	tmp := queryParams.Get("lobby")
+	lobbyId, err := strconv.Atoi(tmp)
+	if err != nil {
+		log.Error().Err(err).Str("lobby id from the query", tmp).Msg("Failed to convert lobby id")
+		return nil, nil, fmt.Errorf("invalid lobby id")
+	}
+
+	// get lobby info
+	lobby, err := manager.lobbyService.GetLobbyFromID(lobbyId)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return user, lobby, err
+}
+
 //func HandleMessage(s *melody.Session, m *melody.Melody, msg []byte) {
 //	var data map[string]interface{}
 //

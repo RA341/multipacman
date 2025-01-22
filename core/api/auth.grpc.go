@@ -52,7 +52,8 @@ func (a AuthHandler) Login(_ context.Context, c *connect.Request[v1.AuthRequest]
 		return nil, err
 	}
 
-	return connect.NewResponse(userInfo.ToRPC()), nil
+	response := connect.NewResponse(userInfo.ToRPC())
+	return response, nil
 }
 
 func (a AuthHandler) Test(_ context.Context, c *connect.Request[v1.AuthResponse]) (*connect.Response[v1.UserResponse], error) {

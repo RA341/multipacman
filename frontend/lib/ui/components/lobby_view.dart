@@ -5,13 +5,14 @@ import 'package:multipacman/gen/lobby/v1/lobby.pb.dart';
 import 'package:multipacman/providers.dart';
 import 'package:multipacman/ui/components/lobby_grid_view_if.dart';
 import 'package:multipacman/ui/components/utils.dart';
+import 'package:multipacman/utils.dart';
 
 class LobbyGridView extends ConsumerWidget {
   const LobbyGridView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lobbyList = ref.watch(grpcLobbyListProvider);
+    final lobbyList = ref.watch(lobbyListProvider);
 
     return lobbyList.when(
       data: (data) => LobbyGridViewIf(data: data),
@@ -24,7 +25,7 @@ class LobbyGridView extends ConsumerWidget {
         ),
       ),
       loading: () {
-        final val = ref.read(grpcLobbyListProvider).valueOrNull;
+        final val = ref.read(lobbyListProvider).valueOrNull;
         if (val != null) {
           return LobbyGridViewIf(data: val);
         }
@@ -65,7 +66,10 @@ class LobbyActionBar extends ConsumerWidget {
             icon: Icon(Icons.delete),
           ),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            logger.i("Going to lobby ${item.iD.toInt()} ${item.lobbyName}");
+            ref.read(lobbyIDProvider.notifier).state = item.iD.toInt();
+          },
           child: Text('Join'),
         )
       ],

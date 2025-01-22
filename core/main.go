@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"github.com/RA341/multipacman/api"
+	"github.com/RA341/multipacman/game"
 	"github.com/RA341/multipacman/service"
 	"github.com/RA341/multipacman/utils"
 	_ "github.com/mattn/go-sqlite3"
@@ -35,6 +36,9 @@ func main() {
 func setupServer(db *gorm.DB) error {
 	authSrv, lobSrv := service.InitSrv(db)
 	router := api.InitHandlers(authSrv, lobSrv)
+
+	// game socket
+	game.InitGameWsHandler(router, authSrv, lobSrv)
 
 	// serve frontend dir
 	log.Info().Msgf("Setting up ui files")

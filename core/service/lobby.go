@@ -16,6 +16,17 @@ type LobbyService struct {
 	Connections map[uint]chan bool
 }
 
+func (lobbyService *LobbyService) GetLobbyFromID(id int) (*models.Lobby, error) {
+	var lobby *models.Lobby
+	result := lobbyService.Db.Find(&lobby, id)
+	if result.Error != nil {
+		log.Error().Err(result.Error).Int("lobby-id", id).Msg("no lobby found with id")
+		return nil, fmt.Errorf("unable to find lobby for %d", id)
+	}
+
+	return lobby, nil
+}
+
 func (lobbyService *LobbyService) CreateLobby(lobbyName, username string, userId uint) error {
 	err := lobbyService.countUserLobbies(userId)
 	if err != nil {
@@ -121,7 +132,7 @@ func (lobbyService *LobbyService) NewUpdateChannel(channelId uint) chan bool {
 	lobbyService.Connections[channelId] = channel
 	lobbyService.Mu.Unlock()
 
-	log.Debug().Msg("Added to lobby list")
+	//log.Debug().Msg("Added to lobby list")
 	return channel
 }
 

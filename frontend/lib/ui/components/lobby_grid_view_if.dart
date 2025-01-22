@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:multipacman/gen/lobby/v1/lobby.pb.dart';
-import 'package:multipacman/model/lobby.dart';
 import 'package:multipacman/ui/components/lobby_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 

@@ -1,12 +1,34 @@
 package game
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strconv"
+)
 
-func NewPlayerEntity() *PlayerEntity {
+type PlayerMessageType string
+
+const (
+	Join       PlayerMessageType = "active"
+	Disconnect PlayerMessageType = "disconnect"
+	Move       PlayerMessageType = "Move"
+	Pellet     PlayerMessageType = "inactive"
+	Powerup    PlayerMessageType = "pending"
+)
+
+type SpriteType string
+
+const (
+	Ghost1 SpriteType = "gh1"
+	Ghost2 SpriteType = "gh2"
+	Ghost3 SpriteType = "gh3"
+	Pacman SpriteType = "pacman"
+)
+
+func NewPlayerEntity(userId uint, username string) *PlayerEntity {
 	return &PlayerEntity{
-		Type:       "",
-		PlayerId:   "",
-		Username:   "",
+		Type:       string(Join),
+		PlayerId:   strconv.Itoa(int(userId)),
+		Username:   username,
 		SpriteType: "",
 		X:          0,
 		Y:          0,
@@ -16,13 +38,13 @@ func NewPlayerEntity() *PlayerEntity {
 
 // PlayerEntity represents a player in the game
 type PlayerEntity struct {
-	Type       string `json:"type"`
-	PlayerId   string `json:"playerid"`
-	Username   string `json:"user"`
-	SpriteType string `json:"spriteType"`
-	X          int    `json:"x"`
-	Y          int    `json:"y"`
-	ExtraInfo  string `json:"extraInfo"`
+	Type       string     `json:"type"`
+	PlayerId   string     `json:"playerid"`
+	Username   string     `json:"user"`
+	SpriteType SpriteType `json:"spriteType"`
+	X          int        `json:"x"`
+	Y          int        `json:"y"`
+	ExtraInfo  string     `json:"extraInfo"`
 }
 
 // ToJSON converts the PlayerEntity to a JSON string

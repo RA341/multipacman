@@ -3,10 +3,10 @@ package api
 import (
 	"connectrpc.com/connect"
 	"context"
-	"fmt"
 	v1 "github.com/RA341/multipacman/generated/lobby/v1"
 	"github.com/RA341/multipacman/models"
 	"github.com/RA341/multipacman/service"
+	"github.com/RA341/multipacman/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -19,7 +19,7 @@ func InitLobbyHandler(ls *service.LobbyService) *LobbyHandler {
 }
 
 func (l LobbyHandler) ListLobbies(ctx context.Context, _ *connect.Request[v1.ListLobbiesRequest], stream *connect.ServerStream[v1.ListLobbiesResponse]) error {
-	user, err := getUserContext(ctx)
+	user, err := utils.GetUserContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -65,21 +65,8 @@ func (l LobbyHandler) ListLobbies(ctx context.Context, _ *connect.Request[v1.Lis
 	return nil
 }
 
-func getUserContext(ctx context.Context) (*models.User, error) {
-	userVal := ctx.Value("user")
-	if userVal == nil {
-		return nil, fmt.Errorf("could not find user in context")
-	}
-	user, ok := userVal.(*models.User)
-	if !ok {
-		return nil, fmt.Errorf("invalid user type in context")
-	}
-
-	return user, nil
-}
-
 func (l LobbyHandler) AddLobby(ctx context.Context, req *connect.Request[v1.AddLobbiesRequest]) (*connect.Response[v1.AddLobbiesResponse], error) {
-	user, err := getUserContext(ctx)
+	user, err := utils.GetUserContext(ctx)
 	if err != nil {
 		return nil, err
 	}

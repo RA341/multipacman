@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/config.dart';
+import 'package:multipacman/game/ui/game.dart';
 import 'package:multipacman/providers.dart';
 import 'package:multipacman/ui/auth.dart';
 import 'package:multipacman/ui/lobby.dart';
@@ -38,7 +39,8 @@ class Root extends ConsumerWidget {
 
     return Scaffold(
       body: authStatus.when(
-        data: (status) => status != null ? LobbyPage() : AuthPage(),
+        data: (status) =>
+            status != null ? HomeContainerPage() : AuthContainerPage(),
         error: (error, stackTrace) => Center(
           child: Column(
             children: [
@@ -51,5 +53,16 @@ class Root extends ConsumerWidget {
         loading: () => Center(child: CircularProgressIndicator()),
       ),
     );
+  }
+}
+
+class HomeContainerPage extends ConsumerWidget {
+  const HomeContainerPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lobbyId = ref.watch(lobbyIDProvider);
+
+    return lobbyId == 0 ? LobbyPage() : GameContainer();
   }
 }

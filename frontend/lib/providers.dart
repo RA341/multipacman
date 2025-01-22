@@ -9,3 +9,7 @@ final userDataProvider = FutureProvider<UserResponse?>((ref) async {
 
   return await authApi.testToken(token: token);
 });
+
+final lobbyIDProvider = StateProvider<int>((ref) {
+  return 0;
+});
