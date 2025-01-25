@@ -39,21 +39,25 @@ dependencies:
 
   # networking
   universal_html: ^2.2.4
-  http: ^1.2.2
   grpc: ^4.0.1
   protobuf: ^3.1.0
-  web_socket_channel: ^3.0.1
+  web_socket_channel: ^3.0.2
 
   # ui
   flutter_animate: ^4.5.2
   timeago: ^3.7.0
 
   # misc
-  shared_preferences: ^2.3.5
+  shared_preferences: ^2.4.0
   url_launcher:
   fixnum: ^1.1.1
   logger: ^2.5.0
   connectrpc: ^0.1.0
+
+  # game stuff
+  flame: ^1.23.0
+  flame_tiled: ^1.21.2
+  flame_tiled_utils: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -79,15 +83,19 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/centrepoint.png
+    - assets/images/forthTile.png
+    - assets/images/ghosts.png
+    - assets/images/pacmanSpriteSheet.png
+    - assets/images/powercent.png
+    - assets/images/secondTile.png
+    - assets/tiles/map.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
-  # For details regarding adding assets from package dependencies, see
+  # For details regarding adding images from package dependencies, see
   # https://flutter.dev/to/asset-from-package
 
   # To add custom fonts to your application, add a fonts section here,
