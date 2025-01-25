@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/config.dart';
-import 'package:multipacman/game/ui/game.dart';
+import 'package:multipacman/game/game_container.dart';
 import 'package:multipacman/providers.dart';
 import 'package:multipacman/ui/auth.dart';
 import 'package:multipacman/ui/lobby.dart';
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.deepPurple, brightness: Brightness.dark),
         useMaterial3: true,
       ),
-      home: const Root(),
+      home: const GameContainer(),
     );
   }
 }
