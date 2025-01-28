@@ -8,7 +8,7 @@ extension StringExtension on String {
 var logger = Logger(
   printer: PrettyPrinter(
     // Number of method calls to be displayed
-    methodCount: 2,
+    // methodCount: 2,
     // Number of method calls if stacktrace is provided
     errorMethodCount: 8,
     // Width of the output

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/config.dart';
 import 'package:multipacman/game/game_container.dart';
@@ -14,19 +15,20 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Multipacman',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple, brightness: Brightness.dark),
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
-      home: const GameContainer(),
-    );
+      home: const Root(),
+    ).animate().fadeIn(duration: 400.ms);
   }
 }
 
@@ -38,6 +40,7 @@ class Root extends ConsumerWidget {
     final authStatus = ref.watch(userDataProvider);
 
     return Scaffold(
+      backgroundColor: Colors.black,
       body: authStatus.when(
         data: (status) =>
             status != null ? HomeContainerPage() : AuthContainerPage(),

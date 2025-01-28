@@ -11,5 +11,5 @@ final userDataProvider = FutureProvider<UserResponse?>((ref) async {
 });
 
 final lobbyIDProvider = StateProvider<int>((ref) {
-  return 1;
+  return 0;
 });

@@ -8,7 +8,7 @@ final lobbyApiProvider = Provider<LobbyServiceClient>((ref) {
   return LobbyServiceClient(channel);
 });
 
-final lobbyListProvider = StreamProvider<List<Lobby>>((ref) async* {
+final lobbyListProvider = StreamProvider.autoDispose<List<Lobby>>((ref) async* {
   final grpcLobbies =
       ref.watch(lobbyApiProvider).listLobbies(ListLobbiesRequest());
 
