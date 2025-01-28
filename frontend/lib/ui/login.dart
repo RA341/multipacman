@@ -16,40 +16,35 @@ class LoginPage extends HookConsumerWidget {
     final password = useTextEditingController();
     final authApi = ref.watch(authApiProvider);
 
-    return Center(
-      child: SizedBox(
-        width: 400,
-        child: Column(
-          spacing: 50,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Login',
-              style: TextStyle(fontSize: 40),
-            ),
-            createUpdateButtons2("Username", username),
-            createUpdateButtons2("Password", password),
-            ActionButton(
-              () async {
-                if (password.text.isEmpty || username.text.isEmpty) {
-                  showErrorDialog(context, "One or more fields are empty");
-                }
-
-                await runGrpcRequest(
-                  context,
-                  () async {
-                    await authApi.login(
-                        user: username.text, pass: password.text);
-                  },
-                );
-                ref.invalidate(apiTokenProvider);
-              },
-              'Login',
-            ),
-            RegisterButton(),
-          ],
+    return Column(
+      spacing: 50,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Login',
+          style: TextStyle(fontSize: 40),
         ),
-      ),
+        createUpdateButtons2("Username", username),
+        createUpdateButtons2("Password", password),
+        ActionButton(
+          () async {
+            if (password.text.isEmpty || username.text.isEmpty) {
+              showErrorDialog(context, "One or more fields are empty");
+            }
+
+            await runGrpcRequest(
+              context,
+              () async {
+                await authApi.login(
+                    user: username.text, pass: password.text);
+              },
+            );
+            ref.invalidate(apiTokenProvider);
+          },
+          'Login',
+        ),
+        RegisterButton(),
+      ],
     );
   }
 }

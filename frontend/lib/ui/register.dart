@@ -17,55 +17,50 @@ class RegisterPage extends HookConsumerWidget {
     final password = useTextEditingController();
     final verifyPassword = useTextEditingController();
 
-    return Center(
-      child: SizedBox(
-        width: 400,
-        child: Column(
-          spacing: 50,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Register',
-              style: TextStyle(fontSize: 40),
-            ),
-            createUpdateButtons2("Username", username),
-            createUpdateButtons2("Password", password),
-            createUpdateButtons2("Verify Password", verifyPassword),
-            ActionButton(
-              () async {
-                if (password.text.isEmpty ||
-                    username.text.isEmpty ||
-                    verifyPassword.text.isEmpty) {
-                  showErrorDialog(context, "One or more fields are empty");
-                }
-
-                if (password.text != verifyPassword.text) {
-                  showErrorDialog(
-                    context,
-                    'Mismatched passwords',
-                    message: 'Check your password and try again',
-                  );
-                }
-
-                await runGrpcRequest(
-                  context,
-                  () async {
-                    await authApi.register(
-                      user: username.text,
-                      pass: password.text,
-                      passVerify: verifyPassword.text,
-                    );
-
-                    ref.read(goToRegisterProvider.notifier).state = false;
-                  },
-                );
-              },
-              'Register',
-            ),
-            RegisterButton(),
-          ],
+    return Column(
+      spacing: 50,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Register',
+          style: TextStyle(fontSize: 40),
         ),
-      ),
+        createUpdateButtons2("Username", username),
+        createUpdateButtons2("Password", password),
+        createUpdateButtons2("Verify Password", verifyPassword),
+        ActionButton(
+          () async {
+            if (password.text.isEmpty ||
+                username.text.isEmpty ||
+                verifyPassword.text.isEmpty) {
+              showErrorDialog(context, "One or more fields are empty");
+            }
+
+            if (password.text != verifyPassword.text) {
+              showErrorDialog(
+                context,
+                'Mismatched passwords',
+                message: 'Check your password and try again',
+              );
+            }
+
+            await runGrpcRequest(
+              context,
+              () async {
+                await authApi.register(
+                  user: username.text,
+                  pass: password.text,
+                  passVerify: verifyPassword.text,
+                );
+
+                ref.read(goToRegisterProvider.notifier).state = false;
+              },
+            );
+          },
+          'Register',
+        ),
+        RegisterButton(),
+      ],
     );
   }
 }

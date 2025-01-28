@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
       title: 'Multipacman',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Play',
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.deepPurple,
           brightness: Brightness.dark,

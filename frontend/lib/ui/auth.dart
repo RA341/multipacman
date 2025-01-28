@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/ui/components/register_button.dart';
-import 'package:multipacman/ui/login.dart';
 import 'package:multipacman/ui/register.dart';
+
+import 'login.dart';
 
 class AuthContainerPage extends ConsumerWidget {
   const AuthContainerPage({super.key});
@@ -10,6 +11,14 @@ class AuthContainerPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isRegister = ref.watch(goToRegisterProvider);
-    return isRegister ? RegisterPage() : LoginPage();
+    return SingleChildScrollView(
+      child: Center(
+        child: SizedBox(
+          width: 400,
+          height: 700,
+          child: isRegister ? RegisterPage() : LoginPage(),
+        ),
+      ),
+    );
   }
 }
