@@ -1,8 +1,8 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
-import 'package:multipacman/game/flame/pacman.component.dart';
-import 'package:multipacman/game/flame/utils.dart';
+import 'package:multipacman/game/components/pacman.component.dart';
+import 'package:multipacman/game/components/utils.dart';
 
 class PowerUpComponent extends SpriteComponent with CollisionCallbacks {
   final Vector2 vectorId;

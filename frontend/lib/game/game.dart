@@ -5,29 +5,23 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
-import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:multipacman/game/flame/block.component.dart';
-import 'package:multipacman/game/flame/ghost.component.dart';
-import 'package:multipacman/game/flame/pacman.component.dart';
-import 'package:multipacman/game/flame/pellet.component.dart';
-import 'package:multipacman/game/flame/powerup.component.dart';
-import 'package:multipacman/game/flame/utils.dart';
+import 'package:multipacman/game/components/block.component.dart';
+import 'package:multipacman/game/components/pellet.component.dart';
+import 'package:multipacman/game/components/player.component.dart';
+import 'package:multipacman/game/components/powerup.component.dart';
+import 'package:multipacman/game/components/utils.dart';
+import 'package:multipacman/game/connection_manager/game.manager.dart';
 
 class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
+  final GameManager manager;
+
+  GameWorld(this.manager);
+
   late final CameraComponent cameraComponent;
   late final World gameWorld;
-  late SpriteSheet ghostSpriteSheet;
-  late SpriteSheet pacmanSpriteSheet;
-
   final _pressedKeys = <LogicalKeyboardKey>{};
-
-  final ghostList = <String, GhostComponent>{};
-
-  get ghostIds => ghostList.values.toList();
-
-  late final PacmanComponent pacman;
 
   final mapWidth = 1700.0;
   final mapHeight = 1000.0;
@@ -40,8 +34,11 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
     gameWorld = World();
 
     await buildAndLoadMap();
-    await loadGhosts();
-    await loadPacman();
+    // add sprites already loaded from manager
+    await gameWorld.add(manager.pacman);
+    await gameWorld.addAll(manager.ghostList.values);
+    manager.assignControllingSprite();
+
     await lifecycleEventsProcessed;
 
     // Initialize the camera with adaptive viewport
@@ -59,52 +56,8 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
     cameraComponent.viewfinder.position = Vector2(mapWidth / 2, mapHeight / 2);
     cameraComponent.viewfinder.anchor = Anchor.center;
 
+    // start socket listener
     await super.onLoad();
-  }
-
-  Future<void> loadPacman() async {
-    final image = await images.load('pacmanSpriteSheet.png');
-    pacmanSpriteSheet = SpriteSheet(
-      image: image,
-      srcSize: Vector2(blockSize, blockSize),
-    );
-
-    pacman = PacmanComponent(
-      pacmanSpriteSheet,
-      0,
-      Vector2(100, 200),
-    );
-
-    await gameWorld.add(pacman);
-  }
-
-  Future<void> loadGhosts() async {
-    final image = await images.load('ghosts.png');
-    ghostSpriteSheet = SpriteSheet(
-      image: image,
-      srcSize: Vector2(blockSize, blockSize), // Size of each frame
-    );
-
-    for (int x = 0; x < 12; x += 4) {
-      // Create animations for each character
-      final iter = x ~/ 4;
-
-      // Create components for each character
-      final character = GhostComponent(
-        "gh$iter",
-        ghostSpriteSheet,
-        x,
-        Vector2(100, 100 + ((iter) * 100)),
-      );
-
-      ghostList.addAll({"gh$iter": character});
-    }
-
-    await gameWorld.addAll([
-      ghostIds[0]..position = Vector2(700, 400),
-      ghostIds[1]..position = Vector2(750, 400),
-      ghostIds[2]..position = Vector2(800, 400),
-    ]);
   }
 
   @override
@@ -125,9 +78,12 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
   void update(double dt) {
     super.update(dt);
 
-    final sprite = pacman;
+    // Track frame time
+    // if (dt > 0.016) { // More than 16ms (less than 60 FPS)
+    //   print('Frame drop detected: ${dt * 1000}ms');
+    // }
 
-    handleKeyInput(sprite);
+    handleKeyInput(manager.controllingSprite);
   }
 
   void checkGameOverState() {
@@ -136,11 +92,7 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
     // todo from backend
   }
 
-  void handleKeyInput(PacmanComponent sprite) {
-    if (_pressedKeys.isEmpty) {
-      sprite.neutral();
-    }
-
+  void handleKeyInput(PlayerComponent sprite) {
     // Calculate movement based on pressed keys
     if (_pressedKeys.contains(LogicalKeyboardKey.arrowUp)) {
       sprite.up();
@@ -191,13 +143,17 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
         final powerUpGid = powerUpElements[globIndex] as int;
 
         globIndex++;
+        position.x += blockSize;
 
         final tileId = Vector2(
           rowIndex.toDouble(),
           colIndex.toDouble(),
         );
 
-        position.x += blockSize;
+        if (mapGid == 5) {
+          // todo portals
+          continue;
+        }
 
         if (mapGid == 0) {
           // decide pellet or power up

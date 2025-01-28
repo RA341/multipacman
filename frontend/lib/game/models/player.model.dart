@@ -1,22 +1,24 @@
 import 'dart:convert';
 
+import 'package:multipacman/game/components/utils.dart';
+
 class PlayerModel {
   final String type;
   final String playerid;
   final String user;
   final String spriteType;
-  final int x;
-  final int y;
-  final String extraInfo;
+  final double x;
+  final double y;
+  final String dir;
 
   PlayerModel({
+    this.dir = "right",
     required this.type,
     required this.playerid,
     required this.user,
     required this.spriteType,
     required this.x,
     required this.y,
-    required this.extraInfo,
   });
 
   factory PlayerModel.fromRawJson(String str) =>
@@ -27,11 +29,11 @@ class PlayerModel {
   factory PlayerModel.fromJson(Map<String, dynamic> json) => PlayerModel(
         type: json["type"],
         playerid: json["playerid"],
+        dir: json["dir"],
         user: json["user"],
         spriteType: json["spriteType"],
-        x: json["x"],
-        y: json["y"],
-        extraInfo: json["extraInfo"],
+        x: double.parse(json["x"]),
+        y: double.parse(json["y"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -41,6 +43,5 @@ class PlayerModel {
         "spriteType": spriteType,
         "x": x,
         "y": y,
-        "extraInfo": extraInfo,
       };
 }

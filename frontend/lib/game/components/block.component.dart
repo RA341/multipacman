@@ -1,6 +1,6 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:multipacman/game/flame/player.component.dart';
+import 'package:multipacman/game/components/player.component.dart';
 
 class BlockComponent extends SpriteComponent with CollisionCallbacks {
   final Vector2 vectorId;
@@ -23,7 +23,7 @@ class BlockComponent extends SpriteComponent with CollisionCallbacks {
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
     if (other is PlayerComponent) {
-      print('player colliding with wall');
+      // print('player colliding with wall');
       debugMode = true;
       // print(intersectionPoints);
       // other.position = intersectionPoints.last;
