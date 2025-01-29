@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
-const imageScale = 2.7;
-
 const baseFolder = 'assets/app_images';
 
 const orangeGhost = '$baseFolder/ghost-orange.png';
 const redGhost = '$baseFolder/ghost-red.png';
 const pinkGhost = '$baseFolder/ghost-pink.png';
 const blueGhost = '$baseFolder/ghost-blue.png';
+const pacmanImg = '$baseFolder/pacman.png';
 
 class GhostStack extends StatelessWidget {
   const GhostStack({super.key, required this.child});
@@ -42,6 +41,15 @@ class GhostStack extends StatelessWidget {
           ),
         ),
         Positioned(
+          left: 50,
+          top: 340,
+          child: ImageBackgroundComponent(
+            assetName: pacmanImg,
+            imageScale: 7,
+            faceRight: true,
+          ),
+        ),
+        Positioned(
           right: 80,
           bottom: 250,
           child: ImageBackgroundComponent(
@@ -58,9 +66,11 @@ class ImageBackgroundComponent extends StatelessWidget {
   const ImageBackgroundComponent({
     required this.assetName,
     this.faceRight = false,
+    this.imageScale = 2.7,
     super.key,
   });
 
+  final double imageScale;
   final bool faceRight;
   final String assetName;
 

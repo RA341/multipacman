@@ -57,29 +57,42 @@ class LobbyTile extends StatelessWidget {
       footer: LobbyActionBar(item: item),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.blue,
           borderRadius: BorderRadius.circular(8),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.blue, Colors.blueGrey],
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(
-                'Name: ${item.lobbyName}',
-                style: TextStyle(color: Colors.white),
+              Row(
+                children: [
+                  Text(
+                    'Name: ${item.lobbyName}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
-              Text(
-                'Created: ${timeago.format(createdAt)}',
-                style: TextStyle(color: Colors.white),
+              Row(
+                children: [
+                  Text(
+                    'Added: ${timeago.format(createdAt)}',
+                    style: TextStyle(
+                        color: Colors.white, overflow: TextOverflow.ellipsis),
+                  ),
+                ],
               ),
-              Text(
-                'Players joined: ${item.playerCount}',
-                style: TextStyle(color: Colors.white),
-              ),
-              Text(
-                'Created by ${item.ownerName}',
-                style: TextStyle(color: Colors.white),
+              Row(
+                children: [
+                  Text(
+                    'Players joined: ${item.playerCount}/4',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
               SizedBox(height: 15),
               Row(
@@ -127,13 +140,16 @@ class LobbyActionBar extends ConsumerWidget {
             },
             icon: Icon(Icons.delete),
           ),
-        ElevatedButton(
-          onPressed: () {
-            logger.i("Going to lobby ${item.iD.toInt()} ${item.lobbyName}");
-            ref.read(lobbyIDProvider.notifier).state = item.iD.toInt();
-          },
-          child: Text('Join'),
-        )
+        item.playerCount >= 4
+            ? Text('Lobby is full')
+            : ElevatedButton(
+                onPressed: () {
+                  logger
+                      .i("Going to lobby ${item.iD.toInt()} ${item.lobbyName}");
+                  ref.read(lobbyIDProvider.notifier).state = item.iD.toInt();
+                },
+                child: Text('Join'),
+              )
       ],
     );
   }
