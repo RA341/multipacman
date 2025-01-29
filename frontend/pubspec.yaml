@@ -91,6 +91,11 @@ flutter:
     - assets/images/powercent.png
     - assets/images/secondTile.png
     - assets/tiles/map.json
+    - assets/app_images/ghost-blue.png
+    - assets/app_images/ghost-pink.png
+    - assets/app_images/ghost-orange.png
+    - assets/app_images/ghost-red.png
+    - assets/app_images/pacman.png
 
   fonts:
     - family: Play
