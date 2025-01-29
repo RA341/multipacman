@@ -7,7 +7,8 @@ import 'package:multipacman/gen/lobby/v1/lobby.pb.dart';
 import 'package:multipacman/grpc/api.dart';
 import 'package:multipacman/providers.dart';
 import 'package:multipacman/ui/components/action_button.dart';
-import 'package:multipacman/ui/components/lobby_view.dart';
+import 'package:multipacman/ui/components/ghost_stack.dart';
+import 'package:multipacman/ui/components/lobby_container.dart';
 import 'package:multipacman/ui/components/utils.dart';
 import 'package:multipacman/utils.dart';
 
@@ -16,15 +17,17 @@ class LobbyPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          LobbyBar(),
-          SizedBox(height: 50),
-          AddLobbyBar(),
-          SizedBox(height: 50),
-          LobbyGridView(),
-        ],
+    return GhostStack(
+      child: Center(
+        child: Column(
+          children: [
+            LobbyBar(),
+            SizedBox(height: 50),
+            AddLobbyBar(),
+            SizedBox(height: 50),
+            LobbyGridView(),
+          ],
+        ),
       ),
     );
   }
