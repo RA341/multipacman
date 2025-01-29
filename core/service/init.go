@@ -12,6 +12,7 @@ func InitSrv(db *gorm.DB) (*AuthService, *LobbyService) {
 		Db:          db,
 		Connections: map[uint]chan bool{},
 		Mu:          &sync.RWMutex{},
+		playerCount: sync.Map{},
 	}
 
 	return authService, lobSrv

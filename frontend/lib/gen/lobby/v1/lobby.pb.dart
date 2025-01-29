@@ -264,6 +264,7 @@ class Lobby extends $pb.GeneratedMessage {
     $core.String? createdAt,
     $core.String? ownerName,
     $fixnum.Int64? ownerId,
+    $fixnum.Int64? playerCount,
   }) {
     final $result = create();
     if (iD != null) {
@@ -281,6 +282,9 @@ class Lobby extends $pb.GeneratedMessage {
     if (ownerId != null) {
       $result.ownerId = ownerId;
     }
+    if (playerCount != null) {
+      $result.playerCount = playerCount;
+    }
     return $result;
   }
   Lobby._() : super();
@@ -293,6 +297,7 @@ class Lobby extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'createdAt')
     ..aOS(4, _omitFieldNames ? '' : 'ownerName', protoName: 'ownerName')
     ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'ownerId', $pb.PbFieldType.OU6, protoName: 'ownerId', defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'playerCount', $pb.PbFieldType.OU6, protoName: 'playerCount', defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
   ;
 
@@ -361,6 +366,15 @@ class Lobby extends $pb.GeneratedMessage {
   $core.bool hasOwnerId() => $_has(4);
   @$pb.TagNumber(5)
   void clearOwnerId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get playerCount => $_getI64(5);
+  @$pb.TagNumber(6)
+  set playerCount($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPlayerCount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPlayerCount() => clearField(6);
 }
 
 class LobbyServiceApi {

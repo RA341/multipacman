@@ -59,7 +59,7 @@ func (auth *AuthService) Login(username, inputPassword string) (*models.User, er
 	return finalUser, nil
 }
 func (auth *AuthService) updateUserAuthToken(userId uint) (*models.User, error) {
-	token := createAuthToken(32)
+	token := CreateAuthToken(32)
 
 	var user models.User
 	result := auth.Db.
@@ -112,7 +112,7 @@ func (auth *AuthService) retrieveUser(username string) (models.User, error) {
 	return user, nil
 }
 
-func createAuthToken(length int) string {
+func CreateAuthToken(length int) string {
 	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	var randomString []byte
 

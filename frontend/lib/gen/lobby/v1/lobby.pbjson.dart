@@ -87,6 +87,7 @@ const Lobby$json = {
     {'1': 'ownerName', '3': 4, '4': 1, '5': 9, '10': 'ownerName'},
     {'1': 'ownerId', '3': 5, '4': 1, '5': 4, '10': 'ownerId'},
     {'1': 'created_at', '3': 3, '4': 1, '5': 9, '10': 'createdAt'},
+    {'1': 'playerCount', '3': 6, '4': 1, '5': 4, '10': 'playerCount'},
   ],
 };
 
@@ -94,7 +95,8 @@ const Lobby$json = {
 final $typed_data.Uint8List lobbyDescriptor = $convert.base64Decode(
     'CgVMb2JieRIOCgJJRBgBIAEoBFICSUQSHQoKbG9iYnlfbmFtZRgCIAEoCVIJbG9iYnlOYW1lEh'
     'wKCW93bmVyTmFtZRgEIAEoCVIJb3duZXJOYW1lEhgKB293bmVySWQYBSABKARSB293bmVySWQS'
-    'HQoKY3JlYXRlZF9hdBgDIAEoCVIJY3JlYXRlZEF0');
+    'HQoKY3JlYXRlZF9hdBgDIAEoCVIJY3JlYXRlZEF0EiAKC3BsYXllckNvdW50GAYgASgEUgtwbG'
+    'F5ZXJDb3VudA==');
 
 const $core.Map<$core.String, $core.dynamic> LobbyServiceBase$json = {
   '1': 'LobbyService',

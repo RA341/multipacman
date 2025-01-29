@@ -36,4 +36,5 @@ message Lobby {
   string ownerName = 4;
   uint64 ownerId = 5;
   string created_at = 3;
+  uint64 playerCount = 6;
 }

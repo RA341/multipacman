@@ -14,7 +14,10 @@ type LobbyService struct {
 	Db          *gorm.DB
 	Mu          *sync.RWMutex
 	Connections map[uint]chan bool
+	playerCount sync.Map
 }
+
+var byPassLobbyLimit = true
 
 func (lobbyService *LobbyService) GetLobbyFromID(id int) (*models.Lobby, error) {
 	var lobby *models.Lobby
@@ -29,7 +32,7 @@ func (lobbyService *LobbyService) GetLobbyFromID(id int) (*models.Lobby, error) 
 
 func (lobbyService *LobbyService) CreateLobby(lobbyName, username string, userId uint) error {
 	err := lobbyService.countUserLobbies(userId)
-	if err != nil {
+	if !byPassLobbyLimit && err != nil {
 		return err
 	}
 
@@ -79,7 +82,9 @@ func (lobbyService *LobbyService) GetGrpcLobbies() ([]*v1.Lobby, error) {
 
 	var grpcLobbies []*v1.Lobby
 	for _, lobby := range lobbies {
-		grpcLobbies = append(grpcLobbies, lobby.ToRPC())
+		lobbyTmp := lobby.ToRPC()
+		lobbyTmp.PlayerCount = lobbyService.GetLobbyPlayerCount(lobby.ID)
+		grpcLobbies = append(grpcLobbies, lobbyTmp)
 	}
 
 	return grpcLobbies, nil
@@ -140,4 +145,19 @@ func (lobbyService *LobbyService) RemoveUpdateChannel(channelIndex uint) {
 	lobbyService.Mu.Lock()
 	delete(lobbyService.Connections, channelIndex)
 	lobbyService.Mu.Unlock()
+}
+
+func (lobbyService *LobbyService) GetLobbyPlayerCount(lobbyId uint) uint64 {
+	val, exists := lobbyService.playerCount.Load(lobbyId)
+	if !exists {
+		return 0
+	}
+
+	//log.Debug().Msgf("Lobby %d has player count: %d", lobbyId, val)
+	return uint64(val.(int))
+}
+
+func (lobbyService *LobbyService) UpdateLobbyPlayerCount(lobbyId uint, count int) {
+	//log.Debug().Msgf("Updating Lobby: %d, count: %d", lobbyId, count)
+	lobbyService.playerCount.Store(lobbyId, count)
 }
