@@ -1,0 +1,23 @@
+version: v2
+clean: true
+
+managed:
+  enabled: true
+
+plugins:
+  - local: protoc-gen-go
+    out: generated/go
+    opt: paths=source_relative
+
+  - local: protoc-gen-connect-go
+    out: generated/go
+    opt: paths=source_relative
+
+  - remote: buf.build/connectrpc/dart
+    out: generated/dart
+
+  - remote: buf.build/protocolbuffers/dart
+    out: generated/dart
+    include_wkt: true
+    include_imports: true
+

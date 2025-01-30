@@ -3,3 +3,7 @@
 /bin
 .env
 multipacman.db
+spec
+frontend/build/*
+frontend/.dart_tool
+core/web

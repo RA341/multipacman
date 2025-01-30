@@ -1,0 +1,46 @@
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
+imageName := "multipacman:proto"
+
+# generate files no moves
+geno:
+    just build
+    docker run --rm -v "{{justfile_directory()}}:/workspace" {{imageName}}
+
+# generate and copy out go files and remove go generated dir
+gen:
+    just geno
+    just go
+    just dart
+
+goDir := "../core/generated"
+go:
+    clear
+    echo 'moving go files'
+    rm -r {{goDir}}/*
+    cp -r generated/go/* {{goDir}}/
+    rm -r generated/go
+
+frontendDir := "../frontend/lib/gen"
+dart:
+    clear
+    echo 'moving dart files'
+    rm -r {{frontendDir}}/*
+    cp -r generated/dart/* {{frontendDir}}/
+    rm -r generated/dart
+
+
+# drop into a shell and interact with the image
+# CTRL+D to exit
+it:
+    just build
+    docker run --rm --name gouda_grpc_shell -v "{{justfile_directory()}}:/workspace" -it {{imageName}} /bin/bash
+
+# build image
+build:
+	docker build . -t {{imageName}}
+
+# build and push
+bpsh:
+	make build
+	make push

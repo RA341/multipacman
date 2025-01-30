@@ -1,35 +1,45 @@
-FROM node:18-alpine AS minifier
+# Flutter build
+FROM ghcr.io/cirruslabs/flutter:stable AS flutter_builder
+
+RUN flutter config --enable-web --no-cli-animations && flutter doctor
+
+COPY ./frontend /app
+WORKDIR /app/
+
+# Build Flutter web
+RUN flutter pub get
+
+RUN flutter build web
+
+# Stage Go build
+FROM golang:1.23-alpine AS go_builder
 
 WORKDIR /app
 
-COPY . .
+COPY ./core .
 
-RUN npm install uglify-js -g
+# arg substitution
+# https://stackoverflow.com/questions/44438637/arg-substitution-in-run-command-not-working-for-dockerfile
+ARG VERSION
+ENV BV=${VERSION}
 
-RUN find . -name '*.js' -exec sh -c 'uglifyjs "$1" --compress --mangle --output "$1"' _ {} \;
-
-FROM golang:1.22-alpine AS builder
-
-WORKDIR /app
-
+# for sqlite
 ENV CGO_ENABLED=1
 
-RUN apk update && \
-    apk add --no-cache gcc musl-dev
+RUN apk update && apk add --no-cache gcc musl-dev
 
-COPY --from=minifier /app /app
+RUN go mod tidy
 
-RUN go get
+COPY --from=flutter_builder /app/build/web ./web
 
-RUN go build -ldflags "-s -w" -o app
+# Build optimized binary without debugging symbols
+RUN go build -o multipacman
 
+# Stage: Final stage
 FROM alpine:latest
 
-WORKDIR /root/
+WORKDIR /app/
 
-COPY --from=builder /app/app .
+COPY --from=go_builder /app/multipacman .
 
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
-RUN chmod +x /wait
-
-CMD ["./app"]
+CMD ["./multipacman"]
