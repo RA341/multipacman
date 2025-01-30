@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/RA341/multipacman/compare/v1.0.1...v1.1.0) (2025-01-30)
+
+
+### Features
+
+* switched to flutter and backend improvements ([0d9428b](https://github.com/RA341/multipacman/commit/0d9428bb24022d859889ca6631f79da2d915a5fb))
+
 ## [1.0.1](https://github.com/RA341/multipacman/compare/v1.0.0...v1.0.1) (2024-11-13)
 
 
