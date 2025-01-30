@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package lobby.v1;
+
+option go_package = "github.com/RA341/multipacman/generated/lobby/v1";
+
+service LobbyService {
+  // todo figure out lobby streaming
+  rpc ListLobbies(ListLobbiesRequest) returns (stream ListLobbiesResponse) {}
+  rpc AddLobby(AddLobbiesRequest) returns (AddLobbiesResponse) {}
+  rpc DeleteLobby(DelLobbiesRequest) returns (DelLobbiesResponse) {}
+}
+
+message ListLobbiesRequest {}
+
+message ListLobbiesResponse{
+  repeated Lobby lobbies = 1;
+}
+
+message AddLobbiesRequest {
+  string lobby_name = 1;
+}
+
+message AddLobbiesResponse {}
+
+
+message DelLobbiesRequest {
+  Lobby lobby = 1;
+}
+
+message DelLobbiesResponse {}
+
+message Lobby {
+  uint64 ID = 1;
+  string lobby_name = 2;
+  string ownerName = 4;
+  uint64 ownerId = 5;
+  string created_at = 3;
+  uint64 playerCount = 6;
+}

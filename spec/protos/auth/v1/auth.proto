@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/RA341/multipacman/generated/auth/v1";
+
+service AuthService {
+  rpc Login(AuthRequest) returns (UserResponse) {}
+  rpc Register(RegisterUserRequest) returns (RegisterUserResponse) {}
+  rpc Test(AuthResponse) returns (UserResponse) {}
+}
+
+message AuthRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message UserResponse {
+  uint64 ID = 1;
+  string username = 2;
+  string authToken = 3;
+}
+
+message AuthResponse {
+  string authToken = 1;
+}
+
+message TestResponse {}
+
+message RegisterUserRequest {
+  string username = 1;
+  string password = 2;
+  string passwordVerify = 3;
+}
+
+message RegisterUserResponse {}
