@@ -11,22 +11,25 @@ import (
 func NewLobbyStateEntity() *LobbyState {
 	lobby := &LobbyState{
 		MatchStarted:        false,
+		IsPoweredUp:         false,
 		CharactersList:      []SpriteType{Ghost1, Ghost2, Ghost3, Pacman},
 		ConnectedPlayers:    map[string]*melody.Session{},
-		PelletsCoordEaten:   [][]float64{},
-		PowerUpsCoordsEaten: [][]float64{},
-		GhostsEaten:         []SpriteType{},
+		PelletsCoordEaten:   []int{},
+		PowerUpsCoordsEaten: []int{},
+		GhostsIdsEaten:      []SpriteType{},
+		mu:                  sync.Mutex{},
 	}
 	return lobby
 }
 
 type LobbyState struct {
 	MatchStarted        bool
+	IsPoweredUp         bool
 	CharactersList      []SpriteType
 	ConnectedPlayers    map[string]*melody.Session
-	PelletsCoordEaten   [][]float64
-	PowerUpsCoordsEaten [][]float64
-	GhostsEaten         []SpriteType
+	PelletsCoordEaten   []int
+	PowerUpsCoordsEaten []int
+	GhostsIdsEaten      []SpriteType
 	mu                  sync.Mutex
 }
 
@@ -69,52 +72,64 @@ func (l *LobbyState) Leave(player *PlayerEntity) {
 	l.CharactersList = append(l.CharactersList, player.SpriteType)
 
 	if len(l.CharactersList) == 4 {
-		l.GhostsEaten = []SpriteType{}
-		l.PelletsCoordEaten = [][]float64{}
-		l.PowerUpsCoordsEaten = [][]float64{}
+		l.GhostsIdsEaten = []SpriteType{}
+		l.PelletsCoordEaten = []int{}
+		l.PowerUpsCoordsEaten = []int{}
 	}
 
 	delete(l.ConnectedPlayers, id)
 }
 
-func (l *LobbyState) GetGameStateReport() ([]byte, error) {
+func (l *LobbyState) GetGameStateReport(secretToken, spriteId string) ([]byte, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	data := map[string]interface{}{
 		"type":          "state",
-		"ghostsEaten":   l.GhostsEaten,
+		"ghostsEaten":   l.GhostsIdsEaten,
 		"pelletsEaten":  l.PelletsCoordEaten,
 		"powerUpsEaten": l.PowerUpsCoordsEaten,
+		"secretToken":   secretToken,
+		"spriteId":      spriteId,
 	}
 
 	// Convert map to JSON bytes
 	return json.Marshal(data)
 }
 
+func (l *LobbyState) MovePlayer(player *PlayerEntity, x, y string) {
+	player.X = x
+	player.Y = y
+}
+
 func (l *LobbyState) IsLobbyFull() bool {
 	return len(l.CharactersList) == 0
 }
 
-func (l *LobbyState) PelletEatenAction(x, y float64) {
+func (l *LobbyState) EatPellet(pelletId int) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.PelletsCoordEaten = append(l.PelletsCoordEaten, []float64{x, y})
+	l.PelletsCoordEaten = append(l.PelletsCoordEaten, pelletId)
 }
 
-func (l *LobbyState) PowerUpEatenAction(x, y float64) {
+func (l *LobbyState) EatPowerUp(powerUpId int) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if l.IsPoweredUp {
+		// already powered up do nothing
+		return
+	}
 
-	l.PowerUpsCoordsEaten = append(l.PowerUpsCoordsEaten, []float64{x, y})
+	l.IsPoweredUp = true
+	l.PowerUpsCoordsEaten = append(l.PowerUpsCoordsEaten, powerUpId)
 }
 
 func (l *LobbyState) GhostEatenAction(ghostID SpriteType) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.GhostsEaten = append(l.GhostsEaten, ghostID)
+	l.GhostsIdsEaten = append(l.GhostsIdsEaten, ghostID)
 }
 
 //func main() {

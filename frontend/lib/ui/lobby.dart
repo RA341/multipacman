@@ -43,14 +43,9 @@ class AddLobbyBar extends HookConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        IconButton(
-          icon: Icon(Icons.refresh),
-          onPressed: () => ref.invalidate(lobbyListProvider),
-        ),
-        SizedBox(width: 20),
         SizedBox(
           width: 300,
-          child: createUpdateButtons2('New lobby name', lobbyName),
+          child: createUpdateButtons2('Lobby name', lobbyName),
         ),
         SizedBox(width: 20),
         ActionButton(
@@ -93,7 +88,7 @@ class LobbyBar extends ConsumerWidget {
           Center(
             child: Text(
               'Lobby',
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 55, fontWeight: FontWeight.bold),
             ),
           ),
           Positioned(

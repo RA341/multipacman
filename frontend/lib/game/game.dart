@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flame/camera.dart';
-import 'package:flame/components.dart';
+import 'package:flame/components.dart' hide Timer;
 import 'package:flame/events.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
@@ -9,19 +10,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:multipacman/game/components/block.component.dart';
 import 'package:multipacman/game/components/pellet.component.dart';
-import 'package:multipacman/game/components/player.component.dart';
 import 'package:multipacman/game/components/powerup.component.dart';
 import 'package:multipacman/game/components/utils.dart';
 import 'package:multipacman/game/connection_manager/game.manager.dart';
+import 'package:multipacman/game/mixins/keyboard_mixin.dart';
 
-class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
+class GameWorld extends FlameGame
+    with HasCollisionDetection, KeyboardEvents, KeyInputHandler {
   final GameManager manager;
 
   GameWorld(this.manager);
 
   late final CameraComponent cameraComponent;
   late final World gameWorld;
-  final _pressedKeys = <LogicalKeyboardKey>{};
 
   final mapWidth = 1700.0;
   final mapHeight = 1000.0;
@@ -64,19 +65,23 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
   KeyEventResult onKeyEvent(
     KeyEvent event,
     Set<LogicalKeyboardKey> keysPressed,
-  ) {
-    if (event is KeyDownEvent) {
-      _pressedKeys.add(event.logicalKey);
-    } else if (event is KeyUpEvent) {
-      _pressedKeys.remove(event.logicalKey);
-    }
-
-    return KeyEventResult.handled;
-  }
+  ) =>
+      onKeyEventHandler(event, keysPressed);
 
   @override
   void update(double dt) {
     super.update(dt);
+
+    if (manager.gameOverText.text.isNotEmpty) return;
+    final message = manager.checkGameOver();
+    if (message != null) {
+      manager.showGameOverText(
+        Vector2(size.x / 2, size.y / 2),
+        message,
+      );
+      gameWorld.add(manager.gameOverText);
+      return;
+    }
 
     // Track frame time
     // if (dt > 0.016) { // More than 16ms (less than 60 FPS)
@@ -84,28 +89,6 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
     // }
 
     handleKeyInput(manager.controllingSprite);
-  }
-
-  void checkGameOverState() {
-    // 201 - pellets
-    // 11 - power-ups
-    // todo from backend
-  }
-
-  void handleKeyInput(PlayerComponent sprite) {
-    // Calculate movement based on pressed keys
-    if (_pressedKeys.contains(LogicalKeyboardKey.arrowUp)) {
-      sprite.up();
-    }
-    if (_pressedKeys.contains(LogicalKeyboardKey.arrowDown)) {
-      sprite.down();
-    }
-    if (_pressedKeys.contains(LogicalKeyboardKey.arrowRight)) {
-      sprite.right();
-    }
-    if (_pressedKeys.contains(LogicalKeyboardKey.arrowLeft)) {
-      sprite.left();
-    }
   }
 
   @override
@@ -141,14 +124,15 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
         final mapGid = mapElements[globIndex] as int;
         final pelletGid = pelletElements[globIndex] as int;
         final powerUpGid = powerUpElements[globIndex] as int;
+        final tileId = globIndex;
 
         globIndex++;
         position.x += blockSize;
 
-        final tileId = Vector2(
-          rowIndex.toDouble(),
-          colIndex.toDouble(),
-        );
+        if (manager.gameState!.pelletsEaten.contains(tileId) ||
+            manager.gameState!.powerUpsEaten.contains(tileId)) {
+          continue;
+        }
 
         if (mapGid == 5) {
           // todo portals
@@ -158,19 +142,21 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
         if (mapGid == 0) {
           // decide pellet or power up
           if (pelletGid == 3) {
-            await gameWorld.add(
-              PelletComponent(
-                position: position,
-                vectorId: tileId,
-              ),
+            final pellet = PelletComponent(
+              tileId: tileId,
+              position: position,
             );
+
+            manager.pelletMap.addAll({tileId: pellet});
+            await gameWorld.add(pellet);
           } else if (powerUpGid == 4) {
-            await gameWorld.add(
-              PowerUpComponent(
-                position: position,
-                vectorId: tileId,
-              ),
+            final power = PowerUpComponent(
+              tileId: tileId,
+              position: position,
             );
+
+            manager.powerMap.addAll({tileId: power});
+            await gameWorld.add(power);
           }
 
           // empty tile
@@ -179,7 +165,7 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
 
         await gameWorld.add(
           BlockComponent(
-            vectorId: tileId,
+            tileId: tileId,
             sprite: mapGid != 2 ? blueTileSprite : redTileSprite,
             position: position,
           ),
@@ -188,7 +174,6 @@ class GameWorld extends FlameGame with HasCollisionDetection, KeyboardEvents {
       position.y += blockSize;
       position.x = 0;
     }
-    ;
   }
 
   Future<Sprite> getTileSprite(String spriteImg) async {

@@ -5,11 +5,11 @@ import 'package:multipacman/game/components/pacman.component.dart';
 import 'package:multipacman/game/components/utils.dart';
 
 class PelletComponent extends SpriteComponent with CollisionCallbacks {
-  final Vector2 vectorId;
+  final int tileId;
 
   PelletComponent({
     required super.position,
-    required this.vectorId,
+    required this.tileId,
   });
 
   @override
@@ -31,8 +31,7 @@ class PelletComponent extends SpriteComponent with CollisionCallbacks {
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
     if (other is PacmanComponent) {
-      removeFromParent();
-      other.eatPellet(vectorId);
+      other.eatPellet(tileId);
     }
   }
 }

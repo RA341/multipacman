@@ -1,12 +1,18 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
+import 'package:flame/palette.dart';
 import 'package:flame/sprite.dart';
+import 'package:flame/text.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/game/components/ghost.component.dart';
 import 'package:multipacman/game/components/pacman.component.dart';
+import 'package:multipacman/game/components/pellet.component.dart';
 import 'package:multipacman/game/components/player.component.dart';
+import 'package:multipacman/game/components/powerup.component.dart';
 import 'package:multipacman/game/components/utils.dart';
 import 'package:multipacman/game/connection_manager/game.connection.dart';
 import 'package:multipacman/game/models/player.model.dart';
@@ -15,6 +21,10 @@ import 'package:multipacman/grpc/api.dart';
 import 'package:multipacman/providers.dart';
 import 'package:multipacman/utils.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+final gameStatusProvider = StateProvider<String>((ref) {
+  return '';
+});
 
 final gameManagerProvider =
     FutureProvider.autoDispose<GameManager>((ref) async {
@@ -29,7 +39,27 @@ final gameManagerProvider =
   final wsUrl = getWsUrl(baseUrl, lobbyId);
   final channel = await createConnection(wsUrl, token);
 
-  final man = GameManager(gameChannel: channel);
+  final gameStatusStream = StreamController<String>();
+
+  gameStatusStream.stream.listen(
+    (event) {
+      Future.delayed(
+        Duration(seconds: 5),
+        () {
+          ref.invalidate(lobbyIDProvider);
+          ref.invalidate(gameStatusProvider);
+        },
+      );
+
+      ref.read(gameStatusProvider.notifier).state = event;
+    },
+  );
+
+  final man = GameManager(
+    gameChannel: channel,
+    gameStatusStream: gameStatusStream,
+  );
+
   await man.setupManager();
 
   await man.waitForGameState();
@@ -41,25 +71,29 @@ final gameManagerProvider =
 class GameManager {
   final WebSocketChannel gameChannel;
 
-  GameManager({required this.gameChannel});
+  final StreamController<String> gameStatusStream;
+
+  GameManager({
+    required this.gameChannel,
+    required this.gameStatusStream,
+  });
 
   // sprites
   late final PacmanComponent pacman;
   final ghostList = <String, GhostComponent>{};
 
-  get ghostIds => ghostList.values.toList();
-
   GameStateModel? gameState;
-  var isClosed = false;
-
-  Exception? streamError;
-
   final connectedPlayers = <String, PlayerModel>{};
   final spritePlayers = <String, PlayerComponent>{};
 
   String get controllingSpriteId => gameState!.controllingSpriteId;
 
   late final PlayerComponent controllingSprite;
+
+  final pelletMap = <int, PelletComponent>{};
+  final powerMap = <int, PowerUpComponent>{};
+
+  bool streamComplete = false;
 
   void assignControllingSprite() {
     if (controllingSpriteId == 'pacman') {
@@ -74,7 +108,7 @@ class GameManager {
     }
 
     // initial position data
-    sendPosData(
+    sendPositionAction(
       x: controllingSprite.x,
       y: controllingSprite.y,
       dir: controllingSprite.currentDirection,
@@ -86,10 +120,6 @@ class GameManager {
       () async {
         // wait for game state
         while (gameState == null) {
-          if (streamError != null) {
-            print('error detectd fuiture');
-            throw streamError!;
-          }
           await Future.delayed(Duration(milliseconds: 100));
         }
       },
@@ -97,7 +127,7 @@ class GameManager {
   }
 
   Future<void> dispose() async {
-    isClosed = true;
+    gameStatusStream.close();
     gameChannel.sink.close();
     logger.d('leaving game');
   }
@@ -171,26 +201,27 @@ class GameManager {
   void listenForMessages() {
     logger.i('listening for game messages');
     gameChannel.stream.listen(
-      (event) {
-        try {
-          handleMessages(event);
-        } catch (e) {
-          streamError = Exception(e);
-        }
-      },
+      (event) => handleMessages(event),
       onDone: () {
-        print('game stream done');
+        streamComplete = true;
+        sendGameStatusMessage("Game connection was closed");
       },
-      onError: (Object error, StackTrace st) {
-        print('error ');
-        print(error);
-        print(st);
-        streamError = Exception(error);
-      },
+      onError: (Object error, StackTrace st) =>
+          sendGameStatusMessage(error.toString()),
       cancelOnError: true,
     );
   }
 
+  void sendGameStatusMessage(String mess) {
+    try {
+      gameStatusStream.add(mess);
+    } catch (E) {
+      logger.w('Unable to send status message');
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // receive stuff
   void handleMessages(String input) {
     final message = jsonDecode(input) as Map<String, dynamic>;
 
@@ -204,16 +235,38 @@ class GameManager {
 
     switch (messageType) {
       case 'active':
-        addNewPlayer(message);
+        handleAddNewPlayer(message);
         logger.i("Adding new player: connected $connectedPlayers");
         logger.i("Adding new player: sprite $spritePlayers");
-
         return;
       case 'dis':
         final player = PlayerModel.fromJson(message);
         connectedPlayers.remove(player.playerid);
         spritePlayers[player.playerid]?..playerNameText.text = "";
         spritePlayers.remove(player.playerid);
+        return;
+      case "nopow":
+        pacman.endPowerUp();
+        return;
+      case "pel":
+        handlePelletMessage(message);
+        return;
+      case "pow":
+        handlePowerUpMessage(message);
+        return;
+      case "gho":
+        // ghost eaten message
+        final ghostId = message["ghostId"] as String?;
+        if (ghostId == null) {
+          logger.w("No ghost id detected");
+          return;
+        }
+        ghostList[ghostId]?.removeFromParent();
+        return;
+      case "pacd":
+        // pacman eaten message (game over)
+        print('pacman was eaten');
+        pacman.removeFromParent();
         return;
       case 'mov':
         final player = PlayerModel.fromJson(message);
@@ -227,7 +280,27 @@ class GameManager {
     }
   }
 
-  void addNewPlayer(Map<String, dynamic> message) {
+  String? checkGameOver() {
+    if (pacman.isRemoved) {
+      return "Pacman was eaten, ghosts win !!!";
+    }
+
+    // result in true if all ghosts are eaten
+    final allGhostsEaten =
+        ghostList.values.every((element) => element.isRemoved);
+
+    if (allGhostsEaten) {
+      return "All ghosts were eaten, Pacman wins !!!";
+    }
+
+    if (pelletMap.isEmpty && powerMap.isEmpty) {
+      return "all pellets and power ups were eaten Pacman wins";
+    }
+
+    return null;
+  }
+
+  void handleAddNewPlayer(Map<String, dynamic> message) {
     final player = PlayerModel.fromJson(message);
     if (player.spriteType == "pacman") {
       connectedPlayers.addAll({player.playerid: player});
@@ -248,15 +321,32 @@ class GameManager {
     });
   }
 
+  void handlePelletMessage(Map<String, dynamic> msg) {
+    final tileId = msg['id'] as int;
+    pelletMap[tileId]?.removeFromParent();
+    pelletMap.remove(tileId);
+  }
+
+  void handlePowerUpMessage(Map<String, dynamic> msg) {
+    final tileId = msg['id'] as int;
+
+    powerMap[tileId]?.removeFromParent();
+    powerMap.remove(tileId);
+
+    pacman.startPowerUp();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // send stuff
   void updatePosControllingSprite() {
-    sendPosData(
+    sendPositionAction(
       x: controllingSprite.x,
       y: controllingSprite.y,
       dir: controllingSprite.currentDirection,
     );
   }
 
-  void sendPosData({
+  void sendPositionAction({
     required double x,
     required double y,
     required Direction dir,
@@ -270,13 +360,72 @@ class GameManager {
     sendMessage(msg);
   }
 
-  void sendMessage(Map<String, dynamic> msg) {
-    if (isClosed) return;
-    msg.addAll({"secretToken": gameState!.playerSecretToken});
-    gameChannel.sink.add(jsonEncode(msg));
+  void sendPelletAction(int id) {
+    final msg = <String, dynamic>{
+      "type": "pel",
+      "id": id,
+    };
+
+    sendMessage(msg);
   }
 
-  void handlePelletAction() {}
+  void sendPowerUpAction(int id) {
+    final msg = <String, dynamic>{
+      "type": "pow",
+      "id": id,
+    };
 
-  void handlePowerUpAction() {}
+    sendMessage(msg);
+  }
+
+  void sendPacmanGhostCollisionAction(String ghostId) {
+    final msg = <String, dynamic>{
+      "type": "gho",
+      "ghId": ghostId,
+    };
+    sendMessage(msg);
+  }
+
+  void sendEatPacmanAction() {
+    final msg = <String, dynamic>{
+      "type": "pacded",
+    };
+  }
+
+  void sendMessage(Map<String, dynamic> msg) {
+    try {
+      msg.addAll({"secretToken": gameState!.playerSecretToken});
+      gameChannel.sink.add(jsonEncode(msg));
+    } catch (e) {
+      logger.w('Unable to send message: ${e.toString()}');
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // text
+
+  final regular = TextPaint(
+    style: TextStyle(
+      fontSize: 60.0,
+      color: BasicPalette.red.color,
+      backgroundColor: Colors.black,
+      fontWeight: FontWeight.bold,
+    ),
+  );
+  late final gameOverText = TextComponent(
+    textRenderer: regular,
+    anchor: Anchor.topCenter,
+    priority: 0,
+  );
+
+  Duration exitTimeOut = Duration(seconds: 5);
+
+  void showGameOverText(Vector2 textPos, String message) {
+    gameOverText.position = textPos;
+    gameOverText.text = message;
+    Future.delayed(
+      exitTimeOut,
+      () => sendGameStatusMessage('Game Over'),
+    );
+  }
 }

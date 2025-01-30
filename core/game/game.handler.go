@@ -1,20 +1,25 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/RA341/multipacman/models"
 	"github.com/RA341/multipacman/service"
 	"github.com/RA341/multipacman/utils"
 	"github.com/olahol/melody"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/exp/maps"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const (
-	userEntityKey = "userEntity"
-	userInfKey    = "userInf"
-	lobbyIdKey    = "lobby"
+	userEntityKey  = "userEntity"
+	userInfKey     = "userInf"
+	lobbyEntityKey = "lobbyEntity"
+	lobbyIdKey     = "lobbyIdKey"
+	powerUpTime    = 8 * time.Second
 )
 
 type Manager struct {
@@ -31,9 +36,14 @@ func InitGameWsHandler(mux *http.ServeMux, authService *service.AuthService, lob
 		mel:           m,
 	}
 
-	manager.mel.HandleConnect(manager.HandleConnect)
-	manager.mel.HandleMessage(manager.HandleMessage)
-	manager.mel.HandleDisconnect(manager.HandleDisconnect)
+	m.HandleConnect(manager.HandleConnect)
+	m.HandleMessage(manager.HandleMessage)
+	m.HandleDisconnect(manager.HandleDisconnect)
+	// flutter sends close signal
+	m.HandleClose(func(session *melody.Session, i int, s string) error {
+		manager.HandleDisconnect(session)
+		return nil
+	})
 
 	wsHandler := func(w http.ResponseWriter, r *http.Request) {
 		err := m.HandleRequest(w, r)
@@ -89,66 +99,56 @@ func (manager *Manager) HandleConnect(newPlayerSession *melody.Session) {
 
 	// store session info
 	newPlayerSession.Set(userEntityKey, playerEntity)
-	newPlayerSession.Set(lobbyIdKey, lobby.ID)
+	newPlayerSession.Set(lobbyEntityKey, lobbyEntity)
 	newPlayerSession.Set(userInfKey, user)
+	newPlayerSession.Set(lobbyIdKey, lobby.ID)
 
 	// we now have the new player, the lobby joined
-
-	lobbyEntity.mu.Lock()
-	for _, otherPlayerSession := range lobbyEntity.ConnectedPlayers {
-		otherPlayerEntity := manager.getPlayerInfoFromSession(otherPlayerSession)
-		if otherPlayerEntity == nil {
-			continue
-		}
-
-		if otherPlayerEntity.PlayerId == playerEntity.PlayerId {
-			// sending player info to self
-			err = newPlayerSession.Write(newPlayerJson)
-			if err != nil {
-				log.Error().Err(err).Msg("Unable to send new player info")
-				return
-			}
-			continue
-		}
-
-		// inform other players about this player
-		if manager.informPlayerAboutOtherPlayer(otherPlayerSession, playerEntity) {
-			return
-		}
-
-		// inform this player about other players
-		if manager.informPlayerAboutOtherPlayer(newPlayerSession, otherPlayerEntity) {
-			return
-		}
-	}
-	lobbyEntity.mu.Unlock()
-
-	log.Info().Any("user info", *user).Any("lobby", lobby).Msgf("New player joined lobby")
 
 	// inform new player about current game state
 	if manager.sendGameStateInfo(newPlayerSession, lobbyEntity) {
 		return
 	}
 
-	log.Debug().Msg("Refreshing lobbies")
+	lobbyEntity.mu.Lock()
+
+	if manager.broadcastLobbyStatus(lobbyEntity, newPlayerJson) {
+		return
+	}
+
+	broadCastSessions := maps.Values(lobbyEntity.ConnectedPlayers)
+	for _, otherPlayerSession := range broadCastSessions {
+		if otherPlayerSession == newPlayerSession {
+			continue
+		}
+		otherPlayerEntity, err := getPlayerEntityFromSession(otherPlayerSession)
+		if err != nil {
+			continue
+		}
+		otherPlayerEntity.Type = "active"
+
+		// inform other players about this player
+		manager.informPlayerAboutOtherPlayer(newPlayerSession, otherPlayerEntity)
+	}
+
+	lobbyEntity.mu.Unlock()
+
+	log.Info().Any("user", *user).Any("lobby", lobby).Msgf("New player joined lobby")
+
+	// add new player count
+	manager.lobbyService.UpdateLobbyPlayerCount(lobby.ID, len(lobbyEntity.ConnectedPlayers))
 	manager.lobbyService.UpdateLobbies()
 }
 
 func (manager *Manager) HandleDisconnect(s *melody.Session) {
-	exitingPlayer := manager.getPlayerInfoFromSession(s)
-	if exitingPlayer == nil {
+	exitingPlayer, err := getPlayerEntityFromSession(s)
+	if err != nil {
 		log.Warn().Msg("Player info not found in session, on disconnect")
 		return
 	}
-
-	lobbyId := manager.getLobbyIdFromSession(s)
-	if lobbyId == 0 {
-		return
-	}
-
-	lobbyState, exists := manager.activeLobbies[lobbyId]
-	if !exists {
-		log.Warn().Msg("Lobby not found in active lobbies")
+	lobbyState, err := getLobbyEntityFromSession(s)
+	if err != nil {
+		log.Warn().Msg("Lobby not found in active lobbies on disconnect")
 		return
 	}
 
@@ -157,35 +157,186 @@ func (manager *Manager) HandleDisconnect(s *melody.Session) {
 	exitingPlayer.Type = "dis"
 
 	// inform other players
-	for _, currentPlayers := range lobbyState.ConnectedPlayers {
-		manager.informPlayerAboutOtherPlayer(currentPlayers, exitingPlayer)
+	jsonData, err := exitingPlayer.ToJSON()
+	if err != nil {
+		log.Error().Err(err).Any("other entity", exitingPlayer).Msg("Failed to convert PlayerEntity to JSON")
+		return
 	}
+	// inform active players about player that left
+	manager.broadcastLobbyStatus(lobbyState, jsonData)
 
 	log.Info().Any("player", *exitingPlayer).Msg("client disconnected")
+
+	lobbyId, exist := s.Get(lobbyIdKey)
+	if exist {
+		manager.lobbyService.UpdateLobbyPlayerCount(lobbyId.(uint), len(lobbyState.ConnectedPlayers))
+		manager.lobbyService.UpdateLobbies()
+	}
 }
 
-func (manager *Manager) HandleMessage(s *melody.Session, msg []byte) {}
+func (manager *Manager) HandleMessage(s *melody.Session, msg []byte) {
+	playerSession, err := getPlayerEntityFromSession(s)
+	if err != nil {
+		log.Error().Msg("Player info not found in session")
+		return
+	}
+
+	msgInfo := map[string]interface{}{}
+	err = json.Unmarshal(msg, &msgInfo)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to unmarshal msg")
+		return
+	}
+
+	secretToken := msgInfo["secretToken"].(string)
+	if secretToken != playerSession.secretToken {
+		log.Error().Msg("unable to verify secret token")
+		return
+	}
+
+	lobbyInfo, err := getLobbyEntityFromSession(s)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to find lobby info")
+		return
+	}
+
+	msgType := msgInfo["type"].(string)
+
+	switch msgType {
+	case "mov":
+		x, existsx := msgInfo["x"]
+		y, existsy := msgInfo["y"]
+		dir, existsdir := msgInfo["dir"]
+		if !existsy || !existsx || !existsdir {
+			log.Warn().Msg("no x,y, dir info found")
+			return
+		}
+
+		lobbyInfo.MovePlayer(playerSession, x.(string), y.(string))
+		playerSession.Type = "mov"
+		playerSession.Dir = dir.(string)
+		jsonData, err := playerSession.ToJSON()
+		if err != nil {
+			log.Warn().Err(err).Msg("Error while marshalling json")
+			return
+		}
+		manager.broadcastLobbyStatus(lobbyInfo, jsonData)
+		return
+	case "pel":
+		id, exists := msgInfo["id"]
+		if !exists {
+			log.Warn().Any("msg", msgInfo).Msg("no pellet id found")
+			return
+		}
+
+		lobbyInfo.EatPellet(int(id.(float64)))
+		encoded, err := json.Marshal(map[string]interface{}{
+			"id":   id,
+			"type": "pel",
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("Error marshalling json")
+			return
+		}
+
+		manager.broadcastLobbyStatus(lobbyInfo, encoded)
+		return
+	case "pow":
+		id, exists := msgInfo["id"]
+		if !exists {
+			log.Warn().Any("msg", msgInfo).Msg("no pellet id found")
+			return
+		}
+
+		lobbyInfo.EatPowerUp(int(id.(float64)))
+		time.AfterFunc(powerUpTime, func() {
+			manager.sendEndPowerUpMessage(lobbyInfo)
+		})
+
+		encoded, err := json.Marshal(map[string]interface{}{
+			"type": "pow",
+			"id":   id,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("Error marshalling json")
+			return
+		}
+
+		manager.broadcastLobbyStatus(lobbyInfo, encoded)
+		return
+	case "gho":
+		ghostId, exists := msgInfo["ghId"]
+		if !exists {
+			log.Warn().Any("msg", msgInfo).Msg("no pellet ghostId found")
+			return
+		}
+
+		var err error
+		var encoded []byte
+		if lobbyInfo.IsPoweredUp {
+			lobbyInfo.GhostEatenAction(SpriteType(ghostId.(string)))
+			// ghost eaten
+			encoded, err = json.Marshal(map[string]interface{}{
+				"type":    "gho",
+				"ghostId": ghostId,
+			})
+		} else {
+			// pacman eaten
+			// send pacman dead, game over
+			encoded, err = json.Marshal(map[string]interface{}{
+				"type": "pacd",
+			})
+		}
+		if err != nil {
+			log.Error().Err(err).Msg("Error marshalling json")
+			return
+		}
+
+		manager.broadcastLobbyStatus(lobbyInfo, encoded)
+
+		return
+	default:
+		log.Warn().Msgf("Unknown message type: %s", msgType)
+	}
+}
 
 ////////////////////////////
 // Utility functions
 
+func (manager *Manager) sendGameOverMessage(reason string, lobbyEntity *LobbyState) {
+
+}
+
+func (manager *Manager) sendEndPowerUpMessage(lobbyEntity *LobbyState) {
+	lobbyEntity.IsPoweredUp = false
+	encoded, err := json.Marshal(map[string]interface{}{
+		"type": "nopow",
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("Error marshalling json")
+		return
+	}
+
+	manager.broadcastLobbyStatus(lobbyEntity, encoded)
+}
+
+func (manager *Manager) broadcastLobbyStatus(lobbyEntity *LobbyState, newPlayerJson []byte) bool {
+	broadCastSessions := maps.Values(lobbyEntity.ConnectedPlayers)
+	err := manager.mel.BroadcastMultiple(newPlayerJson, broadCastSessions)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to broadcast lobby info")
+		return true
+	}
+	return false
+}
+
 func (manager *Manager) getLobbyIdFromSession(s *melody.Session) uint {
-	lobbyId, exists := s.Get(lobbyIdKey)
+	lobbyId, exists := s.Get(lobbyEntityKey)
 	if !exists {
 		log.Warn().Msg("lobby id not found on disconnect")
 		return 0
 	}
 	return lobbyId.(uint)
-}
-
-func (manager *Manager) getPlayerInfoFromSession(playerSession *melody.Session) *PlayerEntity {
-	pInfo, exists := playerSession.Get(userEntityKey)
-	if !exists {
-		log.Info().Msg("Player info not found in sessions")
-		return nil
-	}
-	otherPlayerEntity := pInfo.(*PlayerEntity)
-	return otherPlayerEntity
 }
 
 // informPlayerAboutOtherPlayer sends otherPlayerEntity to playerSession
@@ -204,7 +355,12 @@ func (manager *Manager) informPlayerAboutOtherPlayer(playerSession *melody.Sessi
 }
 
 func (manager *Manager) sendGameStateInfo(newPlayerSession *melody.Session, lobbyEntity *LobbyState) bool {
-	gameState, err := lobbyEntity.GetGameStateReport()
+	player, err := getPlayerEntityFromSession(newPlayerSession)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to find player")
+		return false
+	}
+	gameState, err := lobbyEntity.GetGameStateReport(player.secretToken, string(player.SpriteType))
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to marshal game state")
 		return true

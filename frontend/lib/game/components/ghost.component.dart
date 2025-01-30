@@ -1,4 +1,3 @@
-import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/material.dart';
@@ -7,15 +6,13 @@ import 'package:multipacman/game/components/player.component.dart';
 import 'package:multipacman/game/components/utils.dart';
 import 'package:multipacman/game/connection_manager/game.manager.dart';
 
-class GhostComponent extends PlayerComponent with CollisionCallbacks {
-  final GameManager manager;
-
+class GhostComponent extends PlayerComponent {
   GhostComponent(
     String spriteId,
     SpriteSheet spriteSheet,
     int baseIndex,
     Vector2 pos,
-    this.manager,
+    GameManager manager,
   ) : super(
           manager: manager,
           spriteId: spriteId,
@@ -30,13 +27,7 @@ class GhostComponent extends PlayerComponent with CollisionCallbacks {
     super.onCollision(intersectionPoints, other);
 
     if (other is PacmanComponent) {
-      if (other.isPoweredUp) {
-        print('Ghost: $spriteId messed with powered pacman');
-        removeFromParent();
-      } else {
-        print('Ghost: $spriteId eating pacman');
-        other.removeFromParent();
-      }
+      manager.sendPacmanGhostCollisionAction(spriteId);
     }
   }
 

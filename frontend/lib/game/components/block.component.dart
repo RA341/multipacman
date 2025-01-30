@@ -3,12 +3,12 @@ import 'package:flame/components.dart';
 import 'package:multipacman/game/components/player.component.dart';
 
 class BlockComponent extends SpriteComponent with CollisionCallbacks {
-  final Vector2 vectorId;
+  final int tileId;
 
   BlockComponent({
     required Vector2 position,
     required Sprite sprite,
-    required this.vectorId,
+    required this.tileId,
   }) : super(
           position: position,
           autoResize: true,
@@ -19,14 +19,12 @@ class BlockComponent extends SpriteComponent with CollisionCallbacks {
     );
   }
 
-  @override
-  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
-    super.onCollision(intersectionPoints, other);
-    if (other is PlayerComponent) {
-      // print('player colliding with wall');
-      debugMode = true;
-      // print(intersectionPoints);
-      // other.position = intersectionPoints.last;
-    }
-  }
+  // @override
+  // void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+  //   super.onCollision(intersectionPoints, other);
+  //   if (other is PlayerComponent) {
+  //     final otherPos = other.position;
+  //     other.position = otherPos;
+  //   }
+  // }
 }

@@ -1,28 +1,24 @@
-import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/sprite.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:multipacman/game/components/player.component.dart';
 import 'package:multipacman/game/components/utils.dart';
 import 'package:multipacman/game/connection_manager/game.manager.dart';
 
-class PacmanComponent extends PlayerComponent with CollisionCallbacks {
+class PacmanComponent extends PlayerComponent {
   @override
-  int get moveSpeed => 2;
+  int get moveSpeed => 1;
 
   final pelletsEaten = <Vector2>{};
   final powerUpEaten = <Vector2>{};
 
 
-  var isPoweredUp = false;
-
-  final GameManager manager;
-
-
   PacmanComponent(
-      SpriteSheet spriteSheet, int baseIndex, Vector2 pos, this.manager)
-      : super(
+    SpriteSheet spriteSheet,
+    int baseIndex,
+    Vector2 pos,
+    GameManager manager,
+  ) : super(
           manager: manager,
           spriteId: 'pacman',
           animations: getPacmanAnimMap(spriteSheet, baseIndex),
@@ -31,35 +27,32 @@ class PacmanComponent extends PlayerComponent with CollisionCallbacks {
           textColor: Colors.yellow,
         );
 
+  bool get isAllowedToEat => manager.controllingSpriteId == "pacman";
 
-  void eatPellet(Vector2 pelletId) {
-    pelletsEaten.add(pelletId);
-  }
-
-  void eatPowerUp(Vector2 powerUpId) {
-    if (isPoweredUp) {
-      print('already powered');
+  void eatPellet(int pelletId) {
+    if (!isAllowedToEat) {
+      // no collision for non pacman controlling players
       return;
     }
 
-    // todo handle via the backend
-    Future.delayed(
-      Duration(seconds: kDebugMode ? 3 : 10),
-      endPowerUp,
-    );
+    manager.sendPelletAction(pelletId);
+  }
 
-    startPowerUp();
-    powerUpEaten.add(powerUpId);
+  void eatPowerUp(int powerUpId) {
+    if (!isAllowedToEat) {
+      // no collision for non pacman controlling players
+      return;
+    }
+
+    manager.sendPowerUpAction(powerUpId);
   }
 
   void endPowerUp() {
-    isPoweredUp = false;
     paint.colorFilter = null;
     print('power up over');
   }
 
   void startPowerUp() {
-    isPoweredUp = true;
     paint.colorFilter = ColorFilter.mode(Colors.red, BlendMode.srcATop);
   }
 

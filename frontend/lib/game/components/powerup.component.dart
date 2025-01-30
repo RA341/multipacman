@@ -5,11 +5,11 @@ import 'package:multipacman/game/components/pacman.component.dart';
 import 'package:multipacman/game/components/utils.dart';
 
 class PowerUpComponent extends SpriteComponent with CollisionCallbacks {
-  final Vector2 vectorId;
+  final int tileId;
 
   PowerUpComponent({
     required super.position,
-    required this.vectorId,
+    required this.tileId,
   });
 
   @override
@@ -34,9 +34,9 @@ class PowerUpComponent extends SpriteComponent with CollisionCallbacks {
     super.onCollision(intersectionPoints, other);
 
     if (other is PacmanComponent) {
-      print('Pacman collided with powerup');
+      // print('Pacman collided with powerup');
       removeFromParent();
-      other.eatPowerUp(vectorId);
+      other.eatPowerUp(tileId);
     }
   }
 }

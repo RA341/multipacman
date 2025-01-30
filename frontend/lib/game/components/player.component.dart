@@ -5,11 +5,14 @@ import 'package:flame/components.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/text.dart';
 import 'package:flutter/material.dart';
+import 'package:multipacman/game/components/ghost.component.dart';
+import 'package:multipacman/game/components/pellet.component.dart';
+import 'package:multipacman/game/components/powerup.component.dart';
 import 'package:multipacman/game/components/utils.dart';
 import 'package:multipacman/game/connection_manager/game.manager.dart';
 
 // base class to contain all players will use
-class PlayerComponent extends SpriteAnimationComponent {
+class PlayerComponent extends SpriteAnimationComponent with CollisionCallbacks {
   late Map<Direction, SpriteAnimation> animations;
   Direction currentDirection = Direction.right;
   int moveSpeed = 1;
@@ -22,6 +25,9 @@ class PlayerComponent extends SpriteAnimationComponent {
   final int textOffsetX = 10;
   final String spriteId;
   final GameManager manager;
+  Vector2 _previousPosition = Vector2(0, 0);
+  var isCollided = false;
+  Direction? collidedDir;
 
   PlayerComponent({
     required this.manager,
@@ -61,14 +67,63 @@ class PlayerComponent extends SpriteAnimationComponent {
   }
 
   @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+    if (other is PelletComponent || other is PowerUpComponent) {
+      // print('collision with non block elements');
+      return;
+    }
+
+    if (spriteId != "pacman" && other is GhostComponent) {
+      // ghost don't collide with each other
+      return;
+    }
+
+    if (intersectionPoints.isEmpty) return;
+
+    Vector2 center = position + Vector2(20, 20); // Circle's center
+    Vector2 averagePoint = intersectionPoints.reduce((a, b) => a + b) /
+        intersectionPoints.length.toDouble();
+
+    Vector2 diff = averagePoint - center;
+
+    if (diff.x.abs() > diff.y.abs()) {
+      if (diff.x < 0) {
+        // print("Collided from LEFT");
+        collidedDir = Direction.left;
+      } else {
+        // print("Collided from RIGHT");
+        collidedDir = Direction.right;
+      }
+    } else {
+      if (diff.y < 0) {
+        // print("Collided from TOP");
+        collidedDir = Direction.up;
+      } else {
+        // print("Collided from BOTTOM");
+        collidedDir = Direction.down;
+      }
+    }
+  }
+
+  @override
+  void onCollisionEnd(PositionComponent other) {
+    super.onCollisionEnd(other);
+    isCollided = false;
+    collidedDir = null;
+  }
+
+  bool isAllowedToMove(Direction dir) {
+    return !(collidedDir == dir);
+  }
+
+  @override
   FutureOr<void> onLoad() async {
     super.onLoad();
 
-    await add(playerNameText);
-    // Position the text above the sprite
     playerNameText.position = Vector2(
       size.x / 2 - playerNameText.size.x / 2, // Center horizontally
-      -playerNameText.size.y - 5, // Place above sprite with 5px padding
+      playerNameText.size.y - 20, // Place above sprite with 5px padding
     );
   }
 
@@ -91,22 +146,12 @@ class PlayerComponent extends SpriteAnimationComponent {
     playerNameText.render(canvas); // Render the text above the player
   }
 
-  get dirF => changeDirection;
-
   void changeDirection(Direction direction) {
     if (currentDirection != direction) {
       currentDirection = direction;
       animation = animations[direction];
     }
   }
-
-  void moveFromNetwork(Vector2 pos, Direction dir) {
-    position = pos;
-  }
-
-  void sendMove(Vector2 vector) {}
-
-  Vector2 _previousPosition = Vector2(0, 0);
 
   void checkIfMoved() {
     // Check if the position has changed
@@ -122,26 +167,42 @@ class PlayerComponent extends SpriteAnimationComponent {
   }
 
   void up() {
-    y += -movePoint * moveSpeed;
-    changeDirection(Direction.up);
-    manager.updatePosControllingSprite();
+    final dirMov = Direction.up;
+
+    if (isAllowedToMove(dirMov)) {
+      y += -movePoint * moveSpeed;
+      changeDirection(dirMov);
+      manager.updatePosControllingSprite();
+    }
   }
 
   void down() {
-    y += movePoint * moveSpeed;
-    changeDirection(Direction.down);
-    manager.updatePosControllingSprite();
+    final dirMov = Direction.down;
+
+    if (isAllowedToMove(dirMov)) {
+      y += movePoint * moveSpeed;
+      changeDirection(dirMov);
+      manager.updatePosControllingSprite();
+    }
   }
 
   void left() {
-    x += -movePoint * moveSpeed;
-    changeDirection(Direction.left);
-    manager.updatePosControllingSprite();
+    final dirMov = Direction.left;
+
+    if (isAllowedToMove(dirMov)) {
+      x += -movePoint * moveSpeed;
+      changeDirection(dirMov);
+      manager.updatePosControllingSprite();
+    }
   }
 
   void right() {
-    x += movePoint * moveSpeed;
-    changeDirection(Direction.right);
-    manager.updatePosControllingSprite();
+    final dirMov = Direction.right;
+
+    if (isAllowedToMove(dirMov)) {
+      x += movePoint * moveSpeed;
+      changeDirection(dirMov);
+      manager.updatePosControllingSprite();
+    }
   }
 }
