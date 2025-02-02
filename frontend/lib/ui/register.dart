@@ -26,8 +26,8 @@ class RegisterPage extends HookConsumerWidget {
           style: TextStyle(fontSize: 40),
         ),
         createUpdateButtons2("Username", username),
-        createUpdateButtons2("Password", password),
-        createUpdateButtons2("Verify Password", verifyPassword),
+        createUpdateButtons2("Password", password, secure: true),
+        createUpdateButtons2("Verify Password", verifyPassword, secure: true),
         ActionButton(
           () async {
             if (password.text.isEmpty ||

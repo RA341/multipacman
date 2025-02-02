@@ -86,12 +86,14 @@ Widget createUpdateButtons2(
   TextEditingController controller, {
   void Function()? editingController,
   String hintText = '',
+  bool secure = false,
   List<String> autofillHints = const [],
 }) {
   return TextField(
     autofillHints: autofillHints,
     controller: controller,
     onEditingComplete: editingController,
+    obscureText: secure,
     decoration: InputDecoration(
       border: OutlineInputBorder(),
       labelText: input,
