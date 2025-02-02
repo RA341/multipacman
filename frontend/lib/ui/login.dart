@@ -25,7 +25,7 @@ class LoginPage extends HookConsumerWidget {
           style: TextStyle(fontSize: 40),
         ),
         createUpdateButtons2("Username", username),
-        createUpdateButtons2("Password", password),
+        createUpdateButtons2("Password", password, secure: true),
         ActionButton(
           () async {
             if (password.text.isEmpty || username.text.isEmpty) {
