@@ -1,5 +1,6 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/game/connection_manager/game.manager.dart';
 import 'package:multipacman/game/game.dart';
@@ -13,7 +14,7 @@ class GameContainer extends ConsumerWidget {
     final gameManager = ref.watch(gameManagerProvider);
     final gameStatus = ref.watch(gameStatusProvider);
 
-    return gameStatus.isNotEmpty
+      return gameStatus.isNotEmpty
         ? Center(
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

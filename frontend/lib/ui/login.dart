@@ -36,7 +36,9 @@ class LoginPage extends HookConsumerWidget {
               context,
               () async {
                 await authApi.login(
-                    user: username.text, pass: password.text);
+                  user: username.text,
+                  pass: password.text,
+                );
               },
             );
             ref.invalidate(apiTokenProvider);

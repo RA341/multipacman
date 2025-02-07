@@ -33,6 +33,10 @@ final gameManagerProvider =
     throw Exception("Invalid lobby ID");
   }
 
+  await landscapeModeOnly(true);
+
+  ref.onDispose(() async => await landscapeModeOnly(false));
+
   final token = ref.watch(apiTokenProvider);
   final baseUrl = Uri.parse(ref.watch(basePathProvider));
 

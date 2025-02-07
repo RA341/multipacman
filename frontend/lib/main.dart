@@ -8,6 +8,7 @@ import 'package:multipacman/ui/auth.dart';
 import 'package:multipacman/ui/lobby.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await PreferencesService.init();
   runApp(ProviderScope(child: const MyApp()));
 }

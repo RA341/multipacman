@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 
 extension StringExtension on String {
@@ -19,3 +20,17 @@ var logger = Logger(
     dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
   ),
 );
+
+
+Future<void> landscapeModeOnly(bool orient) async {
+  if (orient) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  } else {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+  }
+}
