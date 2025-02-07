@@ -3,11 +3,13 @@ FROM ghcr.io/cirruslabs/flutter:stable AS flutter_builder
 
 RUN flutter config --enable-web --no-cli-animations && flutter doctor
 
-COPY ./frontend /app
 WORKDIR /app/
 
-# Build Flutter web
+COPY ./frontend/pubspec.* .
+
 RUN flutter pub get
+
+COPY ./frontend .
 
 RUN flutter build web
 

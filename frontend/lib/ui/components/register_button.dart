@@ -18,7 +18,7 @@ class RegisterButton extends ConsumerWidget {
         ref.read(goToRegisterProvider.notifier).state = !prevState;
       },
       child: Text(
-        isRegister ? 'Login' : 'Register',
+        isRegister ? 'Back to Login' : 'Register new account',
         style: TextStyle(fontSize: 15),
       ),
     );

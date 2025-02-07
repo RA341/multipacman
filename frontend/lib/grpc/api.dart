@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:connectrpc/connect.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,9 +18,13 @@ final basePathProvider = Provider<String>((ref) {
   final basePath = prefs.getString('basePath');
 
   final finalPath = kDebugMode
-      ? 'http://localhost:9862'
+      ? Platform.isAndroid || Platform.isIOS
+          ? 'http://192.168.50.111:11200'
+          : 'http://localhost:11200'
       : basePath ??
-          (kIsWeb ? html.window.location.toString() : 'http://localhost:9862');
+          (kIsWeb
+              ? html.window.location.toString()
+              : 'https://multipacman.dumbapps.org');
 
   logger.i('Base path is: $finalPath');
 

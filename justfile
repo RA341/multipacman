@@ -24,6 +24,10 @@ set-flu:
 dkbd:
     docker build . -t ras334/multipacman:dev
 
+dkr:
+    just dkbd
+    docker run --rm -v ./appdata:/app/appdata -p 11200:11200 ras334/multipacman:dev 
+
 dkp:
     just dkbd
     docker login
