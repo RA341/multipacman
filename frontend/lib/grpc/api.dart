@@ -18,7 +18,7 @@ final basePathProvider = Provider<String>((ref) {
   final basePath = prefs.getString('basePath');
 
   final finalPath = kDebugMode
-      ? Platform.isAndroid || Platform.isIOS
+      ? isMobilePlatform()
           ? 'http://192.168.50.111:11200'
           : 'http://localhost:11200'
       : basePath ??

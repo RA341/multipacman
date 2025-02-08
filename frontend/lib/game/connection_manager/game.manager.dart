@@ -33,9 +33,9 @@ final gameManagerProvider =
     throw Exception("Invalid lobby ID");
   }
 
-  await landscapeModeOnly(true);
-
-  ref.onDispose(() async => await landscapeModeOnly(false));
+  final width = ref.read(deviceWidthProvider);
+  await landscapeModeOnly(width, true);
+  ref.onDispose(() async => await landscapeModeOnly(width, false));
 
   final token = ref.watch(apiTokenProvider);
   final baseUrl = Uri.parse(ref.watch(basePathProvider));
@@ -55,7 +55,7 @@ final gameManagerProvider =
         },
       );
 
-      ref.read(gameStatusProvider.notifier).state = event;
+      ref.modState(gameStatusProvider, event);
     },
   );
 
@@ -137,11 +137,10 @@ class GameManager {
   }
 
   void updateCharacterPos(PlayerModel posData) {
-    print(posData.spriteType);
     connectedPlayers[posData.playerid] = posData;
     if (posData.spriteType == controllingSpriteId) {
-      // do not update self causes issue on web (fucking flutter web)
-      print('self character');
+      // do not update self causes potential pref issue, due to latency
+      // print('self character');
       return;
     }
 
@@ -234,7 +233,7 @@ class GameManager {
       throw Exception('Error: $input');
     }
 
-    print(message);
+    // print(message);
     final messageType = message['type'] as String;
 
     switch (messageType) {

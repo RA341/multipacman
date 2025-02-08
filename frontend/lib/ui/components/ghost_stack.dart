@@ -16,6 +16,7 @@ class GhostStack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      alignment: AlignmentDirectional.topCenter,
       children: [
         Positioned(
           left: 50,
@@ -27,7 +28,7 @@ class GhostStack extends StatelessWidget {
         ),
         Positioned(
           left: 80,
-          bottom: 200,
+          top: 280,
           child: ImageBackgroundComponent(
             faceRight: true,
             assetName: pinkGhost,
@@ -42,7 +43,7 @@ class GhostStack extends StatelessWidget {
         ),
         Positioned(
           left: 50,
-          top: 340,
+          bottom: 10,
           child: ImageBackgroundComponent(
             assetName: pacmanImg,
             imageScale: 7,

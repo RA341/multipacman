@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:multipacman/ui/components/utils.dart';
 
 class ActionButton extends HookConsumerWidget {
   const ActionButton(this.onPress, this.buttonText, {super.key});
@@ -13,6 +14,7 @@ class ActionButton extends HookConsumerWidget {
     final isLoading = useState(false);
 
     return ElevatedButton(
+      style: globalButtonStyle,
       onPressed: isLoading.value
           ? null
           : () async {
@@ -24,7 +26,7 @@ class ActionButton extends HookConsumerWidget {
           ? CircularProgressIndicator()
           : Text(
               buttonText,
-              style: TextStyle(fontSize: 15),
+              style: TextStyle(fontSize: 20),
             ),
     );
   }

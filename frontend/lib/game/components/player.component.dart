@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -25,7 +26,9 @@ class PlayerComponent extends SpriteAnimationComponent with CollisionCallbacks {
   final int textOffsetX = 10;
   final String spriteId;
   final GameManager manager;
-  Vector2 _previousPosition = Vector2(0, 0);
+
+  // store last 10 position moves
+  final ListQueue<Vector2> _previousPosition = ListQueue(5);
   var isCollided = false;
   Direction? collidedDir;
 
@@ -63,6 +66,9 @@ class PlayerComponent extends SpriteAnimationComponent with CollisionCallbacks {
         position: Vector2(5, 5),
       ),
     );
+
+
+
     animation = animations[currentDirection];
   }
 
@@ -71,6 +77,7 @@ class PlayerComponent extends SpriteAnimationComponent with CollisionCallbacks {
     super.onCollision(intersectionPoints, other);
     if (other is PelletComponent || other is PowerUpComponent) {
       // print('collision with non block elements');
+      // handled by the pacman class
       return;
     }
 
@@ -155,10 +162,10 @@ class PlayerComponent extends SpriteAnimationComponent with CollisionCallbacks {
 
   void checkIfMoved() {
     // Check if the position has changed
-    if (_previousPosition == position) {
+    if (_previousPosition.contains(position)) {
       neutral();
     } else {
-      _previousPosition = position.clone();
+      _previousPosition.add(position.clone());
     }
   }
 

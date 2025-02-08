@@ -13,3 +13,7 @@ final userDataProvider = FutureProvider<UserResponse?>((ref) async {
 final lobbyIDProvider = StateProvider<int>((ref) {
   return 0;
 });
+
+final deviceWidthProvider = StateProvider<double>((ref) {
+  return 0.0;
+});
