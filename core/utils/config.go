@@ -68,3 +68,11 @@ func getBaseDir() string {
 	}
 	return baseDir
 }
+
+func getDebugMode() string {
+	baseDir := "./appdata"
+	if os.Getenv("IS_DOCKER") != "" {
+		baseDir = "/appdata"
+	}
+	return baseDir
+}
