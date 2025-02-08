@@ -17,8 +17,6 @@ type LobbyService struct {
 	playerCount sync.Map
 }
 
-var byPassLobbyLimit = true
-
 func (lobbyService *LobbyService) GetLobbyFromID(id int) (*models.Lobby, error) {
 	var lobby *models.Lobby
 	result := lobbyService.Db.Find(&lobby, id)
@@ -32,7 +30,7 @@ func (lobbyService *LobbyService) GetLobbyFromID(id int) (*models.Lobby, error) 
 
 func (lobbyService *LobbyService) CreateLobby(lobbyName, username string, userId uint) error {
 	err := lobbyService.countUserLobbies(userId)
-	if !byPassLobbyLimit && err != nil {
+	if err != nil {
 		return err
 	}
 

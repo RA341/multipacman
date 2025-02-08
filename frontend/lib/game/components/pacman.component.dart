@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:multipacman/game/components/player.component.dart';
 import 'package:multipacman/game/components/utils.dart';
 import 'package:multipacman/game/connection_manager/game.manager.dart';
+import 'package:multipacman/utils.dart';
 
 class PacmanComponent extends PlayerComponent {
   @override
@@ -49,7 +50,7 @@ class PacmanComponent extends PlayerComponent {
 
   void endPowerUp() {
     paint.colorFilter = null;
-    print('power up over');
+    logger.d('power up over');
   }
 
   void startPowerUp() {

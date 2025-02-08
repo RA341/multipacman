@@ -53,58 +53,66 @@ class LobbyTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final createdAt = DateTime.parse(item.createdAt);
-    return GridTile(
-      footer: LobbyActionBar(item: item),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.blue, Colors.blueGrey],
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.black54,
+        shape: BoxShape.rectangle,
+        border: Border.all(
+          color: Colors.grey,
+          width: 2,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Name: ${item.lobbyName}',
-                    style: TextStyle(color: Colors.white),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Name: ${item.lobbyName}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20
                   ),
-                ],
-              ),
-              Row(
-                children: [
-                  Text(
-                    'Added: ${timeago.format(createdAt)}',
-                    style: TextStyle(
-                        color: Colors.white, overflow: TextOverflow.ellipsis),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Text(
-                    'Players joined: ${item.playerCount}/4',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-              SizedBox(height: 15),
-              Row(
-                children: [
-                  Text(
-                    'Created by ${item.ownerName}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  'Players joined: ${item.playerCount}/4',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            smallDiv,
+            Row(
+              children: [
+                Text(
+                  'Added: ${timeago.format(createdAt)}',
+                  style: TextStyle(
+                      color: Colors.white, overflow: TextOverflow.ellipsis),
+                ),
+              ],
+            ),
+            smallDiv,
+            Row(
+              children: [
+                Text(
+                  'Created by ${item.ownerName}',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            actionDivider,
+            Row(
+              children: [
+                LobbyActionBar(item: item),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -148,6 +156,7 @@ class LobbyActionBar extends ConsumerWidget {
                       .i("Going to lobby ${item.iD.toInt()} ${item.lobbyName}");
                   ref.read(lobbyIDProvider.notifier).state = item.iD.toInt();
                 },
+                style: globalButtonStyle,
                 child: Text('Join'),
               )
       ],

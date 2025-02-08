@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:multipacman/ui/components/utils.dart';
 
 final goToRegisterProvider = StateProvider.autoDispose<bool>((ref) {
   return false;
@@ -17,9 +18,10 @@ class RegisterButton extends ConsumerWidget {
         final prevState = ref.read(goToRegisterProvider);
         ref.read(goToRegisterProvider.notifier).state = !prevState;
       },
+      style: globalButtonStyle,
       child: Text(
         isRegister ? 'Back to Login' : 'Register new account',
-        style: TextStyle(fontSize: 15),
+        style: TextStyle(fontSize: 20),
       ),
     );
   }

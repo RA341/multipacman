@@ -6,6 +6,7 @@ import 'package:multipacman/game/game_container.dart';
 import 'package:multipacman/providers.dart';
 import 'package:multipacman/ui/auth.dart';
 import 'package:multipacman/ui/lobby.dart';
+import 'package:multipacman/utils.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,15 +47,19 @@ class Root extends ConsumerWidget {
       body: authStatus.when(
         data: (status) =>
             status != null ? HomeContainerPage() : AuthContainerPage(),
-        error: (error, stackTrace) => Center(
-          child: Column(
-            children: [
-              Text('Unable to verify authentication status'),
-              SizedBox(height: 50),
-              Text(error.toString()),
-            ],
-          ),
-        ),
+        error: (error, stackTrace) {
+          logger.e('Error occurred while checking auth', error: error);
+
+          return Center(
+            child: Column(
+              children: [
+                Text('Error occurred while authenticating'),
+                SizedBox(height: 50),
+                Text(error.toString()),
+              ],
+            ),
+          );
+        },
         loading: () => Center(child: CircularProgressIndicator()),
       ),
     );
@@ -67,6 +72,10 @@ class HomeContainerPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lobbyId = ref.watch(lobbyIDProvider);
+    Future(() {
+      if (!context.mounted) return;
+      ref.modState(deviceWidthProvider, MediaQuery.of(context).size.width);
+    });
 
     return lobbyId == 0 ? LobbyPage() : GameContainer();
   }

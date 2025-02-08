@@ -15,8 +15,7 @@ class AuthContainerPage extends ConsumerWidget {
     return GhostStack(
       child: SingleChildScrollView(
         child: Center(
-          child: Container(
-            color: Colors.black,
+          child: SizedBox(
             width: 400,
             height: 700,
             child: isRegister ? RegisterPage() : LoginPage(),

@@ -165,3 +165,29 @@ Future<void> runGrpcRequest(
     );
   }
 }
+
+final globalButtonStyle = ElevatedButton.styleFrom(
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(5.0), // Rounded corners
+    side: const BorderSide(
+      color: Colors.grey,
+      width: 2.0,
+    ),
+  ),
+  backgroundColor: Colors.black,
+  padding: EdgeInsets.symmetric(
+    vertical: 15,
+    horizontal: 15,
+  ),
+);
+
+const actionDivider = Divider(
+  height: 15,
+  color: Colors.grey,
+);
+
+const smallDiv = Divider(
+  height: 15,
+  color: Colors.grey,
+  endIndent: 30.0,
+);
