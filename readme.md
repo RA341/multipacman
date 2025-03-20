@@ -17,7 +17,7 @@ Try the live demo and experience the multiplayer action firsthand!
 
 ## Project Overview
 
-This project reimagines the classic Pacman game as a modern multiplayer experience, featuring:
+Plat the classic Pacman game as a modern multiplayer experience, featuring:
 
 - Real-time multiplayer functionality with concurrent users
 - Responsive and fluid game mechanics powered by the Flame game engine
@@ -71,13 +71,13 @@ git clone https://github.com/yourusername/multipacman.git
 cd multipacman/server
 
 # Run the Go server
-go run main.go
+go run core/main.go
 ```
 
 #### Frontend
 
 ```bash
-cd ../client
+cd client
 
 # Get Flutter dependencies
 flutter pub get
