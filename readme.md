@@ -3,8 +3,8 @@
 A real-time multiplayer Pacman game built using Flutter, Flame game engine, and Go.
 
 <div align="center">
-  <img src="img/lobby.png" alt="Game Lobby" width="600" />
-  <img src="img/game.png" alt="Gameplay Screenshot" width="600" />
+  <img src="img/lobby.png" alt="Game Lobby" width="500" />
+  <img src="img/game.png" alt="Gameplay Screenshot" width="500" />
 </div>
 
 
