@@ -11,6 +11,7 @@ type User struct {
 	Username string
 	Password string
 	Token    string
+	Guest    bool
 }
 
 func (l User) FromRPC(lobby *v1.UserResponse) *User {
@@ -27,5 +28,6 @@ func (l User) ToRPC() *v1.UserResponse {
 		ID:        uint64(l.ID),
 		Username:  l.Username,
 		AuthToken: l.Token, // make sure this is un-hashed
+		IsGuest:   l.Guest,
 	}
 }
