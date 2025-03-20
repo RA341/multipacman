@@ -2,8 +2,18 @@
 
 A real-time multiplayer Pacman game built using Flutter, Flame game engine, and Go.
 
-![Lobby](img/lobby.png)
-![Game](img/game.png)
+<div align="center">
+  <img src="img/lobby.png" alt="Game Lobby" width="400" />
+  <img src="img/game.png" alt="Gameplay Screenshot" width="400" />
+</div>
+
+
+## Play Now
+
+🎮 **[Play Multiplayer Pacman Online](https://multipacman.dumbapps.org)** 🎮
+
+Try the live demo and experience the multiplayer action firsthand!
+
 
 ## Project Overview
 
@@ -90,3 +100,4 @@ affiliated with, endorsed by, or connected to Bandai Namco Entertainment in any 
 
 All game mechanics, visual styles, and character designs inspired by the original Pacman are used under fair use for
 educational purposes. No copyright infringement is intended.
+
