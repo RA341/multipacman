@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/config.dart';
 import 'package:multipacman/gen/auth/v1/auth.connect.client.dart';
 import 'package:multipacman/gen/auth/v1/auth.pb.dart';
+import 'package:multipacman/gen/lobby/v1/lobby.pb.dart';
 import 'package:multipacman/grpc/api.dart';
 import 'package:multipacman/utils.dart';
 
@@ -26,6 +26,16 @@ class AuthApi {
       username: user,
       password: pass,
     ));
+
+    if (token.authToken.isEmpty) {
+      throw Exception("token returned was empty");
+    }
+
+    await prefs.setString('apikey', token.authToken);
+  }
+
+  Future<void> guestLogin() async {
+    final token = await apiClient.guestLogin(Empty());
 
     if (token.authToken.isEmpty) {
       throw Exception("token returned was empty");
@@ -61,5 +71,9 @@ class AuthApi {
       logger.e('Incorrect token', error: e);
       return null;
     }
+  }
+
+  Future<void> logout() async {
+    await apiClient.logout(Empty());
   }
 }

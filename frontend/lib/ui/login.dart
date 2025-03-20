@@ -45,6 +45,16 @@ class LoginPage extends HookConsumerWidget {
           },
           'Login',
         ),
+        ActionButton(
+          () async {
+            await runGrpcRequest(
+              context,
+              authApi.guestLogin,
+            );
+            ref.invalidate(apiTokenProvider);
+          },
+          'Guest Login',
+        ),
         RegisterButton(),
       ],
     );
