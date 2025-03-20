@@ -8,7 +8,11 @@ service AuthService {
   rpc Login(AuthRequest) returns (UserResponse) {}
   rpc Register(RegisterUserRequest) returns (RegisterUserResponse) {}
   rpc Test(AuthResponse) returns (UserResponse) {}
+  rpc GuestLogin(Empty) returns (UserResponse) {}
+  rpc Logout(Empty) returns (Empty) {}
 }
+
+message Empty {}
 
 message AuthRequest {
   string username = 1;
@@ -19,6 +23,7 @@ message UserResponse {
   uint64 ID = 1;
   string username = 2;
   string authToken = 3;
+  bool isGuest = 4;
 }
 
 message AuthResponse {
