@@ -19,6 +19,7 @@ require (
 )
 
 require (
+	github.com/Pallinder/go-randomdata v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
