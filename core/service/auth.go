@@ -16,11 +16,12 @@ type AuthService struct {
 	Db *gorm.DB
 }
 
-func (auth *AuthService) Register(username, password string) error {
+func (auth *AuthService) Register(username, password string, isGuest bool) error {
 	user := models.User{
 		Username: username,
 		Password: encryptPassword([]byte(password)),
 		Token:    "",
+		Guest:    isGuest,
 	}
 
 	res := auth.Db.Create(&user)
@@ -50,7 +51,7 @@ func (auth *AuthService) Login(username, inputPassword string) (*models.User, er
 		return &models.User{}, fmt.Errorf("invalid user/password")
 	}
 
-	finalUser, err := auth.updateUserAuthToken(user.ID)
+	finalUser, err := auth.newUserAuthToken(user.ID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to update user token")
 		return &models.User{}, fmt.Errorf("failed update user token")
@@ -58,22 +59,35 @@ func (auth *AuthService) Login(username, inputPassword string) (*models.User, er
 
 	return finalUser, nil
 }
-func (auth *AuthService) updateUserAuthToken(userId uint) (*models.User, error) {
-	token := CreateAuthToken(32)
 
+func (auth *AuthService) Logout(userId uint) (*models.User, error) {
+	return auth.updateUserAuthToken(userId, "")
+}
+
+func (auth *AuthService) newUserAuthToken(userId uint) (*models.User, error) {
+	token := CreateAuthToken(32)
+	user, err := auth.updateUserAuthToken(userId, hashString(token))
+	if err != nil {
+		return nil, err
+	}
+	// return un-hashed token
+	user.Token = token
+	return user, nil
+}
+
+func (auth *AuthService) updateUserAuthToken(userId uint, token string) (*models.User, error) {
 	var user models.User
 	result := auth.Db.
 		Model(&user).
 		Where("id = ?", userId).
-		Update("token", hashString(token)).
+		Update("token", token).
 		Find(&user)
 
 	if result.Error != nil {
 		log.Error().Err(result.Error).Msg("Failed to update auth token")
 		return &models.User{}, result.Error
 	}
-	// return un-hashed token
-	user.Token = token
+
 	return &user, nil
 }
 

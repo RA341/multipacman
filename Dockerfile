@@ -14,21 +14,16 @@ COPY ./frontend .
 RUN flutter build web
 
 # Stage Go build
-FROM golang:1.23-alpine AS go_builder
-
-WORKDIR /app
-
-COPY ./core .
-
-# arg substitution
-# https://stackoverflow.com/questions/44438637/arg-substitution-in-run-command-not-working-for-dockerfile
-ARG VERSION
-ENV BV=${VERSION}
+FROM golang:1.24-alpine AS go_builder
 
 # for sqlite
 ENV CGO_ENABLED=1
 
 RUN apk update && apk add --no-cache gcc musl-dev
+
+WORKDIR /app
+
+COPY ./core .
 
 RUN go mod tidy
 

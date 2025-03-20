@@ -26,12 +26,20 @@ dkbd:
 
 dkr:
     just dkbd
-    docker run --rm -v ./appdata:/app/appdata -p 11200:11200 ras334/multipacman:dev 
+    docker run --rm -e LOBBY_LIMIT=1 -v ./appdata:/app/appdata -p 11200:11200 ras334/multipacman:dev
 
 dkp:
     just dkbd
     docker login
     docker push  ras334/multipacman:dev
+
+dklt:
+    docker build . -t ras334/multipacman:latest
+
+dpl:
+    just dklt
+    docker login
+    docker push  ras334/multipacman:latest
 
 prune:
     docker image prune -f

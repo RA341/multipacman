@@ -39,6 +39,10 @@ const (
 	AuthServiceRegisterProcedure = "/auth.v1.AuthService/Register"
 	// AuthServiceTestProcedure is the fully-qualified name of the AuthService's Test RPC.
 	AuthServiceTestProcedure = "/auth.v1.AuthService/Test"
+	// AuthServiceGuestLoginProcedure is the fully-qualified name of the AuthService's GuestLogin RPC.
+	AuthServiceGuestLoginProcedure = "/auth.v1.AuthService/GuestLogin"
+	// AuthServiceLogoutProcedure is the fully-qualified name of the AuthService's Logout RPC.
+	AuthServiceLogoutProcedure = "/auth.v1.AuthService/Logout"
 )
 
 // AuthServiceClient is a client for the auth.v1.AuthService service.
@@ -46,6 +50,8 @@ type AuthServiceClient interface {
 	Login(context.Context, *connect.Request[v1.AuthRequest]) (*connect.Response[v1.UserResponse], error)
 	Register(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
 	Test(context.Context, *connect.Request[v1.AuthResponse]) (*connect.Response[v1.UserResponse], error)
+	GuestLogin(context.Context, *connect.Request[v1.Empty]) (*connect.Response[v1.UserResponse], error)
+	Logout(context.Context, *connect.Request[v1.Empty]) (*connect.Response[v1.Empty], error)
 }
 
 // NewAuthServiceClient constructs a client for the auth.v1.AuthService service. By default, it uses
@@ -77,14 +83,28 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("Test")),
 			connect.WithClientOptions(opts...),
 		),
+		guestLogin: connect.NewClient[v1.Empty, v1.UserResponse](
+			httpClient,
+			baseURL+AuthServiceGuestLoginProcedure,
+			connect.WithSchema(authServiceMethods.ByName("GuestLogin")),
+			connect.WithClientOptions(opts...),
+		),
+		logout: connect.NewClient[v1.Empty, v1.Empty](
+			httpClient,
+			baseURL+AuthServiceLogoutProcedure,
+			connect.WithSchema(authServiceMethods.ByName("Logout")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // authServiceClient implements AuthServiceClient.
 type authServiceClient struct {
-	login    *connect.Client[v1.AuthRequest, v1.UserResponse]
-	register *connect.Client[v1.RegisterUserRequest, v1.RegisterUserResponse]
-	test     *connect.Client[v1.AuthResponse, v1.UserResponse]
+	login      *connect.Client[v1.AuthRequest, v1.UserResponse]
+	register   *connect.Client[v1.RegisterUserRequest, v1.RegisterUserResponse]
+	test       *connect.Client[v1.AuthResponse, v1.UserResponse]
+	guestLogin *connect.Client[v1.Empty, v1.UserResponse]
+	logout     *connect.Client[v1.Empty, v1.Empty]
 }
 
 // Login calls auth.v1.AuthService.Login.
@@ -102,11 +122,23 @@ func (c *authServiceClient) Test(ctx context.Context, req *connect.Request[v1.Au
 	return c.test.CallUnary(ctx, req)
 }
 
+// GuestLogin calls auth.v1.AuthService.GuestLogin.
+func (c *authServiceClient) GuestLogin(ctx context.Context, req *connect.Request[v1.Empty]) (*connect.Response[v1.UserResponse], error) {
+	return c.guestLogin.CallUnary(ctx, req)
+}
+
+// Logout calls auth.v1.AuthService.Logout.
+func (c *authServiceClient) Logout(ctx context.Context, req *connect.Request[v1.Empty]) (*connect.Response[v1.Empty], error) {
+	return c.logout.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the auth.v1.AuthService service.
 type AuthServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.AuthRequest]) (*connect.Response[v1.UserResponse], error)
 	Register(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
 	Test(context.Context, *connect.Request[v1.AuthResponse]) (*connect.Response[v1.UserResponse], error)
+	GuestLogin(context.Context, *connect.Request[v1.Empty]) (*connect.Response[v1.UserResponse], error)
+	Logout(context.Context, *connect.Request[v1.Empty]) (*connect.Response[v1.Empty], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -134,6 +166,18 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("Test")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceGuestLoginHandler := connect.NewUnaryHandler(
+		AuthServiceGuestLoginProcedure,
+		svc.GuestLogin,
+		connect.WithSchema(authServiceMethods.ByName("GuestLogin")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceLogoutHandler := connect.NewUnaryHandler(
+		AuthServiceLogoutProcedure,
+		svc.Logout,
+		connect.WithSchema(authServiceMethods.ByName("Logout")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/auth.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceLoginProcedure:
@@ -142,6 +186,10 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceRegisterHandler.ServeHTTP(w, r)
 		case AuthServiceTestProcedure:
 			authServiceTestHandler.ServeHTTP(w, r)
+		case AuthServiceGuestLoginProcedure:
+			authServiceGuestLoginHandler.ServeHTTP(w, r)
+		case AuthServiceLogoutProcedure:
+			authServiceLogoutHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -161,4 +209,12 @@ func (UnimplementedAuthServiceHandler) Register(context.Context, *connect.Reques
 
 func (UnimplementedAuthServiceHandler) Test(context.Context, *connect.Request[v1.AuthResponse]) (*connect.Response[v1.UserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.Test is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) GuestLogin(context.Context, *connect.Request[v1.Empty]) (*connect.Response[v1.UserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.GuestLogin is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) Logout(context.Context, *connect.Request[v1.Empty]) (*connect.Response[v1.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.Logout is not implemented"))
 }

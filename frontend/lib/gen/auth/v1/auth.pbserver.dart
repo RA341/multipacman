@@ -24,12 +24,16 @@ abstract class AuthServiceBase extends $pb.GeneratedService {
   $async.Future<$0.UserResponse> login($pb.ServerContext ctx, $0.AuthRequest request);
   $async.Future<$0.RegisterUserResponse> register($pb.ServerContext ctx, $0.RegisterUserRequest request);
   $async.Future<$0.UserResponse> test($pb.ServerContext ctx, $0.AuthResponse request);
+  $async.Future<$0.UserResponse> guestLogin($pb.ServerContext ctx, $0.Empty request);
+  $async.Future<$0.Empty> logout($pb.ServerContext ctx, $0.Empty request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
       case 'Login': return $0.AuthRequest();
       case 'Register': return $0.RegisterUserRequest();
       case 'Test': return $0.AuthResponse();
+      case 'GuestLogin': return $0.Empty();
+      case 'Logout': return $0.Empty();
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
@@ -39,6 +43,8 @@ abstract class AuthServiceBase extends $pb.GeneratedService {
       case 'Login': return this.login(ctx, request as $0.AuthRequest);
       case 'Register': return this.register(ctx, request as $0.RegisterUserRequest);
       case 'Test': return this.test(ctx, request as $0.AuthResponse);
+      case 'GuestLogin': return this.guestLogin(ctx, request as $0.Empty);
+      case 'Logout': return this.logout(ctx, request as $0.Empty);
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }

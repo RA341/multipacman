@@ -3,6 +3,7 @@ package api
 import (
 	"connectrpc.com/connect"
 	"context"
+	"fmt"
 	v1 "github.com/RA341/multipacman/generated/lobby/v1"
 	"github.com/RA341/multipacman/models"
 	"github.com/RA341/multipacman/service"
@@ -69,6 +70,10 @@ func (l LobbyHandler) AddLobby(ctx context.Context, req *connect.Request[v1.AddL
 	user, err := utils.GetUserContext(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if user.Guest {
+		return nil, fmt.Errorf("guest users cannot create lobbies")
 	}
 
 	lobbyName := req.Msg.GetLobbyName()

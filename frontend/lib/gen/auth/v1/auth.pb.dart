@@ -15,6 +15,38 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
+class Empty extends $pb.GeneratedMessage {
+  factory Empty() => create();
+  Empty._() : super();
+  factory Empty.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Empty.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Empty', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth.v1'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  Empty clone() => Empty()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  Empty copyWith(void Function(Empty) updates) => super.copyWith((message) => updates(message as Empty)) as Empty;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static Empty create() => Empty._();
+  Empty createEmptyInstance() => create();
+  static $pb.PbList<Empty> createRepeated() => $pb.PbList<Empty>();
+  @$core.pragma('dart2js:noInline')
+  static Empty getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Empty>(create);
+  static Empty? _defaultInstance;
+}
+
 class AuthRequest extends $pb.GeneratedMessage {
   factory AuthRequest({
     $core.String? username,
@@ -84,6 +116,7 @@ class UserResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? iD,
     $core.String? username,
     $core.String? authToken,
+    $core.bool? isGuest,
   }) {
     final $result = create();
     if (iD != null) {
@@ -95,6 +128,9 @@ class UserResponse extends $pb.GeneratedMessage {
     if (authToken != null) {
       $result.authToken = authToken;
     }
+    if (isGuest != null) {
+      $result.isGuest = isGuest;
+    }
     return $result;
   }
   UserResponse._() : super();
@@ -105,6 +141,7 @@ class UserResponse extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'ID', $pb.PbFieldType.OU6, protoName: 'ID', defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(2, _omitFieldNames ? '' : 'username')
     ..aOS(3, _omitFieldNames ? '' : 'authToken', protoName: 'authToken')
+    ..aOB(4, _omitFieldNames ? '' : 'isGuest', protoName: 'isGuest')
     ..hasRequiredFields = false
   ;
 
@@ -155,6 +192,15 @@ class UserResponse extends $pb.GeneratedMessage {
   $core.bool hasAuthToken() => $_has(2);
   @$pb.TagNumber(3)
   void clearAuthToken() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get isGuest => $_getBF(3);
+  @$pb.TagNumber(4)
+  set isGuest($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIsGuest() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIsGuest() => clearField(4);
 }
 
 class AuthResponse extends $pb.GeneratedMessage {
@@ -361,6 +407,12 @@ class AuthServiceApi {
   ;
   $async.Future<UserResponse> test($pb.ClientContext? ctx, AuthResponse request) =>
     _client.invoke<UserResponse>(ctx, 'AuthService', 'Test', request, UserResponse())
+  ;
+  $async.Future<UserResponse> guestLogin($pb.ClientContext? ctx, Empty request) =>
+    _client.invoke<UserResponse>(ctx, 'AuthService', 'GuestLogin', request, UserResponse())
+  ;
+  $async.Future<Empty> logout($pb.ClientContext? ctx, Empty request) =>
+    _client.invoke<Empty>(ctx, 'AuthService', 'Logout', request, Empty())
   ;
 }
 

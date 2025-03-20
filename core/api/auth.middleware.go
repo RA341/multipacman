@@ -23,7 +23,7 @@ func (i *authInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc
 			return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("no auth header found"))
 		}
 
-		ctx, _, err := verifyAuthHeader(ctx, i.authService, token)
+		ctx, err := verifyAuthHeader(ctx, i.authService, token)
 		if err != nil {
 			return err
 		}
@@ -39,9 +39,9 @@ func (i *authInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 	) (connect.AnyResponse, error) {
 		clientToken := req.Header().Get(AuthHeader)
 
-		ctx, response, err := verifyAuthHeader(ctx, i.authService, clientToken)
+		ctx, err := verifyAuthHeader(ctx, i.authService, clientToken)
 		if err != nil {
-			return response, err
+			return nil, err
 		}
 
 		return next(ctx, req)
@@ -57,15 +57,15 @@ func (*authInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) co
 	}
 }
 
-func verifyAuthHeader(ctx context.Context, authService *service.AuthService, clientToken string) (context.Context, connect.AnyResponse, error) {
+func verifyAuthHeader(ctx context.Context, authService *service.AuthService, clientToken string) (context.Context, error) {
 	user, err := authService.VerifyToken(clientToken)
 	if err != nil {
-		return nil, nil, connect.NewError(
+		return nil, connect.NewError(
 			connect.CodeUnauthenticated,
 			fmt.Errorf("invalid token %v", err),
 		)
 	}
 	// add user value to subsequent requests
 	ctx = context.WithValue(ctx, "user", user)
-	return ctx, nil, nil
+	return ctx, nil
 }

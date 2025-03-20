@@ -5,6 +5,7 @@ import (
 	"fmt"
 	v1 "github.com/RA341/multipacman/generated/lobby/v1"
 	"github.com/RA341/multipacman/models"
+	"github.com/RA341/multipacman/utils"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 	"sync"
@@ -114,11 +115,10 @@ func (lobbyService *LobbyService) countUserLobbies(uid uint) error {
 		return fmt.Errorf("unable to count user lobbies")
 	}
 
-	// limit of 3 per user
-	if count+1 <= 3 {
+	if count+1 <= utils.GetLobbyLimit() {
 		return nil
 	} else {
-		return fmt.Errorf("user has 3 lobbies: %d", uid)
+		return fmt.Errorf("user has reached max lobby limit of %d", utils.GetLobbyLimit())
 	}
 }
 

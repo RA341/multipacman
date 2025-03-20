@@ -30,4 +30,18 @@ abstract final class AuthService {
     authv1auth.AuthResponse.new,
     authv1auth.UserResponse.new,
   );
+
+  static const guestLogin = connect.Spec(
+    '/$name/GuestLogin',
+    connect.StreamType.unary,
+    authv1auth.Empty.new,
+    authv1auth.UserResponse.new,
+  );
+
+  static const logout = connect.Spec(
+    '/$name/Logout',
+    connect.StreamType.unary,
+    authv1auth.Empty.new,
+    authv1auth.Empty.new,
+  );
 }
