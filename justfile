@@ -26,7 +26,7 @@ dkbd:
 
 dkr:
     just dkbd
-    docker run --rm -v ./appdata:/app/appdata -p 11200:11200 ras334/multipacman:dev 
+    docker run --rm -e LOBBY_LIMIT=1 -v ./appdata:/app/appdata -p 11200:11200 ras334/multipacman:dev
 
 dkp:
     just dkbd

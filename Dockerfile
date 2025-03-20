@@ -14,7 +14,7 @@ COPY ./frontend .
 RUN flutter build web
 
 # Stage Go build
-FROM golang:1.23-alpine AS go_builder
+FROM golang:1.24-alpine AS go_builder
 
 WORKDIR /app
 
