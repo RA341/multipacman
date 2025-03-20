@@ -33,6 +33,14 @@ dkp:
     docker login
     docker push  ras334/multipacman:dev
 
+dklt:
+    docker build . -t ras334/multipacman:latest
+
+dpl:
+    just dklt
+    docker login
+    docker push  ras334/multipacman:latest
+
 prune:
     docker image prune -f
 
