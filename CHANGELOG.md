@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/RA341/multipacman/compare/v1.1.0...v1.1.1) (2025-03-20)
+
+
+### Bug Fixes
+
+* general fixes and improvements ([19f6683](https://github.com/RA341/multipacman/commit/19f6683038202c77edb3cb7716bf58e2e6428b8d))
+
 # [1.1.0](https://github.com/RA341/multipacman/compare/v1.0.1...v1.1.0) (2025-01-30)
 
 
