@@ -6,6 +6,13 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"os"
+	"strconv"
+	"sync"
+)
+
+var (
+	once             = sync.Once{}
+	lobbyLimit int64 = 0
 )
 
 func InitConfig() {
@@ -47,6 +54,28 @@ func getConfigDir(baseDir string) string {
 		log.Fatal().Err(err).Str("Config dir", configDir).Msgf("could not create config directory")
 	}
 	return configDir
+}
+
+func GetLobbyLimit() int64 {
+	once.Do(func() {
+		lobbyLimit = int64(loadLobbyLimit())
+	})
+	return lobbyLimit
+}
+
+func loadLobbyLimit() int {
+	const defaultLobbyLimit = 3
+
+	limit, ok := os.LookupEnv("LOBBY_LIMIT")
+	if !ok {
+		return defaultLobbyLimit
+	}
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		return defaultLobbyLimit
+	}
+
+	return limitInt
 }
 
 func setupConfigOptions(configDir string) error {
