@@ -59,6 +59,7 @@ func getConfigDir(baseDir string) string {
 func GetLobbyLimit() int64 {
 	once.Do(func() {
 		lobbyLimit = int64(loadLobbyLimit())
+		log.Info().Msgf("Lobby limit has been set to %v", lobbyLimit)
 	})
 	return lobbyLimit
 }
