@@ -2,58 +2,22 @@
 
 A real-time multiplayer Pacman game built using Flutter, Flame game engine, and Go.
 
+🎮 **[Play Now](https://multipacman.dumbapps.org)** 🎮
+
 <div align="center">
   <img src="img/lobby.png" alt="Game Lobby" width="400" />
   <img src="img/game.png" alt="Gameplay Screenshot" width="400" />
 </div>
 
-
-## Hosted Instance
-
-🎮 **[Play Now](https://multipacman.dumbapps.org)** 🎮
-
-Try the live demo and experience the multiplayer action firsthand!
-
-
-## Project Overview
-
-Plat the classic Pacman game as a modern multiplayer experience, featuring:
-
-- Real-time multiplayer functionality with concurrent users
-- Responsive and fluid game mechanics powered by the Flame game engine
-- Robust client-server architecture with optimized performance
-
-## Tech Stack
-
-### Frontend
+## Stack
 
 - **Flutter**: Cross-platform UI framework for the game client
 - **Flame**: 2D game engine for Flutter, used to implement core game mechanics
-- **WebSockets**: For real-time game state synchronization and player interactions
-
-### Backend
-
 - **Go**: High-performance backend server handling game logic and state management
-- **gRPC**: For efficient API communication between client and server
-- **WebSockets**: For real-time bidirectional communication
 
-## Architecture
+## Selfhost
 
-The game follows a client-server architecture:
-
-1. **Go Backend**: Manages game state, player connections, and core game logic
-2. **Flutter Frontend**: Renders the game UI, processes user inputs, and communicates with the server
-3. **WebSockets**: Enable real-time synchronization of game state across all connected players
-4. **gRPC**: Provides efficient API communication for non-real-time operations
-
-## Getting Started
-
-### Prerequisites
-
-- Docker (for the easiest setup)
-- Alternatively: Flutter SDK and Go installed locally
-
-### Quick Start with Docker
+Ensure Docker is installed.
 
 ```bash
 docker run -p 11200:11200 ras334/multipacman:latest
@@ -61,9 +25,11 @@ docker run -p 11200:11200 ras334/multipacman:latest
 
 Then open your browser and navigate to `http://localhost:11200`
 
-### Manual Setup
+## Build
 
-#### Backend
+### Prerequisites
+
+- Flutter SDK and Go installed locally
 
 ```bash
 # Clone the repository
