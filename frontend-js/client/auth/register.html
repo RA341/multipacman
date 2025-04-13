@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="/static/auth/login.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script>
+        function checkHeader() {
+            const queryString = new URLSearchParams(window.location.search);
+            const error = queryString.get("error")
+            if (error) {
+                // If the header is present, show a popup
+                alert(error);
+            }
+        }
+    </script>
+</head>
+<body onload="checkHeader()">
+  <div class="container">
+    <h2 class="header">MULTI-PACMAN</h2>
+    <img src="/static/images/pacman-original.png" alt="Pacman" width="150" height="150" id="pacman-img">
+
+    <form action="/api/auth/register" method="post">
+      <label class="label" for="username">Username:</label><br>
+      <input class="input" type="text" id="username" name="username" maxlength="50" required><br>
+  
+      <label class="label" for="password">Password:</label><br>
+      <input class="input" type="password" id="password" name="password" maxlength="50" required><br>
+  
+      <label class="label" for="passwordVerify">Verify Password:</label><br>
+      <input class="input" type="password" id="passwordVerify" name="passwordVerify" maxlength="50" required><br>
+  
+      <br>
+      
+      <div class="login-container">
+        <input type="submit" value="REGISTER">
+      </div>
+    </form>
+
+    <a id="register-btn" href="/login">
+      <button class="button">
+        LOGIN
+      </button>
+    </a>
+  </div>
+
+  <br>
+  
+  <img src="/images/ghost-orange.png" alt="Orange Ghost" width="150" height="150" id="orange-ghost">
+  <img src="/static/images/ghost-red.png" alt="Red Ghost" width="150" height="150" id="red-ghost">
+  <img src="/static/images/ghost-blue.png" alt="Blue Ghost" width="150" height="150" id="blue-ghost">
+  <img src="/static/images/ghost-pink.png" alt="Pink Ghost" width="150" height="150" id="pink-ghost">
+</body>
+</html>

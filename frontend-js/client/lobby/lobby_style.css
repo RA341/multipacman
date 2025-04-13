@@ -1,0 +1,165 @@
+body {
+    background-color: #000;
+}
+
+.main-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding-top: 1%;
+}
+
+#user {
+  z-index: 1;
+  position: absolute;
+  top: 1%;
+  right: 2%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#username {
+  text-overflow: ellipsis;
+  max-width: 30ch;
+}
+
+.profileImage {
+  z-index: 1;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#logout_button {
+  z-index: 1;
+  border: 5px solid #FFF;
+  background-color: #000;
+  color: #FFF;
+  font-size: 18px;
+  font-family: "Play", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  padding: 15px 32px;
+  text-decoration: none;
+  text-align: center;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+#blue-ghost {
+  z-index: -1;
+  position: absolute;
+}
+#orange-ghost {
+  z-index: -1;
+  position: absolute;
+}
+#pink-ghost {
+  z-index: -1;
+  position: absolute;
+}
+#red-ghost {
+  z-index: -1;
+  position: absolute;
+}
+
+.small-text {
+  z-index: 1;
+  color: #FFF;
+  font-size: 16px;
+  font-family: "Play", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.text {
+  z-index: 1;
+  color: #FFF;
+  font-size: 24px;
+  font-family: "Play", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.tooltiptext {
+  z-index: 1;
+  color: #FFF;
+  font-size: 12px;
+  font-family: "Play", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  overflow-scrolling: auto;
+  overflow: hidden;
+}
+
+.title {
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+
+.title h1 {
+    z-index: 1;
+    margin-right: 10px; /* Adjust as needed */
+}
+
+.create-lobby-form {
+  z-index: 1;
+  align-self: center;
+}
+
+.lobby-container {
+  z-index: 1;
+  overflow-x: scroll;
+  height: 700px;
+  display: flex;
+  flex-direction: row;
+}
+
+.lobby-box {
+  z-index: 1;
+  background-color: #000;
+  border: 5px solid #FFF;
+  padding: 5px 10px;
+  margin-right: 20px;
+  width: 300px;
+}
+
+.lobby-count {
+  align-self: center;
+}
+
+.join-button {
+  border: 5px solid #FFF;
+  background-color: #000;
+  color: #FFF;
+  font-size: 16px;
+  font-family: "Play", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  padding: 10px 16px;
+  text-decoration: none;
+  text-align: center;
+  margin-bottom: 25px;
+  cursor: pointer;
+}
+
+
+.lobby-name {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.lobby-buttons {
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.lobbyProfileImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}

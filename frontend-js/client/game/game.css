@@ -1,0 +1,14 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+#errorMessage {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+}
+#errorMessage a {
+    color: white;
+    text-decoration: underline;
+}

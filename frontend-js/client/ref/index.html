@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Join lobby</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+</head>
+<body>
+<script>
+
+    function setData(pageX, pageY) {
+        console.log(pageX)
+        ws.send([pageX, pageY].join(" "));
+    }
+
+    // function update() {
+    //     setData(logo.x, logo.y)
+    // }
+
+
+</script>
+<h1>Welcome enter user name to join</h1>
+<form action="/join" method="post">
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username"><br><br>
+    <input type="submit" value="Submit">
+</form>
+
+</body>
+</html>`
