@@ -1,5 +1,5 @@
 /.test_assets
-/.idea
+/**/.idea
 /bin
 .env
 multipacman.db

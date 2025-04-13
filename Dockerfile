@@ -23,6 +23,11 @@ RUN apk update && apk add --no-cache gcc musl-dev
 
 WORKDIR /app
 
+COPY ./core/go.mod .
+COPY ./core/go.sum .
+# cache deps
+RUN go mod download
+
 COPY ./core .
 
 RUN go mod tidy
@@ -30,7 +35,7 @@ RUN go mod tidy
 COPY --from=flutter_builder /app/build/web ./web
 
 # Build optimized binary without debugging symbols
-RUN go build -o multipacman
+RUN go build -ldflags "-s -w" -o multipacman
 
 # Stage: Final stage
 FROM alpine:latest
