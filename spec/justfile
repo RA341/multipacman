@@ -12,6 +12,7 @@ gen:
     just geno
     just go
     just dart
+    just ts
 
 goDir := "../core/generated"
 go:
@@ -29,6 +30,13 @@ dart:
     cp -r generated/dart/* {{frontendDir}}/
     rm -r generated/dart
 
+tsDir:="../frontend-svelte/src/lib/generated"
+ts:
+    clear
+    echo 'moving ts files'
+    rm -r {{tsDir}}/*
+    cp -r generated/web/* {{tsDir}}/
+    rm -r generated/web
 
 # drop into a shell and interact with the image
 # CTRL+D to exit
