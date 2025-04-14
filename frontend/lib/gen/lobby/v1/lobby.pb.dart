@@ -2,7 +2,7 @@
 //  Generated code. Do not modify.
 //  source: lobby/v1/lobby.proto
 //
-// @dart = 3.3
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
 // ignore_for_file: constant_identifier_names, library_prefixes
@@ -14,8 +14,6 @@ import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
-
-export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
 class ListLobbiesRequest extends $pb.GeneratedMessage {
   factory ListLobbiesRequest() => create();
@@ -90,7 +88,7 @@ class ListLobbiesResponse extends $pb.GeneratedMessage {
   static ListLobbiesResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $pb.PbList<Lobby> get lobbies => $_getList(0);
+  $core.List<Lobby> get lobbies => $_getList(0);
 }
 
 class AddLobbiesRequest extends $pb.GeneratedMessage {
@@ -140,7 +138,7 @@ class AddLobbiesRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasLobbyName() => $_has(0);
   @$pb.TagNumber(1)
-  void clearLobbyName() => $_clearField(1);
+  void clearLobbyName() => clearField(1);
 }
 
 class AddLobbiesResponse extends $pb.GeneratedMessage {
@@ -218,11 +216,11 @@ class DelLobbiesRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   Lobby get lobby => $_getN(0);
   @$pb.TagNumber(1)
-  set lobby(Lobby v) { $_setField(1, v); }
+  set lobby(Lobby v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasLobby() => $_has(0);
   @$pb.TagNumber(1)
-  void clearLobby() => $_clearField(1);
+  void clearLobby() => clearField(1);
   @$pb.TagNumber(1)
   Lobby ensureLobby() => $_ensure(0);
 }
@@ -331,7 +329,7 @@ class Lobby extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasID() => $_has(0);
   @$pb.TagNumber(1)
-  void clearID() => $_clearField(1);
+  void clearID() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get lobbyName => $_getSZ(1);
@@ -340,7 +338,7 @@ class Lobby extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasLobbyName() => $_has(1);
   @$pb.TagNumber(2)
-  void clearLobbyName() => $_clearField(2);
+  void clearLobbyName() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get createdAt => $_getSZ(2);
@@ -349,7 +347,7 @@ class Lobby extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasCreatedAt() => $_has(2);
   @$pb.TagNumber(3)
-  void clearCreatedAt() => $_clearField(3);
+  void clearCreatedAt() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get ownerName => $_getSZ(3);
@@ -358,7 +356,7 @@ class Lobby extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool hasOwnerName() => $_has(3);
   @$pb.TagNumber(4)
-  void clearOwnerName() => $_clearField(4);
+  void clearOwnerName() => clearField(4);
 
   @$pb.TagNumber(5)
   $fixnum.Int64 get ownerId => $_getI64(4);
@@ -367,7 +365,7 @@ class Lobby extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.bool hasOwnerId() => $_has(4);
   @$pb.TagNumber(5)
-  void clearOwnerId() => $_clearField(5);
+  void clearOwnerId() => clearField(5);
 
   @$pb.TagNumber(6)
   $fixnum.Int64 get playerCount => $_getI64(5);
@@ -376,14 +374,13 @@ class Lobby extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.bool hasPlayerCount() => $_has(5);
   @$pb.TagNumber(6)
-  void clearPlayerCount() => $_clearField(6);
+  void clearPlayerCount() => clearField(6);
 }
 
 class LobbyServiceApi {
   $pb.RpcClient _client;
   LobbyServiceApi(this._client);
 
-  /// todo figure out lobby streaming
   $async.Future<ListLobbiesResponse> listLobbies($pb.ClientContext? ctx, ListLobbiesRequest request) =>
     _client.invoke<ListLobbiesResponse>(ctx, 'LobbyService', 'ListLobbies', request, ListLobbiesResponse())
   ;
