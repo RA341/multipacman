@@ -1,31 +1,28 @@
-package utils
+package database
 
 import (
-	"github.com/RA341/multipacman/models"
+	"github.com/RA341/multipacman/internal/auth"
+	"github.com/RA341/multipacman/internal/config"
+	"github.com/RA341/multipacman/internal/lobby"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func InitDB() *gorm.DB {
-	dbPath := viper.GetString("db_path")
-	if dbPath == "" {
-		log.Fatal().Msgf("db_path is empty")
-	}
-
+	dbPath := config.Opts.DbPath
 	connectionStr := sqlite.Open(dbPath + "?_journal_mode=WAL&_busy_timeout=5000")
-	config := &gorm.Config{
+	dbConf := &gorm.Config{
 		PrepareStmt: true,
 	}
 
-	db, err := gorm.Open(connectionStr, config)
+	db, err := gorm.Open(connectionStr, dbConf)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to connect database")
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(models.User{}, models.Lobby{})
+	err = db.AutoMigrate(auth.User{}, lobby.Lobby{})
 	if err != nil {
 		log.Fatal().Err(err).Msgf("failed to migrate database")
 	}

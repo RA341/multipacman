@@ -2,7 +2,7 @@ package game
 
 import (
 	"encoding/json"
-	"github.com/RA341/multipacman/service"
+	"github.com/RA341/multipacman/internal/auth"
 	"strconv"
 )
 
@@ -31,9 +31,9 @@ func NewPlayerEntity(userId uint, username string) *PlayerEntity {
 		PlayerId:    strconv.Itoa(int(userId)),
 		Username:    username,
 		SpriteType:  "",
-		X:           "0",
-		Y:           "0",
-		secretToken: service.CreateAuthToken(5),
+		X:           0,
+		Y:           0,
+		secretToken: auth.CreateAuthToken(5),
 	}
 }
 
@@ -43,8 +43,8 @@ type PlayerEntity struct {
 	PlayerId    string     `json:"playerid"`
 	Username    string     `json:"user"`
 	SpriteType  SpriteType `json:"spriteType"`
-	X           string     `json:"x"`
-	Y           string     `json:"y"`
+	X           float64    `json:"x"`
+	Y           float64    `json:"y"`
 	Dir         string     `json:"dir"`
 	secretToken string
 }
@@ -56,6 +56,18 @@ func (p *PlayerEntity) ToJSON() ([]byte, error) {
 		return []byte{}, err
 	}
 	return bytes, nil
+}
+
+func (p *PlayerEntity) ToMap() map[string]interface{} {
+	playerMap := map[string]interface{}{}
+	playerMap["type"] = p.Type
+	playerMap["playerid"] = p.PlayerId
+	playerMap["user"] = p.Username
+	playerMap["spriteType"] = p.SpriteType
+	playerMap["x"] = p.X
+	playerMap["y"] = p.Y
+	playerMap["dir"] = p.Dir
+	return playerMap
 }
 
 // FromJSON populates the PlayerEntity from a JSON string

@@ -1,25 +1,33 @@
-package service
+package lobby
 
 import (
 	"encoding/json"
 	"fmt"
 	v1 "github.com/RA341/multipacman/generated/lobby/v1"
-	"github.com/RA341/multipacman/models"
-	"github.com/RA341/multipacman/utils"
+	"github.com/RA341/multipacman/internal/config"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 	"sync"
 )
 
-type LobbyService struct {
+type Service struct {
 	Db          *gorm.DB
 	Mu          *sync.RWMutex
 	Connections map[uint]chan bool
-	playerCount sync.Map
+	PlayerCount sync.Map
 }
 
-func (lobbyService *LobbyService) GetLobbyFromID(id int) (*models.Lobby, error) {
-	var lobby *models.Lobby
+func NewLobbyService(db *gorm.DB) *Service {
+	return &Service{
+		Db:          db,
+		Connections: map[uint]chan bool{},
+		Mu:          &sync.RWMutex{},
+		PlayerCount: sync.Map{},
+	}
+}
+
+func (lobbyService *Service) GetLobbyFromID(id int) (*Lobby, error) {
+	var lobby *Lobby
 	result := lobbyService.Db.Find(&lobby, id)
 	if result.Error != nil {
 		log.Error().Err(result.Error).Int("lobby-id", id).Msg("no lobby found with id")
@@ -29,13 +37,13 @@ func (lobbyService *LobbyService) GetLobbyFromID(id int) (*models.Lobby, error) 
 	return lobby, nil
 }
 
-func (lobbyService *LobbyService) CreateLobby(lobbyName, username string, userId uint) error {
+func (lobbyService *Service) CreateLobby(lobbyName, username string, userId uint) error {
 	err := lobbyService.countUserLobbies(userId)
 	if err != nil {
 		return err
 	}
 
-	lobby := &models.Lobby{
+	lobby := &Lobby{
 		LobbyName: lobbyName,
 		UserID:    int64(userId),
 		Username:  username,
@@ -50,8 +58,8 @@ func (lobbyService *LobbyService) CreateLobby(lobbyName, username string, userId
 	return nil
 }
 
-func (lobbyService *LobbyService) DeleteLobby(lobbyId uint64, userId uint) error {
-	res := lobbyService.Db.Where("user_id", userId).Delete(&models.Lobby{}, lobbyId)
+func (lobbyService *Service) DeleteLobby(lobbyId uint64, userId uint) error {
+	res := lobbyService.Db.Where("user_id", userId).Delete(&Lobby{}, lobbyId)
 	if res.Error != nil {
 		log.Error().Err(res.Error).Msg("unable to delete lobby")
 		return fmt.Errorf("unable to delete lobby")
@@ -60,19 +68,19 @@ func (lobbyService *LobbyService) DeleteLobby(lobbyId uint64, userId uint) error
 	return nil
 }
 
-func (lobbyService *LobbyService) RetrieveLobbies() ([]models.Lobby, error) {
-	var lobbies []models.Lobby
+func (lobbyService *Service) RetrieveLobbies() ([]Lobby, error) {
+	var lobbies []Lobby
 
 	res := lobbyService.Db.Find(&lobbies)
 	if res.Error != nil {
 		log.Error().Err(res.Error).Msg("unable to query lobbies")
-		return []models.Lobby{}, fmt.Errorf("unable to find lobbies")
+		return []Lobby{}, fmt.Errorf("unable to find lobbies")
 	}
 
 	return lobbies, nil
 }
 
-func (lobbyService *LobbyService) GetGrpcLobbies() ([]*v1.Lobby, error) {
+func (lobbyService *Service) GetGrpcLobbies() ([]*v1.Lobby, error) {
 	lobbies, err := lobbyService.RetrieveLobbies()
 	if err != nil {
 		log.Error().Err(err).Msg("unable to get lobbies")
@@ -89,7 +97,7 @@ func (lobbyService *LobbyService) GetGrpcLobbies() ([]*v1.Lobby, error) {
 	return grpcLobbies, nil
 }
 
-func (lobbyService *LobbyService) GetAndParseLobbies() ([]byte, error) {
+func (lobbyService *Service) GetAndParseLobbies() ([]byte, error) {
 	lobbies, err := lobbyService.RetrieveLobbies()
 	if err != nil {
 		log.Error().Err(err).Msg("error retrieving lobbies")
@@ -103,10 +111,10 @@ func (lobbyService *LobbyService) GetAndParseLobbies() ([]byte, error) {
 	return jsonData, err
 }
 
-func (lobbyService *LobbyService) countUserLobbies(uid uint) error {
+func (lobbyService *Service) countUserLobbies(uid uint) error {
 	var count int64
 	result := lobbyService.Db.
-		Model(&models.Lobby{}).
+		Model(&Lobby{}).
 		Where("user_id = ?", uid).
 		Count(&count)
 
@@ -115,20 +123,20 @@ func (lobbyService *LobbyService) countUserLobbies(uid uint) error {
 		return fmt.Errorf("unable to count user lobbies")
 	}
 
-	if count+1 <= utils.GetLobbyLimit() {
+	if count+1 <= int64(config.Opts.LobbyLimit) {
 		return nil
 	} else {
-		return fmt.Errorf("user has reached max lobby limit of %d", utils.GetLobbyLimit())
+		return fmt.Errorf("user has reached max lobby limit of %d", config.Opts.LobbyLimit)
 	}
 }
 
-func (lobbyService *LobbyService) UpdateLobbies() {
+func (lobbyService *Service) UpdateLobbies() {
 	for _, chn := range lobbyService.Connections {
 		chn <- true
 	}
 }
 
-func (lobbyService *LobbyService) NewUpdateChannel(channelId uint) chan bool {
+func (lobbyService *Service) NewUpdateChannel(channelId uint) chan bool {
 	channel := make(chan bool)
 
 	lobbyService.Mu.Lock()
@@ -139,14 +147,14 @@ func (lobbyService *LobbyService) NewUpdateChannel(channelId uint) chan bool {
 	return channel
 }
 
-func (lobbyService *LobbyService) RemoveUpdateChannel(channelIndex uint) {
+func (lobbyService *Service) RemoveUpdateChannel(channelIndex uint) {
 	lobbyService.Mu.Lock()
 	delete(lobbyService.Connections, channelIndex)
 	lobbyService.Mu.Unlock()
 }
 
-func (lobbyService *LobbyService) GetLobbyPlayerCount(lobbyId uint) uint64 {
-	val, exists := lobbyService.playerCount.Load(lobbyId)
+func (lobbyService *Service) GetLobbyPlayerCount(lobbyId uint) uint64 {
+	val, exists := lobbyService.PlayerCount.Load(lobbyId)
 	if !exists {
 		return 0
 	}
@@ -155,7 +163,7 @@ func (lobbyService *LobbyService) GetLobbyPlayerCount(lobbyId uint) uint64 {
 	return uint64(val.(int))
 }
 
-func (lobbyService *LobbyService) UpdateLobbyPlayerCount(lobbyId uint, count int) {
+func (lobbyService *Service) UpdateLobbyPlayerCount(lobbyId uint, count int) {
 	//log.Debug().Msgf("Updating Lobby: %d, count: %d", lobbyId, count)
-	lobbyService.playerCount.Store(lobbyId, count)
+	lobbyService.PlayerCount.Store(lobbyId, count)
 }

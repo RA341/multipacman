@@ -2,12 +2,12 @@ package game
 
 import (
 	"context"
-	"github.com/RA341/multipacman/service"
+	"github.com/RA341/multipacman/internal/auth"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
-func AuthMiddleware(authService *service.AuthService, next http.Handler) http.Handler {
+func WsAuthMiddleware(authService *auth.Service, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		clientToken := getAuthToken(w, r)
 		if clientToken == "" {

@@ -1,24 +1,29 @@
-package api
+package auth
 
 import (
 	"connectrpc.com/connect"
 	"context"
 	"fmt"
-	"github.com/RA341/multipacman/service"
 )
 
-const AuthHeader = "Authorization"
+const Header = "Authorization"
 
-type authInterceptor struct {
-	authService *service.AuthService
+type Interceptor struct {
+	authService *Service
 }
 
-func (i *authInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
+func NewInterceptor(authService *Service) *Interceptor {
+	return &Interceptor{
+		authService: authService,
+	}
+}
+
+func (i *Interceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
 	return func(
 		ctx context.Context,
 		conn connect.StreamingHandlerConn,
 	) error {
-		token := conn.RequestHeader().Get(AuthHeader)
+		token := conn.RequestHeader().Get(Header)
 		if token == "" {
 			return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("no auth header found"))
 		}
@@ -32,12 +37,12 @@ func (i *authInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc
 	}
 }
 
-func (i *authInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
+func (i *Interceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 	return func(
 		ctx context.Context,
 		req connect.AnyRequest,
 	) (connect.AnyResponse, error) {
-		clientToken := req.Header().Get(AuthHeader)
+		clientToken := req.Header().Get(Header)
 
 		ctx, err := verifyAuthHeader(ctx, i.authService, clientToken)
 		if err != nil {
@@ -48,7 +53,7 @@ func (i *authInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 	}
 }
 
-func (*authInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) connect.StreamingClientFunc {
+func (*Interceptor) WrapStreamingClient(next connect.StreamingClientFunc) connect.StreamingClientFunc {
 	return func(
 		ctx context.Context,
 		spec connect.Spec,
@@ -57,7 +62,7 @@ func (*authInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) co
 	}
 }
 
-func verifyAuthHeader(ctx context.Context, authService *service.AuthService, clientToken string) (context.Context, error) {
+func verifyAuthHeader(ctx context.Context, authService *Service, clientToken string) (context.Context, error) {
 	user, err := authService.VerifyToken(clientToken)
 	if err != nil {
 		return nil, connect.NewError(

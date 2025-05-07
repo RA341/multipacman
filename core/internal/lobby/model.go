@@ -1,4 +1,4 @@
-package models
+package lobby
 
 import (
 	v1 "github.com/RA341/multipacman/generated/lobby/v1"
