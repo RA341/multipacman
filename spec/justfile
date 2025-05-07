@@ -12,7 +12,6 @@ gen:
     just geno
     just go
     just dart
-    just ts
 
 goDir := "../core/generated"
 go:
@@ -30,7 +29,7 @@ dart:
     cp -r generated/dart/* {{frontendDir}}/
     rm -r generated/dart
 
-tsDir:="../frontend-svelte/src/lib/generated"
+tsDir:="../frontend-js/src/generated"
 ts:
     clear
     echo 'moving ts files'
