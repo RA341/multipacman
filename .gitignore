@@ -4,5 +4,5 @@
 .env
 multipacman.db
 spec/generated
-core/web
+/**/web
 appdata
