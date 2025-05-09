@@ -1,9 +1,9 @@
 package database
 
 import (
-	"github.com/RA341/multipacman/internal/auth"
 	"github.com/RA341/multipacman/internal/config"
 	"github.com/RA341/multipacman/internal/lobby"
+	"github.com/RA341/multipacman/internal/user"
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -22,7 +22,7 @@ func InitDB() *gorm.DB {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(auth.User{}, lobby.Lobby{})
+	err = db.AutoMigrate(user.User{}, lobby.Lobby{})
 	if err != nil {
 		log.Fatal().Err(err).Msgf("failed to migrate database")
 	}

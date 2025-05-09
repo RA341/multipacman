@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	v1 "github.com/RA341/multipacman/generated/auth/v1"

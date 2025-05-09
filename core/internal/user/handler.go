@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	"connectrpc.com/connect"
@@ -15,19 +15,6 @@ type Handler struct {
 
 func NewAuthHandler(auth *Service) *Handler {
 	return &Handler{auth: auth}
-}
-
-func GetUserContext(ctx context.Context) (*User, error) {
-	userVal := ctx.Value("user")
-	if userVal == nil {
-		return nil, fmt.Errorf("could not find user in context")
-	}
-	user, ok := userVal.(*User)
-	if !ok {
-		return nil, fmt.Errorf("invalid user type in context")
-	}
-
-	return user, nil
 }
 
 func (a *Handler) Register(_ context.Context, c *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error) {

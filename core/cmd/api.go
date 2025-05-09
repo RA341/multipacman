@@ -7,11 +7,11 @@ import (
 	"fmt"
 	authrpc "github.com/RA341/multipacman/generated/auth/v1/v1connect"
 	lobbyrpc "github.com/RA341/multipacman/generated/lobby/v1/v1connect"
-	"github.com/RA341/multipacman/internal/auth"
 	"github.com/RA341/multipacman/internal/config"
 	"github.com/RA341/multipacman/internal/database"
 	"github.com/RA341/multipacman/internal/game"
 	"github.com/RA341/multipacman/internal/lobby"
+	"github.com/RA341/multipacman/internal/user"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/http2"
@@ -42,7 +42,7 @@ func setupServer(baseUrl string) error {
 		AllowedOrigins:      []string{"*"},
 		AllowPrivateNetwork: true,
 		AllowedMethods:      connectcors.AllowedMethods(),
-		AllowedHeaders:      append(connectcors.AllowedHeaders(), auth.Header),
+		AllowedHeaders:      append(connectcors.AllowedHeaders(), user.Header),
 		ExposedHeaders:      connectcors.ExposedHeaders(),
 	})
 
@@ -56,23 +56,23 @@ func setupServer(baseUrl string) error {
 	)
 }
 
-func initServices() (*auth.Service, *lobby.Service) {
+func initServices() (*user.Service, *lobby.Service) {
 	config.Load()
 	db := database.InitDB()
 
 	// setup service structs
-	authService := &auth.Service{Db: db}
+	authService := &user.Service{Db: db}
 	lobSrv := lobby.NewLobbyService(db)
 
 	return authService, lobSrv
 }
 
-func registerHandlers(mux *http.ServeMux, as *auth.Service, ls *lobby.Service) {
-	authInterceptor := connect.WithInterceptors(auth.NewInterceptor(as))
+func registerHandlers(mux *http.ServeMux, as *user.Service, ls *lobby.Service) {
+	authInterceptor := connect.WithInterceptors(user.NewInterceptor(as))
 
 	services := []func() (string, http.Handler){
 		func() (string, http.Handler) {
-			return authrpc.NewAuthServiceHandler(auth.NewAuthHandler(as))
+			return authrpc.NewAuthServiceHandler(user.NewAuthHandler(as))
 		},
 		func() (string, http.Handler) {
 			return lobbyrpc.NewLobbyServiceHandler(lobby.NewLobbyHandler(ls), authInterceptor)

@@ -3,8 +3,8 @@ package game
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/RA341/multipacman/internal/auth"
 	"github.com/RA341/multipacman/internal/lobby"
+	"github.com/RA341/multipacman/internal/user"
 	"github.com/RA341/multipacman/pkg"
 	"github.com/olahol/melody"
 	"github.com/rs/zerolog/log"
@@ -113,12 +113,11 @@ func (manager *Manager) getWorld(lobby *lobby.Lobby) (*World, error) {
 	return activeWorld, nil
 }
 
-func (manager *Manager) getUserAndLobbyForNewConnection(newPlayerSession *melody.Session) (*auth.User, *lobby.Lobby, error) {
-	// user info
-	user, err := auth.GetUserContext(newPlayerSession.Request.Context())
+func (manager *Manager) getUserAndLobbyForNewConnection(newPlayerSession *melody.Session) (*user.User, *lobby.Lobby, error) {
+	userInfo, err := user.GetUserContext(newPlayerSession.Request.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("User context error")
-		return nil, nil, fmt.Errorf("no user info found")
+		return nil, nil, fmt.Errorf("no userInfo info found")
 	}
 
 	queryParams := newPlayerSession.Request.URL.Query()
@@ -137,7 +136,7 @@ func (manager *Manager) getUserAndLobbyForNewConnection(newPlayerSession *melody
 		return nil, nil, err
 	}
 
-	return user, lobbyInfo, err
+	return userInfo, lobbyInfo, err
 }
 
 //func (manager *Manager) sendGameOverMessage(reason string, lobbyEntity *World) {

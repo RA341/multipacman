@@ -2,8 +2,8 @@ package game
 
 import (
 	"encoding/json"
-	"github.com/RA341/multipacman/internal/auth"
 	"github.com/RA341/multipacman/internal/lobby"
+	"github.com/RA341/multipacman/internal/user"
 	"github.com/RA341/multipacman/pkg"
 	"github.com/olahol/melody"
 	"github.com/rs/zerolog/log"
@@ -25,7 +25,7 @@ type WsHandler struct {
 	manager         *Manager
 }
 
-func RegisterGameWSHandler(mux *http.ServeMux, authService *auth.Service, lobbyService *lobby.Service) {
+func RegisterGameWSHandler(mux *http.ServeMux, authService *user.Service, lobbyService *lobby.Service) {
 	mel := melody.New()
 	manager := &Manager{
 		lobbyService:  lobbyService,

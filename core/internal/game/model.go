@@ -2,7 +2,7 @@ package game
 
 import (
 	"encoding/json"
-	"github.com/RA341/multipacman/internal/auth"
+	"github.com/RA341/multipacman/internal/user"
 	"strconv"
 )
 
@@ -33,7 +33,7 @@ func NewPlayerEntity(userId uint, username string) *PlayerEntity {
 		SpriteType:  "",
 		X:           0,
 		Y:           0,
-		secretToken: auth.CreateAuthToken(5),
+		secretToken: user.CreateAuthToken(5),
 	}
 }
 
