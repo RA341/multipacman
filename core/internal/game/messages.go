@@ -20,6 +20,23 @@ type MessageHandler struct {
 	messageName string
 }
 
+func (handler MessageHandler) WithMiddleware(middleware func(MessageHandlerFunc) MessageHandlerFunc) MessageHandler {
+	handler.handler = middleware(handler.handler)
+	return handler
+}
+
+func CheckGameOverMiddleware(existingFunc MessageHandlerFunc) MessageHandlerFunc {
+	return func(data MessageData) map[string]interface{} {
+		encodedMsg := existingFunc(data)
+		reason := data.world.checkGameOver() // verify the state after message has been handled
+		if reason != "" {
+			data.world.GameOver(reason)
+		}
+
+		return encodedMsg
+	}
+}
+
 func registerMessageHandlers(opts ...MessageHandler) map[string]MessageHandlerFunc {
 	handlers := map[string]MessageHandlerFunc{}
 
@@ -67,6 +84,19 @@ func MovMessage() MessageHandler {
 	}
 }
 
+func EndGameMessage(reason string) MessageHandler {
+	name := "gameover"
+	return MessageHandler{
+		messageName: name,
+		handler: func(_ MessageData) map[string]interface{} {
+			return map[string]interface{}{
+				"type":   name,
+				"reason": reason,
+			}
+		},
+	}
+}
+
 func PelletMessage() MessageHandler {
 	name := "pel"
 	return MessageHandler{
@@ -101,14 +131,14 @@ func PowerUpMessage(manager *Manager) MessageHandler {
 			data.world.EatPowerUp(x, y)
 
 			time.AfterFunc(powerUpTime, func() {
-				mess := EndPowerUpMessage(data.world)
-				asd, err := json.Marshal(mess)
+				mess := EndPowerUpMessage(data.world).handler(data)
+				encoded, err := json.Marshal(mess)
 				if err != nil {
 					log.Warn().Err(err).Msg("Unable to marshal json")
 					return
 				}
 
-				err = manager.broadcastPlayerChange(data.world, asd)
+				err = manager.broadcastAll(data.world, encoded)
 				if err != nil {
 					log.Warn().Err(err).Msg("Unable to broadcast status")
 					return
@@ -138,15 +168,15 @@ func KillPlayer() MessageHandler {
 			if data.world.IsPoweredUp {
 				data.world.GhostEatenAction(SpriteType(ghostId.(string)))
 				return map[string]interface{}{
-					"type":    name, // ghost eaten
-					"ghostId": ghostId,
+					"type":     name, // ghost eaten
+					"spriteId": ghostId,
 				}
 			}
 
-			//data.world.GameOver()
+			data.world.GameOver("pacman was killed")
 			return map[string]interface{}{
-				"type": name,
-				"id":   Pacman, // pacman dead
+				"type":     name,
+				"spriteId": Pacman, // pacman dead
 			}
 		},
 	}

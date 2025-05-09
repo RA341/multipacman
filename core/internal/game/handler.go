@@ -32,25 +32,27 @@ func RegisterGameWSHandler(mux *http.ServeMux, authService *auth.Service, lobbyS
 		mel:           mel,
 		activeLobbies: pkg.Map[uint, *World]{},
 	}
+
 	handler := WsHandler{
 		lobbyService: lobbyService,
 		manager:      manager,
 		msgHandlerFuncs: registerMessageHandlers(
 			MovMessage(),
-			PowerUpMessage(manager),
-			KillPlayer(),
-			PelletMessage(),
+			KillPlayer().WithMiddleware(CheckGameOverMiddleware),
+			PowerUpMessage(manager).WithMiddleware(CheckGameOverMiddleware),
+			PelletMessage().WithMiddleware(CheckGameOverMiddleware),
 		),
 	}
 
 	mel.HandleConnect(handler.HandleConnect)
 	mel.HandleMessage(handler.HandleMessage)
 	mel.HandleDisconnect(handler.HandleDisconnect)
+
 	// flutter sends close signal
-	mel.HandleClose(func(session *melody.Session, i int, s string) error {
-		handler.HandleDisconnect(session)
-		return nil
-	})
+	//mel.HandleClose(func(session *melody.Session, i int, s string) error {
+	//	handler.HandleDisconnect(session)
+	//	return nil
+	//})
 
 	wsHandler := func(w http.ResponseWriter, r *http.Request) {
 		err := mel.HandleRequest(w, r)
@@ -109,30 +111,15 @@ func (h *WsHandler) HandleConnect(newPlayerSession *melody.Session) {
 	}
 
 	// inform new player has joined to existing players
-	if err := h.manager.broadcastPlayerChange(world, newPlayerJson); err != nil {
+	if err := h.manager.broadcastExceptPlayer(newPlayerSession, newPlayerJson); err != nil {
 		log.Error().Err(err).Msg("Unable to broadcast status")
 		return
-	}
-
-	broadCastSessions := world.ConnectedPlayers.GetValues()
-	for _, otherPlayerSession := range broadCastSessions {
-		if otherPlayerSession == newPlayerSession {
-			continue
-		}
-
-		otherPlayerEntity, err := getPlayerEntityFromSession(otherPlayerSession)
-		if err != nil {
-			continue
-		}
-		otherPlayerEntity.Type = "active"
-
-		// inform this player about other players
-		h.manager.informNewPlayerAboutOtherPlayer(newPlayerSession, otherPlayerEntity)
 	}
 
 	log.Info().Any("user", *user).Any("lobby", lobbyInfo).Msgf("New player joined lobby")
 
 	// add new player count
+	broadCastSessions := world.ConnectedPlayers.GetValues()
 	h.lobbyService.UpdateLobbyPlayerCount(lobbyInfo.ID, len(broadCastSessions))
 	h.lobbyService.UpdateLobbies()
 }
@@ -143,13 +130,13 @@ func (h *WsHandler) HandleDisconnect(s *melody.Session) {
 		log.Warn().Msg("player not found in session on disconnect")
 		return
 	}
-	lobbyState, err := getWorldFromSession(s)
+	world, err := getWorldFromSession(s)
 	if err != nil {
 		log.Warn().Msg("Lobby not found in active lobbies on disconnect")
 		return
 	}
 
-	lobbyState.Leave(exitingPlayer)
+	world.Leave(exitingPlayer)
 	// set disconnect status
 	exitingPlayer.Type = "dis"
 
@@ -160,13 +147,13 @@ func (h *WsHandler) HandleDisconnect(s *melody.Session) {
 		return
 	}
 	// inform active players about player that left
-	_ = h.manager.broadcastPlayerChange(lobbyState, jsonData)
+	_ = h.manager.broadcastAll(world, jsonData)
 
 	log.Info().Any("player", *exitingPlayer).Msg("client disconnected")
 
 	lobbyId, exist := s.Get(lobbyIdKey)
 	if exist {
-		h.lobbyService.UpdateLobbyPlayerCount(lobbyId.(uint), len(lobbyState.ConnectedPlayers.GetValues()))
+		h.lobbyService.UpdateLobbyPlayerCount(lobbyId.(uint), len(world.ConnectedPlayers.GetValues()))
 		h.lobbyService.UpdateLobbies()
 	}
 }
@@ -215,8 +202,12 @@ func (h *WsHandler) HandleMessage(s *melody.Session, msg []byte) {
 		return
 	}
 
-	_ = h.manager.broadcastPlayerChange(lobbyInfo, marshal)
-
+	if msgType == "pos" {
+		// player self does not need the pos update adds lag
+		_ = h.manager.broadcastExceptPlayer(s, marshal)
+	} else {
+		_ = h.manager.broadcastAll(lobbyInfo, marshal)
+	}
 }
 
 func sendMessage(session *melody.Session, message []byte) {

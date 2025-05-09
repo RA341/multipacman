@@ -10,7 +10,7 @@ import (
 )
 
 type World struct {
-	cancelChan          chan struct{}
+	gameOverChan        chan string
 	MatchStarted        bool
 	IsPoweredUp         bool
 	CharactersList      []SpriteType
@@ -31,58 +31,75 @@ func NewWorldState() *World {
 		PowerUpsCoordsEaten: NewCordList(),
 		GhostsIdsEaten:      []SpriteType{},
 		worldLock:           sync.Mutex{},
-		cancelChan:          make(chan struct{}, 1),
+		gameOverChan:        make(chan string, 1),
 	}
 }
 
-func (l *World) Join(player *PlayerEntity, session *melody.Session) error {
-	if l.IsLobbyFull() {
+func (w *World) Join(player *PlayerEntity, session *melody.Session) error {
+	if w.IsLobbyFull() {
 		log.Error().Msg("lobby is full")
 		return fmt.Errorf("lobby is full")
 	}
 
-	if len(l.CharactersList) == 0 {
+	if len(w.CharactersList) == 0 {
 		log.Error().Msg("No available sprites, this should never happen dumbass")
 		return fmt.Errorf("no available sprites")
 	}
 
 	// assign the last available sprite in sprite list
-	spriteId := l.CharactersList[len(l.CharactersList)-1]
+	spriteId := w.CharactersList[len(w.CharactersList)-1]
 	player.SpriteType = spriteId
 	// pop this sprite
-	l.CharactersList = l.CharactersList[:len(l.CharactersList)-1]
+	w.CharactersList = w.CharactersList[:len(w.CharactersList)-1]
 
 	// assign new player to world
-	l.ConnectedPlayers.Store(player.PlayerId, session)
+	w.ConnectedPlayers.Store(player.PlayerId, session)
 
 	return nil
 }
 
-func (l *World) Leave(player *PlayerEntity) {
+func (w *World) Leave(player *PlayerEntity) {
 	id := player.PlayerId
 
-	_, exists := l.ConnectedPlayers.Load(id)
+	_, exists := w.ConnectedPlayers.Load(id)
 	if !exists {
 		return
 	}
 
-	l.CharactersList = append(l.CharactersList, player.SpriteType)
+	w.CharactersList = append(w.CharactersList, player.SpriteType)
+	w.ConnectedPlayers.Delete(id)
 
-	if len(l.CharactersList) == 4 {
-		l.GhostsIdsEaten = []SpriteType{}
-		l.PelletsCoordEaten = NewCordList()
-		l.PowerUpsCoordsEaten = NewCordList()
+	if len(w.CharactersList) == 4 {
+		w.GameOver("all player left lobby empty")
 	}
-
-	l.ConnectedPlayers.Delete(id)
 }
 
-func (l *World) GetGameStateReport(secretToken, username, spriteId string) ([]byte, error) {
+func (w *World) GetGameStateReport(secretToken, username, spriteId string, newPlayer *melody.Session) ([]byte, error) {
+	connectedMap := map[string]interface{}{}
+
+	for _, otherPlayerSession := range w.ConnectedPlayers.GetValues() {
+		if otherPlayerSession == newPlayer {
+			continue
+		}
+
+		otherPlayerEntity, err := getPlayerEntityFromSession(otherPlayerSession)
+		if err != nil {
+			continue
+		}
+
+		connectedMap[string(otherPlayerEntity.SpriteType)] = map[string]interface{}{
+			"username": otherPlayerEntity.Username,
+			"x":        otherPlayerEntity.X,
+			"y":        otherPlayerEntity.Y,
+		}
+	}
+
 	data := map[string]interface{}{
 		"type":          "state",
-		"ghostsEaten":   l.GhostsIdsEaten,
-		"pelletsEaten":  l.PelletsCoordEaten.GetList(),
-		"powerUpsEaten": l.PowerUpsCoordsEaten.GetList(),
+		"ghostsEaten":   w.GhostsIdsEaten,
+		"activePlayers": connectedMap,
+		"pelletsEaten":  w.PelletsCoordEaten.GetList(),
+		"powerUpsEaten": w.PowerUpsCoordsEaten.GetList(),
 		"secretToken":   secretToken,
 		"spriteId":      spriteId,
 		"username":      username,
@@ -90,43 +107,60 @@ func (l *World) GetGameStateReport(secretToken, username, spriteId string) ([]by
 	return json.Marshal(data)
 }
 
-func (l *World) MovePlayer(player *PlayerEntity, x, y float64) {
+func (w *World) MovePlayer(player *PlayerEntity, x, y float64) {
 	player.X = x
 	player.Y = y
 }
 
-func (l *World) IsLobbyFull() bool {
-	return len(l.CharactersList) == 0
+func (w *World) IsLobbyFull() bool {
+	return len(w.CharactersList) == 0
 }
 
-func (l *World) GameOver() {
-	l.cancelChan <- struct{}{}
+const MaxPellets = 100 // todo
+const MaxPowerUps = 100
+
+func (w *World) checkGameOver() (reason string) {
+	if len(w.GhostsIdsEaten) == 3 {
+		return "all ghosts eaten"
+	}
+
+	allPelletsEaten := len(w.PelletsCoordEaten.GetList()) == MaxPellets
+	allPowerUpsEaten := len(w.PowerUpsCoordsEaten.GetList()) == MaxPowerUps
+	if allPelletsEaten && allPowerUpsEaten {
+		return "all pellets and all powerups eaten"
+	}
+
+	return ""
 }
 
-func (l *World) waitForGameOver() {
-	<-l.cancelChan
+func (w *World) GameOver(reason string) {
+	w.gameOverChan <- reason
+}
+
+func (w *World) waitForGameOver() string {
+	return <-w.gameOverChan
 }
 
 type Consumable interface {
 }
 
-func (l *World) EatPellet(pelletX, PelletY float64) {
-	l.PelletsCoordEaten.Add(pelletX, PelletY)
+func (w *World) EatPellet(pelletX, PelletY float64) {
+	w.PelletsCoordEaten.Add(pelletX, PelletY)
 }
 
-func (l *World) EatPowerUp(powerUpX, powerUpY float64) {
-	if l.IsPoweredUp {
+func (w *World) EatPowerUp(powerUpX, powerUpY float64) {
+	if w.IsPoweredUp {
 		// already powered up do nothing
 		return
 	}
 
-	l.PowerUpsCoordsEaten.Add(powerUpX, powerUpY)
-	l.IsPoweredUp = true
+	w.PowerUpsCoordsEaten.Add(powerUpX, powerUpY)
+	w.IsPoweredUp = true
 }
 
-func (l *World) GhostEatenAction(ghostID SpriteType) {
-	l.worldLock.Lock()
-	defer l.worldLock.Unlock()
+func (w *World) GhostEatenAction(ghostID SpriteType) {
+	w.worldLock.Lock()
+	defer w.worldLock.Unlock()
 
-	l.GhostsIdsEaten = append(l.GhostsIdsEaten, ghostID)
+	w.GhostsIdsEaten = append(w.GhostsIdsEaten, ghostID)
 }

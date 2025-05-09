@@ -1,6 +1,7 @@
 package game
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/RA341/multipacman/internal/auth"
 	"github.com/RA341/multipacman/internal/lobby"
@@ -40,9 +41,18 @@ func (manager *Manager) informNewPlayerAboutOtherPlayer(playerSession *melody.Se
 	return false
 }
 
-func (manager *Manager) broadcastPlayerChange(world *World, newPlayer []byte) error {
+func (manager *Manager) broadcastAll(world *World, message []byte) error {
 	broadCastSessions := world.ConnectedPlayers.GetValues()
-	err := manager.mel.BroadcastMultiple(newPlayer, broadCastSessions)
+	err := manager.mel.BroadcastMultiple(message, broadCastSessions)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (manager *Manager) broadcastExceptPlayer(player *melody.Session, message []byte) error {
+	//broadCastSessions := world.ConnectedPlayers.GetValues()
+	err := manager.mel.BroadcastOthers(message, player)
 	if err != nil {
 		return err
 	}
@@ -54,7 +64,7 @@ func (manager *Manager) sendGameStateInfo(newPlayerSession *melody.Session, worl
 	if err != nil {
 		return fmt.Errorf("unable to find player: %v", err)
 	}
-	gameState, err := world.GetGameStateReport(player.secretToken, player.Username, string(player.SpriteType))
+	gameState, err := world.GetGameStateReport(player.secretToken, player.Username, string(player.SpriteType), newPlayerSession)
 	if err != nil {
 		return fmt.Errorf("unable to marshal game state: %v", err)
 	}
@@ -73,8 +83,22 @@ func (manager *Manager) getWorld(lobby *lobby.Lobby) (*World, error) {
 		newWorld := NewWorldState()
 		manager.activeLobbies.Store(lobby.ID, newWorld)
 		go func() {
-			newWorld.waitForGameOver()
-			log.Debug().Uint("id", lobby.ID).Msg("deleting lobby")
+			reason := newWorld.waitForGameOver()
+
+			// endgame does not need any info
+			msg := EndGameMessage(reason).handler(MessageData{
+				msgInfo:       nil,
+				world:         nil,
+				playerSession: nil,
+			})
+			marshal, err := json.Marshal(msg)
+			if err != nil {
+				log.Error().Err(err).Msg("Unable to marshal msg")
+			} else {
+				_ = manager.broadcastAll(newWorld, marshal)
+			}
+
+			log.Debug().Uint("id", lobby.ID).Str("reason", reason).Msg("game end deleting lobby")
 			manager.activeLobbies.Delete(lobby.ID)
 		}()
 
