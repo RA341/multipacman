@@ -33,15 +33,12 @@ async function initGame() {
     };
 
     new Phaser.Game(config);
-
-
-    console.log("Game initialized!");
 }
 
-try {
-    await initGame()
-} catch (err: any) {
+initGame().then(() => {
+    console.log("Game initialized!");
+}).catch(err => {
     console.error(err);
     showError(err)
-}
+})
 
