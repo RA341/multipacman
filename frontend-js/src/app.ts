@@ -33,6 +33,8 @@ async function initGame() {
     };
 
     new Phaser.Game(config);
+
+
     console.log("Game initialized!");
 }
 

@@ -23,16 +23,16 @@ export function getUsername() {
     return (prevGameState.username ?? "") as string
 }
 
-
 let messageHandlers: { [key: string]: (json: any) => void } = {
-    "join": handleNewPlayerJoin,
+    "active": handleNewPlayerJoin,
     "state": handleGameStateMessage,
     "dis": handleDisconnect,
     "pos": handlePosMessage,
     "pel": handlePellet,
     "pow": handlePowerPelletStart,
     "powend": handlePowerPelletEnd,
-    "kill": handlePlayerKilled
+    "kill": handlePlayerKilled,
+    "gameover": handleGameOver
 }
 
 export function connectToWebSocket() {
@@ -61,7 +61,12 @@ export async function waitForGameState() {
     await gameStatePromise;
 }
 
-export function handleMessage(msg: MessageEvent): void {
+
+export function getGameState() {
+    return prevGameState;
+}
+
+function handleMessage(msg: MessageEvent): void {
     if (!msg.data) {
         console.log("No data received")
         return
@@ -86,12 +91,12 @@ export function handleMessage(msg: MessageEvent): void {
     }
 }
 
-export function handleError(ev: Event): void {
+function handleError(ev: Event): void {
     console.log('Error: ', ev.type);
     showError(ev.type);
 }
 
-export function handleGameStateMessage(msg: any) {
+function handleGameStateMessage(msg: any) {
     prevGameState = msg;
     console.log(prevGameState)
     if (resolvePromise) {
@@ -99,57 +104,54 @@ export function handleGameStateMessage(msg: any) {
     }
 }
 
-// actual join with player info
+function setPlayerJoinedUsername(spriteId: string, username: string) {
+    console.log(`New player joined ${spriteId}: ${username}`);
+    gameScene?.allSprites[spriteId]?.userNameText!.setText(username)
+}
 
-export function handleNewPlayerJoin(json: any) {
+// actual join with player info
+function handleNewPlayerJoin(json: any) {
     if (!json.spriteType) {
         throw new Error("No sprite id found")
     }
 
-    const spriteId = json.spriteId;
-    gameScene?.allSprites[spriteId]?.userNameText!.setText(json.username)
+    const spriteId = json.spriteType;
+    setPlayerJoinedUsername(spriteId, json.user);
 }
 
-
-export function handlePosMessage(json: any) {
+function handlePosMessage(json: any) {
     let spriteId = json.spriteType
     let x = json.x as number;
     let y = json.y as number;
-    let anim = json.dir;
-
-    if (spriteId == gameScene?.controllingSprite?.playerInfo!.getData(spriteId)) {
-        return // skip if self update
-    }
+    let anim = json.dir as string;
 
     // update player
     gameScene?.allSprites[spriteId]?.playerInfo!.setPosition(x, y);
-
     // update other player username text
     gameScene?.setUserNameTextPos(spriteId)
 
-    let baseAnimKey = gameScene?.allSprites[spriteId]!.animBase!
     try {
-        gameScene?.allSprites[spriteId].playerInfo!.anims.play(baseAnimKey + anim, true)
+        gameScene?.setSpriteAnim(spriteId, anim)
     } catch (e) {
-        let defaultAnim = gameScene?.allSprites[spriteId]!.defaultAnim!
         // if invalid anim default to neutral image
-        gameScene?.allSprites[spriteId]!.playerInfo!.anims.play(baseAnimKey + defaultAnim)
+        let defaultAnim = gameScene?.allSprites[spriteId]!.defaultAnim!
+        gameScene?.setSpriteAnim(spriteId, defaultAnim)
         console.warn(e)
     }
 }
 
 
-export function handleDisconnect(json: any) {
+function handleDisconnect(json: any) {
     console.log('disconnect')
     console.log(json)
 
-    let spriteId = json.spriteId;
+    let spriteId = json.spriteType;
 
     gameScene?.allSprites[spriteId]!.userNameText!.setText('')
 }
 
 
-export function handlePellet(json: any) {
+function handlePellet(json: any) {
     const x = json.x as number
     const y = json.y as number
     console.log(`Pellet eaten at x:${x}, y:${y}`)
@@ -158,7 +160,7 @@ export function handlePellet(json: any) {
 }
 
 
-export function handlePowerPelletStart(json: any) {
+function handlePowerPelletStart(json: any) {
     const x = json.x as number
     const y = json.y as number
     console.log(`Power eaten at x:${x}, y:${y}`)
@@ -172,7 +174,7 @@ export function handlePowerPelletStart(json: any) {
 }
 
 
-export function handlePowerPelletEnd(_json: any) {
+function handlePowerPelletEnd(_json: any) {
     console.log(`power up ended`)
 
     // give pacman power up
@@ -181,41 +183,23 @@ export function handlePowerPelletEnd(_json: any) {
 }
 
 
-export function handlePlayerKilled(json: any) {
-    const spriteId = json.spriteId;
+function handlePlayerKilled(json: any) {
+    let spriteId = json.spriteId;
     console.log(`spriteId ${spriteId} killed`)
     gameScene?.allSprites[spriteId]!.playerInfo!.destroy()
+    gameScene?.allSprites[spriteId]!.userNameText!.setText("") // username empty
+}
+
+
+function handleGameOver(msg: any) {
+    console.log(`game over: ${msg.reason}`)
+    gameScene!.gameOver = true
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // send functions
-
-export function handlePacmanDead() {
-    // if (playerSprites['pcm'].isPoweredUp === 0) {
-    //     console.log('Received pacman is dead')
-    //     playerSprites['pcm'].playerInfo.destroy()
-    //     gameEnd = true
-    //     return
-    // }
-    //
-    // const spriteId = json.id
-    // if (spriteId !== undefined) {
-    //     playerSprites[spriteId].playerInfo.destroy()
-    //     setUserNameText(spriteId, '')
-    //
-    //     if (!playerSprites['gh1'].playerInfo.active
-    //         && !playerSprites['gh2'].playerInfo.active
-    //         && !playerSprites['gh3'].playerInfo.active
-    //     ) {   // all ghosts eaten
-    //         gameEnd = true
-    //     }
-    //     return;
-    // }
-    // console.log('Json does not have id')
-}
-
 
 export function sendPelletMessage(x: number, y: number) {
     console.log('eating pellet')
@@ -245,5 +229,6 @@ export function sendPosMessage(x: number, y: number, dir: AnimDir) {
 export function sendWsMessage(messageType: GameMessage, data: any) {
     data.type = messageType
     data.secretToken = prevGameState.secretToken
-    ws.send(data) // do not use json stringify here adds latency when sending messages
+    const mess = JSON.stringify(data)
+    ws.send(mess) // do not use json stringify here adds latency when sending messages
 }

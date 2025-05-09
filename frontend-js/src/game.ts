@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import {AnimDir, Ghost, GhostAnimBase, Pacman} from "./models.ts";
 import {
+    getGameState,
     getSpriteID,
     getUsername,
     sendPacmanGhostMessage,
@@ -20,7 +21,7 @@ import GameObjectWithBody = Phaser.Types.Physics.Arcade.GameObjectWithBody;
 
 const playerSpriteIdKey = "playerID";
 
-type CollisonBodyType =
+type CollisionBodyType =
     Phaser.Types.Physics.Arcade.GameObjectWithBody
     | Phaser.Physics.Arcade.Body
     | Phaser.Physics.Arcade.StaticBody
@@ -39,15 +40,15 @@ export class GameScene extends Phaser.Scene {
     gameOverText!: Text;
     spectatingText!: Text
 
-    gameEnd = false
+    gameOver = false
     isRedirecting = true
 
     allSprites: { [key: string]: Ghost | Pacman } = {
         "pacman": {
             playerInfo: null,
             curAnimDir: 'up',
-            animBase: 'pacman',
             defaultAnim: 'default',
+            animBase: 'pacman',
             startPos: [110, 220],
             userNameText: null,
             movementSpeed: -200
@@ -100,7 +101,6 @@ export class GameScene extends Phaser.Scene {
         this.initGhostsAnim()
         this.loadPlayers()
 
-
         // Set up the "Game Ended" text
         const textStyle = {fontFamily: 'Arial', fontSize: 48, color: '#00ffc7'};
         this.gameOverText = this.add.text(700, 450, 'Game Ended', textStyle);
@@ -128,10 +128,36 @@ export class GameScene extends Phaser.Scene {
             ${this.controllingSprite!.userNameText} 
             with username ${this.controllingSprite.userNameText!.text}`
         )
+
+        const gameState = getGameState()
+
+        // assign username for existing players
+        for (const [playerSprite, playerData] of Object.entries(gameState.activePlayers)) {
+            let username = (playerData as any).username as string
+            let x = (playerData as any).x as number
+            let y = (playerData as any).y as number
+
+            this.allSprites[playerSprite]!.userNameText!.setText(username as string)
+            this.allSprites[playerSprite]!.playerInfo!.setPosition(x, y);
+        }
+
+        // update map to match game state till now
+        for (const pellet of gameState.pelletsEaten) {
+            this.pelletLayer.removeTileAt(pellet.X, pellet.Y)
+        }
+
+        for (const powerUpId of gameState.powerUpsEaten) {
+            this.powerLayer.removeTileAt(powerUpId.X, powerUpId.Y)
+        }
+
+        for (const ghId of gameState.ghostsEaten) {
+            console.log(`Eaten ghosts ${ghId}`)
+            this.allSprites[ghId]!.playerInfo!.destroy()
+        }
     }
 
     update(_time: number, _delta: number): void {
-        if (this.gameEnd) {
+        if (this.gameOver) {
             // Show the "Game Ended" text
             this.gameOverText.visible = true;
             if (this.isRedirecting) {
@@ -149,20 +175,17 @@ export class GameScene extends Phaser.Scene {
 
         if (!(this.controllingSprite!.playerInfo!.active)) {
             this.spectatingText.visible = true
-            console.log('You are killed')
+            // console.log('You are killed')
             return;
         }
 
         // anims
         let curAnim: AnimDir;
-
         let spriteID = this.controllingSprite!.playerInfo!.getData(playerSpriteIdKey) as string;
 
         if (this.cursors.left.isDown) {
             this.movePlayer(spriteID, this.controllingSprite!.movementSpeed, 0);
-            // set anim
             curAnim = `left`
-
             this.setSpriteAnim(spriteID, curAnim)
         } else if (this.cursors.right.isDown) {
             this.movePlayer(spriteID, -this.controllingSprite!.movementSpeed, 0);
@@ -171,7 +194,6 @@ export class GameScene extends Phaser.Scene {
             this.setSpriteAnim(spriteID, curAnim)
         } else if (this.cursors.up.isDown) {
             this.movePlayer(spriteID, 0, this.controllingSprite!.movementSpeed);
-
             curAnim = `up`
             this.setSpriteAnim(spriteID, curAnim)
         } else if (this.cursors.down.isDown) {
@@ -184,6 +206,7 @@ export class GameScene extends Phaser.Scene {
             this.setSpriteAnim(spriteID, curAnim, false)
         }
 
+        this.controllingSprite!.curAnimDir = curAnim;
         // move username text
         this.setUserNameTextPos(spriteID)
         sendPosMessage(
@@ -191,15 +214,9 @@ export class GameScene extends Phaser.Scene {
             this.controllingSprite?.playerInfo!.y!,
             this.controllingSprite?.curAnimDir!
         )
-
-        // setup info to send to server
-        // allPlayers[userId].x = this.controllingSprite!.playerInfo!.x
-        // allPlayers[userId].y = this.controllingSprite!.playerInfo!.y
-        // allPlayers[userId].spriteAnim = curAnim
     }
 
     setSpriteAnim(spriteId: string, anim: string, loop = true) {
-        // convert loop to bool
         const finalAnim = this.allSprites[spriteId]!.animBase + anim
         this.allSprites[spriteId]!.playerInfo!.anims.play(finalAnim, loop)
     }
@@ -256,7 +273,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     private initGhostsAnim() {
-        // rember to maintain order left, up, down, right (order in sprite sheet)
+        // remember to maintain this order right, up, down, left (order in sprite sheet)
         const animDirections: AnimDir[] = ["right", "up", "down", "left"];
         const ghostColors: GhostAnimBase[] = ["ghostred", "ghostblue", "ghostpink"];
 
@@ -341,26 +358,26 @@ export class GameScene extends Phaser.Scene {
     }
 
     pelletCallBack(
-        _pacman: CollisonBodyType,
-        pellet: CollisonBodyType
+        _pacman: CollisionBodyType,
+        pellet: CollisionBodyType
     ) {
         let pel = pellet as Tile
         sendPelletMessage(pel.x, pel.y)
-        console.log("remove")
-        // this.pelletLayer.removeTileAt(pel.x, pel.y)
     }
 
     powerUpCallBack(
-        _pacman: CollisonBodyType,
-        power: CollisonBodyType
+        _pacman: CollisionBodyType,
+        power: CollisionBodyType
     ) {
         let pow = power as Tile
+        console.log(pow.x, pow.y)
+
         sendPowerUpMessage(pow.x, pow.y)
     }
 
     pacmanGhostCollision(
-        _pacman: CollisonBodyType,
-        ghost: CollisonBodyType
+        ghost: CollisionBodyType,
+        _pacman: CollisionBodyType,
     ): void {
         const gho = ghost as GameObjectWithBody
         const ghostId = gho.getData(playerSpriteIdKey) as string
@@ -369,7 +386,7 @@ export class GameScene extends Phaser.Scene {
         sendPacmanGhostMessage(ghostId)
     }
 
-    addUsernameText(sprite: Phaser.Physics.Arcade.Sprite & { body: Phaser.Physics.Arcade.Body }) {
+    addUsernameText(sprite: Phaser.Physics.Arcade.Sprite) {
         return this.add.text(
             sprite.x - userNameOffSetX,
             sprite.y - userNameOffSetY,
