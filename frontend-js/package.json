@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build": "tsc && vite build && npm run mv-index && npm run mv",
+    "mv-index": "npx shx mv dist/index.html dist/game/index.html",
+    "mv": "npx shx cp -Rf dist/* ../core/cmd/web/"
   },
   "devDependencies": {
     "typescript": "~5.7.2",
