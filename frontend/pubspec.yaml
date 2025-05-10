@@ -38,10 +38,10 @@ dependencies:
   hooks_riverpod: ^2.6.1
 
   # networking
-  connectrpc: ^0.3.0
+  connectrpc: ^0.4.0
   grpc: ^4.0.4
   universal_html: ^2.2.4
-  web_socket_channel: ^3.0.2
+  web_socket_channel: ^3.0.3
 
   # ui
   flutter_animate: ^4.5.2
@@ -54,7 +54,7 @@ dependencies:
   logger: ^2.5.0
 
   # game stuff
-  flame: ^1.27.0
+  flame: ^1.28.1
 
 dev_dependencies:
   flutter_test:
