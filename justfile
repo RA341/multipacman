@@ -49,3 +49,8 @@ ui:
     flutter build web
     rm -r ../core/cmd/web/
     cp -r build/web ../core/cmd/web
+    just game
+
+[working-directory: 'frontend-js']
+game:
+    npm run build
