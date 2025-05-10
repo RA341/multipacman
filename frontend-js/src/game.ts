@@ -333,6 +333,21 @@ export class GameScene extends Phaser.Scene {
             sprite.setCollideWorldBounds(true);
             sprite.setScale(.7)
 
+
+            // hit box
+            let desiredRadius = 20; // 50/2 - 5
+            if (spriteId === "pacman") {
+                sprite.body.setCircle(desiredRadius);
+                const offsetX = (sprite.width / 2) - desiredRadius;
+                const offsetY = (sprite.height / 2) - desiredRadius;
+                sprite.body.setCircle(desiredRadius, offsetX, offsetY);
+                sprite.body.setCircle(20);
+            } else {
+                // ghosts have a sightly offset and smaller hitbox because of sprite size
+                const offset = 8;
+                sprite.body.setCircle(desiredRadius - 2, offset, offset);
+            }
+
             spriteData.userNameText = this.addUsernameText(sprite);
 
             // collisions

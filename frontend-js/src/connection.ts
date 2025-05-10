@@ -176,7 +176,7 @@ function handlePowerPelletStart(json: any) {
     // give pacman power up
     gameScene?.allSprites['pacman']!.playerInfo!.setTint(0xff0000);
     gameScene!.allSprites['pacman']!.movementSpeed = -160
-
+    // gameScene!.allSprites['pacman']!.movementSpeed = -300
 }
 
 
@@ -186,6 +186,7 @@ function handlePowerPelletEnd(_json: any) {
     // give pacman power up
     gameScene?.allSprites['pacman']!.playerInfo!.setTint(0xffffff);
     gameScene!.allSprites['pacman']!.movementSpeed = -200
+    // gameScene!.allSprites['pacman']!.movementSpeed = -300
 }
 
 
