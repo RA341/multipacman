@@ -4,32 +4,46 @@ import (
 	"fmt"
 	"github.com/olahol/melody"
 	"github.com/rs/zerolog/log"
+	"maps"
 	"math/rand"
+	"slices"
 	"sync"
 )
 
+type Point struct {
+	X, Y float64
+}
 type CoordList struct {
-	mu   sync.Mutex
-	list []struct{ X, Y float64 }
+	mu        sync.Mutex
+	coordList map[Point]struct{}
 }
 
 func NewCordList() CoordList {
 	return CoordList{
-		mu:   sync.Mutex{},
-		list: []struct{ X, Y float64 }{},
+		mu:        sync.Mutex{},
+		coordList: map[Point]struct{}{},
 	}
 }
 
-func (c *CoordList) Add(X, Y float64) {
+func (c *CoordList) Add(x, y float64) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.list = append(c.list, struct{ X, Y float64 }{X: X, Y: Y})
+	point := Point{X: x, Y: y}
+	c.coordList[point] = struct{}{}
 }
 
-func (c *CoordList) GetList() []struct{ X, Y float64 } {
+func (c *CoordList) GetList() []Point {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	return c.list
+	v := slices.Collect(maps.Keys(c.coordList))
+	if v == nil {
+		return []Point{}
+	}
+	return v
+}
+
+func (c *CoordList) Len() int {
+	return len(c.GetList())
 }
 
 func shuffleArray(array []SpriteType) []SpriteType {

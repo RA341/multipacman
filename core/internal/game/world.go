@@ -116,18 +116,9 @@ func (w *World) IsLobbyFull() bool {
 	return len(w.CharactersList) == 0
 }
 
-const MaxPellets = 100 // todo
-const MaxPowerUps = 100
-
 func (w *World) checkGameOver() (reason string) {
 	if len(w.GhostsIdsEaten) == 3 {
 		return "all ghosts eaten"
-	}
-
-	allPelletsEaten := len(w.PelletsCoordEaten.GetList()) == MaxPellets
-	allPowerUpsEaten := len(w.PowerUpsCoordsEaten.GetList()) == MaxPowerUps
-	if allPelletsEaten && allPowerUpsEaten {
-		return "all pellets and all powerups eaten"
 	}
 
 	return ""
