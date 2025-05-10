@@ -1,7 +1,7 @@
 export function showError(message: string): void {
     const overlay = document.getElementById('errorPopupOverlay') as HTMLElement | null;
     const errorMessageElement = document.getElementById('errorMessage') as HTMLParagraphElement | null;
-    const closeButton = document.getElementById('closePopupButton') as HTMLButtonElement | null;
+    let closeButton = document.getElementById('closePopupButton') as HTMLButtonElement | null;
 
     if (overlay && errorMessageElement && closeButton) {
         errorMessageElement.textContent = message;
@@ -13,7 +13,7 @@ export function showError(message: string): void {
                 overlay.style.display = 'none';
             }
             // Remove event listeners to prevent memory leaks and multiple navigations
-            closeButton.removeEventListener('click', closePopupAndNavigate);
+            closeButton!.removeEventListener('click', closePopupAndNavigate);
             overlay.removeEventListener('click', closePopupOutsideAndNavigate);
 
             // Navigate to "/"
@@ -34,7 +34,7 @@ export function showError(message: string): void {
         closeButton.parentNode?.replaceChild(oldButton, closeButton);
         closeButton = oldButton; // Re-assign to the new button element
 
-        let oldOverlay = overlay.cloneNode(false) as HTMLElement; // shallow clone for overlay
+        // let oldOverlay = overlay.cloneNode(false) as HTMLElement; // shallow clone for overlay
 
         closeButton.addEventListener('click', closePopupAndNavigate);
         overlay.addEventListener('click', closePopupOutsideAndNavigate);

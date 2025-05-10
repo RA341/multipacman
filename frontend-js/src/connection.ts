@@ -74,11 +74,17 @@ function handleMessage(msg: MessageEvent): void {
 
     try {
         const json = JSON.parse(msg.data);
-
         const mType = json["type"] as string
+
         const handler = messageHandlers[mType]
         if (!handler) {
             console.warn(`No handler found: ${mType}`);
+            return;
+        }
+
+        if (Object.keys(prevGameState).length === 0 && mType !== "state") {
+            // state has not been received
+            // game has not started, ignore all messages
             return;
         }
 
@@ -87,7 +93,7 @@ function handleMessage(msg: MessageEvent): void {
         console.log("unable to handle message")
         console.log(e)
         console.log(msg.data)
-        showError(e)
+        // showError(e)
     }
 }
 
