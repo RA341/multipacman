@@ -13,6 +13,19 @@ COPY ./frontend .
 
 RUN flutter build web
 
+FROM node:23-alpine AS node
+
+WORKDIR /game/
+
+COPY frontend-js/package.json .
+COPY frontend-js/package-lock.json .
+
+RUN npm i
+
+COPY frontend-js .
+
+RUN npm run docker
+
 # Stage Go build
 FROM golang:1.24-alpine AS go_builder
 
@@ -23,19 +36,17 @@ RUN apk update && apk add --no-cache gcc musl-dev
 
 WORKDIR /app
 
-COPY ./core/go.mod .
-COPY ./core/go.sum .
+COPY core/go.mod .
+COPY core/go.sum .
 # cache deps
 RUN go mod download
 
-COPY ./core .
-
-RUN go mod tidy
-
+COPY core/ .
 COPY --from=flutter_builder /app/build/web ./web
+COPY --from=node /game/dist/* ./web/*
 
 # Build optimized binary without debugging symbols
-RUN go build -ldflags "-s -w" -o multipacman
+RUN go build -ldflags "-s -w" -o multipacman ./cmd/server/main.go
 
 # Stage: Final stage
 FROM alpine:latest

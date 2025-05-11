@@ -7,3 +7,4 @@ spec
 frontend/build/*
 frontend/.dart_tool
 core/web
+/**/node_modules
