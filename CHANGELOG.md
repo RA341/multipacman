@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/RA341/multipacman/compare/v1.1.1...v1.2.0) (2025-05-11)
+
+
+### Features
+
+* switched to phaser ([26cb4ca](https://github.com/RA341/multipacman/commit/26cb4ca5c8db0b46fc6e7844e7277f05b520db05))
+
 ## [1.1.1](https://github.com/RA341/multipacman/compare/v1.1.0...v1.1.1) (2025-03-20)
 
 
