@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - 'main'
-      - 'develop'
+      - 'release'
     tags:
       - 'v*.*.*'
 
   pull_request:
     branches:
       - 'main'
+      - 'release'
       - 'develop'
 
 jobs:
@@ -67,7 +68,7 @@ jobs:
             # create more specific semver tags. This handles your 'v*' tag logic.
             type=semver,pattern={{version}} # Full version: e.g., v1.2.3
             type=semver,pattern={{major}}.{{minor}} # Major.minor: e.g., v1.2
-            # type=semver,pattern={{major}} # Optional: Major only: e.g., v1
+            type=semver,pattern={{major}} # Major only: e.g., v1
 
             # Tag with the short Git commit SHA
             # e.g., 'a1b2c3d'
