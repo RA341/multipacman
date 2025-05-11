@@ -8,6 +8,6 @@ services:
     ports:
         - "8080:5000"
     volumes:
-      - ./appdata/:/root/db/
+      - ./appdata/:/app/appdata/
     restart: unless-stopped
 

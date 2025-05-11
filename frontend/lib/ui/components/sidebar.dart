@@ -90,7 +90,7 @@
 //               child: ElevatedButton(
 //                 child: Text('Logout'),
 //                 onPressed: () async {
-//                   await prefs.setString('apikey', '');
+//                   await prefs.setString(authTokenKey, '');
 //                   ref.invalidate(apiTokenProvider);
 //                 },
 //               ),

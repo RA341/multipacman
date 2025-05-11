@@ -6,6 +6,7 @@ import 'package:multipacman/providers.dart';
 import 'package:multipacman/ui/components/utils.dart';
 import 'package:multipacman/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:universal_html/html.dart';
 
 class LobbyList extends StatelessWidget {
   const LobbyList({
@@ -154,7 +155,8 @@ class LobbyActionBar extends ConsumerWidget {
                 onPressed: () {
                   logger
                       .i("Going to lobby ${item.iD.toInt()} ${item.lobbyName}");
-                  ref.read(lobbyIDProvider.notifier).state = item.iD.toInt();
+                  // ref.read(lobbyIDProvider.notifier).state = item.iD.toInt();
+                  window.location.assign("/game/?lobby=${item.iD}");
                 },
                 style: globalButtonStyle,
                 child: Text('Join'),
