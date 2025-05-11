@@ -6,5 +6,5 @@ multipacman.db
 spec
 frontend/build/*
 frontend/.dart_tool
-core/web
+core/**/web
 /**/node_modules
