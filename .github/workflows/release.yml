@@ -55,7 +55,7 @@ jobs:
 
       - name: build and push leviathan
         run: |
-          REGISTRY="ghcr.io/${{ github.repository }}"
+          REGISTRY=$(echo "ghcr.io/${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           GIT_TAG=$(git describe --tags 2>/dev/null || echo "develop")
           GIT_BRANCH=${GITHUB_REF#refs/heads/}
 
