@@ -4,14 +4,12 @@ on:
   push:
     branches:
       - 'main'
-      - 'release'
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*' # called by the semantic-bot once it pushes new tag
 
   pull_request:
     branches:
       - 'main'
-      - 'release'
       - 'develop'
 
 jobs:
