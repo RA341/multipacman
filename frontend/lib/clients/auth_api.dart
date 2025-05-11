@@ -4,7 +4,6 @@ import 'package:multipacman/gen/auth/v1/auth.connect.client.dart';
 import 'package:multipacman/gen/auth/v1/auth.pb.dart';
 import 'package:multipacman/grpc/api.dart';
 import 'package:multipacman/utils.dart';
-import 'package:universal_html/html.dart';
 
 final authApiProvider = Provider<AuthApi>((ref) {
   final channel = ref.watch(grpcChannelProvider);
@@ -35,7 +34,6 @@ class AuthApi {
 
     await prefs.setString(authTokenKey, token.authToken);
     logger.d("setting cookie");
-    window.cookieStore!.set(authTokenKey, token.authToken);
   }
 
   Future<void> guestLogin() async {
@@ -46,7 +44,6 @@ class AuthApi {
     }
 
     await prefs.setString(authTokenKey, token.authToken);
-    window.cookieStore!.set(authTokenKey, token.authToken);
   }
 
   Future<void> register({
