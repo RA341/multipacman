@@ -42,7 +42,7 @@ func setupServer(baseUrl string) error {
 		AllowedOrigins:      []string{"*"},
 		AllowPrivateNetwork: true,
 		AllowedMethods:      connectcors.AllowedMethods(),
-		AllowedHeaders:      append(connectcors.AllowedHeaders(), user.Header),
+		AllowedHeaders:      append(connectcors.AllowedHeaders(), user.AuthHeader),
 		ExposedHeaders:      connectcors.ExposedHeaders(),
 	})
 
