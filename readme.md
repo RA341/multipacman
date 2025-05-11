@@ -2,7 +2,7 @@
 
 A real-time multiplayer Pacman game built using Flutter, Phaser game engine, and Go.
 
-🎮 **[Play Now](https://multipacman.dumbapps.org)** 🎮
+🎮 **[Play Now](https://multipacman.radn.dev/)** 🎮
 
 <div align="center">
   <img src="img/lobby.png" alt="Game Lobby" width="400" />
