@@ -167,6 +167,7 @@ function handlePellet(json: any) {
     
     if (gameScene?.pelletLayer.tilesDrawn === 0) {
         gameScene!.gameOver = true
+        gameScene!.gameOverText.setText("Pacman wins")
     }
 }
 
