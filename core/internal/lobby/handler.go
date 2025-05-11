@@ -35,7 +35,6 @@ func (l Handler) ListLobbies(ctx context.Context, _ *connect.Request[v1.ListLobb
 	}
 
 	channel := l.lobbyService.NewUpdateChannel(userInfo.ID)
-
 	for range channel {
 		//log.Debug().Bool("Msg", msg).Msg("Received update message")
 
@@ -52,12 +51,11 @@ func (l Handler) ListLobbies(ctx context.Context, _ *connect.Request[v1.ListLobb
 					Uint("userInfo id", userInfo.ID).
 					Str("username", userInfo.Username).
 					Msg("Client disconnected, removing channel at ind")
-
-				l.lobbyService.RemoveUpdateChannel(userInfo.ID)
-				break
+			} else {
+				log.Warn().Err(err).Msg("Error sending message to client")
 			}
 
-			log.Error().Any("All connections", l.lobbyService.Connections).Err(err).Msg("Error sending message to client")
+			l.lobbyService.RemoveUpdateChannel(userInfo.ID)
 		}
 	}
 
