@@ -2,7 +2,8 @@ name: Release
 on:
   push:
     branches:
-      - release # or main
+      - release
+      - main
 
 jobs:
   tag-release:
