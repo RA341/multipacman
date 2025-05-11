@@ -5,12 +5,14 @@ on:
     branches:
       - 'main'
     tags:
-      - 'v*.*.*' # called by the semantic-bot once it pushes new tag
+      - 'v*' # called by the semantic-bot once it pushes new tag
 
   pull_request:
     branches:
       - 'main'
       - 'develop'
+    tags:
+      - 'v*' # called by the semantic-bot once it pushes new tag
 
 jobs:
   build-and-push-image:
