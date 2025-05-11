@@ -45,6 +45,11 @@ COPY core/ .
 COPY --from=flutter_builder /app/build/web ./web
 COPY --from=node /game/dist/* ./web/*
 
+# Debugging: List directory contents
+RUN echo "Listing /app contents:" && ls -lRa /app
+RUN echo "Listing /app/web contents:" && ls -lRa /app/web
+RUN echo "Listing /app/cmd contents:" && ls -lRa /app/cmd
+
 # Build optimized binary without debugging symbols
 RUN go build -ldflags "-s -w" -o multipacman ./cmd/server/main.go
 
