@@ -39,7 +39,7 @@ func (a *Handler) Register(_ context.Context, c *connect.Request[v1.RegisterUser
 }
 
 func (a *Handler) Logout(ctx context.Context, req *connect.Request[v1.Empty]) (*connect.Response[v1.Empty], error) {
-	clientToken := req.Header().Get(Header)
+	clientToken := req.Header().Get(AuthHeader)
 	ctx, err := verifyAuthHeader(ctx, a.auth, clientToken)
 	if err != nil {
 		log.Warn().Err(err).Msg("Logout failed, user info not found in request")
@@ -73,6 +73,8 @@ func (a *Handler) GuestLogin(_ context.Context, _ *connect.Request[v1.Empty]) (*
 	}
 
 	response := connect.NewResponse(user.ToRPC())
+	setCookie(user, response)
+
 	return response, nil
 }
 

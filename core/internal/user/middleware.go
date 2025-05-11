@@ -6,8 +6,8 @@ import (
 	"fmt"
 )
 
-const Header = "Authorization"
-const userKeyInCtx = "user"
+const AuthHeader = "Authorization"
+const CtxUserKey = "user"
 
 type Interceptor struct {
 	authService *Service
@@ -22,7 +22,7 @@ func (i *Interceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) co
 		ctx context.Context,
 		conn connect.StreamingHandlerConn,
 	) error {
-		token := conn.RequestHeader().Get(Header)
+		token := conn.RequestHeader().Get(AuthHeader)
 		if token == "" {
 			return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("no auth header found"))
 		}
@@ -41,7 +41,7 @@ func (i *Interceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		ctx context.Context,
 		req connect.AnyRequest,
 	) (connect.AnyResponse, error) {
-		clientToken := req.Header().Get(Header)
+		clientToken := req.Header().Get(AuthHeader)
 
 		ctx, err := verifyAuthHeader(ctx, i.authService, clientToken)
 		if err != nil {
@@ -66,18 +66,18 @@ func verifyAuthHeader(ctx context.Context, authService *Service, clientToken str
 	if err != nil {
 		return nil, connect.NewError(
 			connect.CodeUnauthenticated,
-			fmt.Errorf("invalid token %v", err),
+			err,
 		)
 	}
 	// add user value to subsequent requests
-	ctx = context.WithValue(ctx, userKeyInCtx, user)
+	ctx = context.WithValue(ctx, CtxUserKey, user)
 	return ctx, nil
 }
 
 // todo combine the 2 funcs
 
 func GetUserContext(ctx context.Context) (*User, error) {
-	userVal := ctx.Value(userKeyInCtx)
+	userVal := ctx.Value(CtxUserKey)
 	if userVal == nil {
 		return nil, fmt.Errorf("could not find user in context")
 	}
@@ -90,5 +90,5 @@ func GetUserContext(ctx context.Context) (*User, error) {
 }
 
 func GetUserFromCtx(ctx context.Context) *User {
-	return ctx.Value(userKeyInCtx).(*User)
+	return ctx.Value(CtxUserKey).(*User)
 }

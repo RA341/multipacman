@@ -1,13 +1,31 @@
 package user
 
 import (
+	"connectrpc.com/connect"
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
+	v1 "github.com/RA341/multipacman/generated/auth/v1"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 	"math/big"
+	"net/http"
 )
+
+func setCookie(user *User, response *connect.Response[v1.UserResponse]) {
+	cookie := http.Cookie{
+		Name:     AuthHeader,
+		Value:    user.Token,
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode, // SameSite attribute
+		//Secure:   true,                 // Secure attribute (send only over HTTPS) - for production
+		// Domain: "example.com", // Uncomment and set if you need to specify the domain
+		// MaxAge: 86400, // Alternative to Expires: seconds for cookie to live (24 * 60 * 60)
+	}
+
+	response.Header().Add("Set-Cookie", cookie.String())
+}
 
 func CreateAuthToken(length int) string {
 	const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
