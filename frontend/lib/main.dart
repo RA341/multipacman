@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/config.dart';
-import 'package:multipacman/game/game_container.dart';
 import 'package:multipacman/providers.dart';
 import 'package:multipacman/ui/auth.dart';
 import 'package:multipacman/ui/lobby.dart';
@@ -77,6 +76,6 @@ class HomeContainerPage extends ConsumerWidget {
       ref.modState(deviceWidthProvider, MediaQuery.of(context).size.width);
     });
 
-    return lobbyId == 0 ? LobbyPage() : GameContainer();
+    return LobbyPage();
   }
 }

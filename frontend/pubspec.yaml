@@ -45,16 +45,13 @@ dependencies:
 
   # ui
   flutter_animate: ^4.5.2
-  timeago: ^3.7.0
+  timeago: ^3.7.1
 
   # misc
   shared_preferences: ^2.5.3
   url_launcher:
   fixnum: ^1.1.1
   logger: ^2.5.0
-
-  # game stuff
-  flame: ^1.28.1
 
 dev_dependencies:
   flutter_test:
