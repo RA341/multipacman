@@ -1,5 +1,5 @@
 /.test_assets
-/.idea
+/**/.idea
 /bin
 .env
 multipacman.db
@@ -7,3 +7,4 @@ spec
 frontend/build/*
 frontend/.dart_tool
 core/web
+/**/node_modules

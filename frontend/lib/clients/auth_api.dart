@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multipacman/config.dart';
 import 'package:multipacman/gen/auth/v1/auth.connect.client.dart';
 import 'package:multipacman/gen/auth/v1/auth.pb.dart';
-import 'package:multipacman/gen/lobby/v1/lobby.pb.dart';
 import 'package:multipacman/grpc/api.dart';
 import 'package:multipacman/utils.dart';
 
@@ -12,6 +11,8 @@ final authApiProvider = Provider<AuthApi>((ref) {
 
   return AuthApi(client);
 });
+
+const authTokenKey = 'auth';
 
 class AuthApi {
   final AuthServiceClient apiClient;
@@ -31,7 +32,8 @@ class AuthApi {
       throw Exception("token returned was empty");
     }
 
-    await prefs.setString('apikey', token.authToken);
+    await prefs.setString(authTokenKey, token.authToken);
+    logger.d("setting cookie");
   }
 
   Future<void> guestLogin() async {
@@ -41,7 +43,7 @@ class AuthApi {
       throw Exception("token returned was empty");
     }
 
-    await prefs.setString('apikey', token.authToken);
+    await prefs.setString(authTokenKey, token.authToken);
   }
 
   Future<void> register({

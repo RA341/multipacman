@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:connectrpc/connect.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:multipacman/clients/auth_api.dart';
 import 'package:multipacman/config.dart';
 import 'package:multipacman/utils.dart';
 import 'package:universal_html/html.dart' as html;
@@ -10,7 +11,7 @@ import 'package:universal_html/html.dart' as html;
 import 'grpc_native.dart' if (dart.library.html) 'grpc_web.dart';
 
 final apiTokenProvider = Provider<String>((ref) {
-  return prefs.getString('apikey') ?? '';
+  return prefs.getString(authTokenKey) ?? '';
 });
 
 final basePathProvider = Provider<String>((ref) {

@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Go
-ENV GO_VERSION=1.23.4
+ENV GO_VERSION=1.24.1
 
 RUN curl -OL https://go.dev/dl/go$GO_VERSION.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz && \
@@ -38,15 +38,6 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | b
 ENV NODE_PATH=$NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH=$NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
-# Install Dart SDK
-RUN apt-get update && apt-get  --no-install-recommends -y install apt-transport-https
-RUN wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dart.gpg
-RUN echo 'deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main' | tee /etc/apt/sources.list.d/dart_stable.list
-RUN apt-get update && apt-get install -y dart
-
-# Install Dart gRPC tools
-RUN dart pub global activate protoc_plugin
-
 # Install Node.js dependencies globally
 # @bufbuild/buf depends on
 # @bufbuild/protobuf
@@ -58,9 +49,6 @@ RUN . $NVM_DIR/nvm.sh && \
 RUN go install github.com/bufbuild/buf/cmd/buf@latest && \
     go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
     go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
-
-# Set up PATH for tools
-ENV PATH="/root/.pub-cache/bin:${PATH}"
 
 # Create working directory
 WORKDIR /workspace

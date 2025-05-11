@@ -114,7 +114,7 @@ class LobbyBar extends ConsumerWidget {
                             (error, stackTrace) =>
                                 logger.w("An error occurred while logging out"),
                           );
-                      await prefs.setString("apikey", "");
+                      await prefs.setString(authTokenKey, "");
                     } catch (e) {
                       if (!context.mounted) return;
                       logger.e(e.toString());
