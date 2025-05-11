@@ -1,6 +1,6 @@
 # Multiplayer Pacman
 
-A real-time multiplayer Pacman game built using Flutter, Flame game engine, and Go.
+A real-time multiplayer Pacman game built using Flutter, Phaser game engine, and Go.
 
 🎮 **[Play Now](https://multipacman.dumbapps.org)** 🎮
 
@@ -12,8 +12,8 @@ A real-time multiplayer Pacman game built using Flutter, Flame game engine, and 
 ## Stack
 
 - **Flutter**: Cross-platform UI framework for the game client
-- **Flame**: 2D game engine for Flutter, used to implement core game mechanics
-- **Go**: High-performance backend server handling game logic and state management
+- **Phaser**: game engine for javascript
+- **Go**: backend server handling game logic and state management
 
 ## Selfhost
 
