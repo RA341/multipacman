@@ -341,7 +341,6 @@ export class GameScene extends Phaser.Scene {
                 const offsetX = (sprite.width / 2) - desiredRadius;
                 const offsetY = (sprite.height / 2) - desiredRadius;
                 sprite.body.setCircle(desiredRadius, offsetX, offsetY);
-                sprite.body.setCircle(20);
             } else {
                 // ghosts have a sightly offset and smaller hitbox because of sprite size
                 const offset = 8;
