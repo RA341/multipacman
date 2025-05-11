@@ -42,11 +42,11 @@ COPY core/go.sum .
 RUN go mod download
 
 COPY core/ .
-COPY --from=flutter_builder /app/build/web ./web
-COPY --from=node /game/dist/* ./web/*
+COPY --from=flutter_builder /app/build/web ./cmd/web
+COPY --from=node /game/dist/ ./cmd/web/
 
 # Build optimized binary without debugging symbols
-RUN go build -ldflags "-s -w" -o multipacman ./cmd/server/main.go
+RUN go build -ldflags "-s -w" -o multipacman cmd/server/main.go
 
 # Stage: Final stage
 FROM alpine:latest
