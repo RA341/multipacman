@@ -70,7 +70,7 @@ func (w *World) Leave(player *PlayerEntity) {
 	w.ConnectedPlayers.Delete(id)
 
 	if len(w.CharactersList) == 4 {
-		w.GameOver("all player left lobby empty")
+		w.GameOver("all players left, lobby is now empty")
 	}
 }
 
