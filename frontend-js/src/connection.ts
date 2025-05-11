@@ -163,6 +163,11 @@ function handlePellet(json: any) {
     console.log(`Pellet eaten at x:${x}, y:${y}`)
 
     gameScene?.pelletLayer.removeTileAt(x, y)
+    console.log(gameScene?.pelletLayer.tilesDrawn)
+    
+    if (gameScene?.pelletLayer.tilesDrawn === 0) {
+        gameScene!.gameOver = true
+    }
 }
 
 
