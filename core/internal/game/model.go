@@ -6,16 +6,6 @@ import (
 	"strconv"
 )
 
-type PlayerMessageType string
-
-const (
-	Join       PlayerMessageType = "active"
-	Disconnect PlayerMessageType = "disconnect"
-	Move       PlayerMessageType = "Move"
-	Pellet     PlayerMessageType = "inactive"
-	Powerup    PlayerMessageType = "pending"
-)
-
 type SpriteType string
 
 const (
@@ -27,7 +17,7 @@ const (
 
 func NewPlayerEntity(userId uint, username string) *PlayerEntity {
 	return &PlayerEntity{
-		Type:        string(Join),
+		Type:        "active",
 		PlayerId:    strconv.Itoa(int(userId)),
 		Username:    username,
 		SpriteType:  "",

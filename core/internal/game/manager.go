@@ -26,21 +26,6 @@ func (manager *Manager) getLobbyIdFromSession(s *melody.Session) uint {
 	return lobbyId.(uint)
 }
 
-// informNewPlayerAboutOtherPlayer sends otherPlayerEntity to playerSession
-func (manager *Manager) informNewPlayerAboutOtherPlayer(playerSession *melody.Session, otherPlayerEntity *PlayerEntity) bool {
-	jsonData, err := otherPlayerEntity.ToJSON()
-	if err != nil {
-		log.Error().Err(err).Any("other entity", otherPlayerEntity).Msg("Failed to convert PlayerEntity to JSON")
-		return true
-	}
-	err = playerSession.Write(jsonData)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to send player info")
-		return true
-	}
-	return false
-}
-
 func (manager *Manager) broadcastAll(world *World, message []byte) error {
 	broadCastSessions := world.ConnectedPlayers.GetValues()
 	err := manager.mel.BroadcastMultiple(message, broadCastSessions)
@@ -51,7 +36,6 @@ func (manager *Manager) broadcastAll(world *World, message []byte) error {
 }
 
 func (manager *Manager) broadcastExceptPlayer(player *melody.Session, message []byte) error {
-	//broadCastSessions := world.ConnectedPlayers.GetValues()
 	err := manager.mel.BroadcastOthers(message, player)
 	if err != nil {
 		return err
@@ -64,14 +48,17 @@ func (manager *Manager) sendGameStateInfo(newPlayerSession *melody.Session, worl
 	if err != nil {
 		return fmt.Errorf("unable to find player: %v", err)
 	}
+
 	gameState, err := world.GetGameStateReport(player.secretToken, player.Username, string(player.SpriteType), newPlayerSession)
 	if err != nil {
 		return fmt.Errorf("unable to marshal game state: %v", err)
 	}
+
 	err = newPlayerSession.Write(gameState)
 	if err != nil {
-		return fmt.Errorf("unable to send new player, game state: %v", err)
+		return fmt.Errorf("unable to send game state: %v", err)
 	}
+
 	return nil
 }
 
@@ -84,18 +71,13 @@ func (manager *Manager) getWorld(lobby *lobby.Lobby) (*World, error) {
 		manager.activeLobbies.Store(lobby.ID, newWorld)
 		go func() {
 			reason := newWorld.waitForGameOver()
-
 			// endgame does not need any info
-			msg := EndGameMessage(reason).handler(MessageData{
-				msgInfo:       nil,
-				world:         nil,
-				playerSession: nil,
-			})
+			msg := EndGameMessage(reason).handler(MessageData{})
 			marshal, err := json.Marshal(msg)
 			if err != nil {
 				log.Error().Err(err).Msg("Unable to marshal msg")
 			} else {
-				_ = manager.broadcastAll(newWorld, marshal)
+				pkg.Elog(manager.broadcastAll(newWorld, marshal))
 			}
 
 			log.Debug().Uint("id", lobby.ID).Str("reason", reason).Msg("game end deleting lobby")
@@ -113,7 +95,7 @@ func (manager *Manager) getWorld(lobby *lobby.Lobby) (*World, error) {
 	return activeWorld, nil
 }
 
-func (manager *Manager) getUserAndLobbyForNewConnection(newPlayerSession *melody.Session) (*user.User, *lobby.Lobby, error) {
+func (manager *Manager) getUserAndLobbyInfo(newPlayerSession *melody.Session) (*user.User, *lobby.Lobby, error) {
 	userInfo, err := user.GetUserContext(newPlayerSession.Request.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("User context error")
@@ -123,7 +105,7 @@ func (manager *Manager) getUserAndLobbyForNewConnection(newPlayerSession *melody
 	queryParams := newPlayerSession.Request.URL.Query()
 	param := queryParams.Get("lobby")
 	if param == "" {
-		return nil, nil, fmt.Errorf("lobbyID query parameter not found")
+		return nil, nil, fmt.Errorf("lobby query parameter not found")
 	}
 
 	lobbyId, err := strconv.Atoi(param)
@@ -138,94 +120,3 @@ func (manager *Manager) getUserAndLobbyForNewConnection(newPlayerSession *melody
 
 	return userInfo, lobbyInfo, err
 }
-
-//func (manager *Manager) sendGameOverMessage(reason string, lobbyEntity *World) {
-//
-//}
-
-//func HandleMessage(s *melody.Session, m *melody.Melody, msg []byte) {
-//	var data map[string]interface{}
-//
-//	tmp, exists := s.Get("LobbyId")
-//	if !exists {
-//		log.Print("lobby id not found on message")
-//		return
-//	}
-//	lobbyId := tmp.(int)
-//	//LobbyList[lobbyId.(string)].
-//
-//	err := json.Unmarshal(msg, &data)
-//	if err != nil {
-//		log.Print("Failed to unmarshal ws msg")
-//		return
-//	}
-//
-//	// for these message types broadcast to all clients
-//	// included the once who sent this ws request
-//	// List of strings
-//	messageType := data["type"].(string)
-//
-//	switch messageType {
-//	//case "pos":
-//	//	x, y := retrieveCoordinates(data)
-//	//	log.Print(x)
-//	//	log.Print(y)
-//
-//	case "pellet":
-//		x, y := retrieveCoordinates(data)
-//		LobbyList[lobbyId].PelletEatenAction(x, y)
-//		//fmt.Println("Handling " + messageType)
-//		broadCastAll(m, msg, lobbyId)
-//	case "power":
-//		x, y := retrieveCoordinates(data)
-//		LobbyList[lobbyId].PowerUpEatenAction(x, y)
-//		//fmt.Println("Handling " + messageType)
-//		broadCastAll(m, msg, lobbyId)
-//	case "pacded":
-//		ghostId := data["id"].(string)
-//		LobbyList[lobbyId].GhostEatenAction(ghostId)
-//		//fmt.Println("Handling " + messageType)
-//		broadCastAll(m, msg, lobbyId)
-//	default:
-//		//fmt.Println("Broadcasting others for type " + messageType)
-//		broadCastOthers(m, msg, s, lobbyId)
-//	}
-//}
-//
-//func retrieveCoordinates(data map[string]interface{}) (float64, float64) {
-//	x := data["x"].(float64)
-//	y := data["y"].(float64)
-//	return x, y
-//}
-//
-//func broadCastAll(m *melody.Melody, msg []byte, lobbyId int) {
-//	var sessionList []*melody.Session
-//
-//	for session := range LobbyList[lobbyId].ConnectedPlayers {
-//		sessionList = append(sessionList, LobbyList[lobbyId].ConnectedPlayers[session])
-//	}
-//
-//	err := m.BroadcastMultiple(msg, sessionList)
-//	if err != nil {
-//		log.Printf("Failed to send data" + err.Error())
-//		return
-//	}
-//}
-//
-//func broadCastOthers(m *melody.Melody, msg []byte, session *melody.Session, lobbyId int) {
-//	var sessionList []*melody.Session
-//
-//	for sessionKeys := range LobbyList[lobbyId].ConnectedPlayers {
-//		tmpSession := LobbyList[lobbyId].ConnectedPlayers[sessionKeys]
-//		// ignore the session calling the message
-//		if session != tmpSession {
-//			sessionList = append(sessionList, tmpSession)
-//		}
-//	}
-//
-//	err := m.BroadcastMultiple(msg, sessionList)
-//	if err != nil {
-//		log.Fatal("Failed to send data" + err.Error())
-//		return
-//	}
-//}

@@ -31,6 +31,8 @@ func Load() {
 	opts.LogFilePath = fmt.Sprintf("%s/multipacman.log", configDir)
 
 	Opts = opts
+
+	log.Info().Any("config", Opts).Msg("Loaded config")
 }
 
 func getConfigDir(baseDir string) string {

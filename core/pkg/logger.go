@@ -14,6 +14,11 @@ func getConsoleWriter() zerolog.ConsoleWriter {
 	}
 }
 
+func Elog(err error) {
+	// creates too many logs enable only for dev
+	//log.Warn().Err(err).Msg("")
+}
+
 func getBaseLogger() zerolog.Logger {
 	return log.With().Caller().Logger()
 }

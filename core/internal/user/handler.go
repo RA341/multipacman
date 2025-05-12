@@ -84,13 +84,13 @@ func (a *Handler) Login(_ context.Context, c *connect.Request[v1.AuthRequest]) (
 		return nil, fmt.Errorf("empty username or password")
 	}
 
-	userInfo, err := a.auth.Login(username, password)
+	user, err := a.auth.Login(username, password)
 	if err != nil {
 		return nil, err
 	}
 
-	response := connect.NewResponse(userInfo.ToRPC())
-	setCookie(userInfo, response)
+	response := connect.NewResponse(user.ToRPC())
+	setCookie(user, response)
 
 	return response, nil
 }
