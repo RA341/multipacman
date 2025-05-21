@@ -74,21 +74,11 @@ func verifyAuthHeader(ctx context.Context, authService *Service, clientToken str
 	return ctx, nil
 }
 
-// todo combine the 2 funcs
-
 func GetUserContext(ctx context.Context) (*User, error) {
 	userVal := ctx.Value(CtxUserKey)
 	if userVal == nil {
 		return nil, fmt.Errorf("could not find user in context")
 	}
-	user, ok := userVal.(*User)
-	if !ok {
-		return nil, fmt.Errorf("invalid user type in context")
-	}
 
-	return user, nil
-}
-
-func GetUserFromCtx(ctx context.Context) *User {
-	return ctx.Value(CtxUserKey).(*User)
+	return userVal.(*User), nil
 }

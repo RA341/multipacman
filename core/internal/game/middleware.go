@@ -7,28 +7,28 @@ import (
 	"net/http"
 )
 
-func WsAuthMiddleware(authService *user.Service, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		clientToken := getAuthToken(r)
+func WSAuthMiddleware(authService *user.Service, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, req *http.Request) {
+		clientToken := getWSAuthToken(req)
 		if clientToken == "" {
 			log.Error().Msg("empty client token")
-			w.WriteHeader(http.StatusUnauthorized)
+			writer.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		username, err := authService.VerifyToken(clientToken)
 		if err != nil {
 			log.Error().Err(err).Msg("Error verifying token")
-			w.WriteHeader(http.StatusUnauthorized)
+			writer.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), user.CtxUserKey, username)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		ctx := context.WithValue(req.Context(), user.CtxUserKey, username)
+		next.ServeHTTP(writer, req.WithContext(ctx))
 	})
 }
 
-func getAuthToken(r *http.Request) string {
+func getWSAuthToken(r *http.Request) string {
 	cookie, err := r.Cookie(user.AuthHeader)
 	if err == nil && cookie.Value != "" {
 		return cookie.Value

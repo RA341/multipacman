@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/RA341/multipacman/pkg"
 	"github.com/rs/zerolog/log"
 	"time"
 )
@@ -55,7 +56,7 @@ func registerMessageHandlers(opts ...MessageHandler) map[string]MessageHandlerFu
 		}
 
 		handlers[opt.messageName] = opt.handler
-		log.Debug().Str("key", opt.messageName).Msg("Registered handler")
+		//log.Debug().Str("key", opt.messageName).Msg("Registered handler")
 	}
 
 	return handlers
@@ -132,17 +133,13 @@ func PowerUpMessage(manager *Manager) MessageHandler {
 
 			time.AfterFunc(powerUpTime, func() {
 				mess := EndPowerUpMessage(data.world).handler(data)
-				encoded, err := json.Marshal(mess)
+				marshal, err := json.Marshal(mess)
 				if err != nil {
 					log.Warn().Err(err).Msg("Unable to marshal json")
 					return
 				}
 
-				err = manager.broadcastAll(data.world, encoded)
-				if err != nil {
-					log.Warn().Err(err).Msg("Unable to broadcast status")
-					return
-				}
+				pkg.Elog(manager.broadcastAll(data.world, marshal))
 			})
 
 			return map[string]interface{}{

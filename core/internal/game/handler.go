@@ -39,20 +39,14 @@ func RegisterGameWSHandler(mux *http.ServeMux, authService *user.Service, lobbyS
 		msgHandlerFuncs: registerMessageHandlers(
 			MovMessage(),
 			KillPlayer().WithMiddleware(CheckGameOverMiddleware),
-			PowerUpMessage(manager).WithMiddleware(CheckGameOverMiddleware),
-			PelletMessage().WithMiddleware(CheckGameOverMiddleware),
+			PowerUpMessage(manager),
+			PelletMessage(),
 		),
 	}
 
 	mel.HandleConnect(handler.HandleConnect)
 	mel.HandleMessage(handler.HandleMessage)
 	mel.HandleDisconnect(handler.HandleDisconnect)
-
-	// flutter sends close signal
-	//mel.HandleClose(func(session *melody.Session, i int, s string) error {
-	//	handler.HandleDisconnect(session)
-	//	return nil
-	//})
 
 	wsHandler := func(w http.ResponseWriter, r *http.Request) {
 		err := mel.HandleRequest(w, r)
@@ -62,14 +56,14 @@ func RegisterGameWSHandler(mux *http.ServeMux, authService *user.Service, lobbyS
 		}
 	}
 
-	mux.Handle("/api/game", WsAuthMiddleware(authService, http.HandlerFunc(wsHandler)))
+	mux.Handle("/api/game", WSAuthMiddleware(authService, http.HandlerFunc(wsHandler)))
 }
 
 ////////////////////////////
 // main handlers
 
 func (h *WsHandler) HandleConnect(newPlayerSession *melody.Session) {
-	user, lobbyInfo, err := h.manager.getUserAndLobbyForNewConnection(newPlayerSession)
+	userInfo, lobbyInfo, err := h.manager.getUserAndLobbyInfo(newPlayerSession)
 	if err != nil {
 		log.Error().Err(err).Msg("Unable to find lobby or user info")
 		return
@@ -81,7 +75,7 @@ func (h *WsHandler) HandleConnect(newPlayerSession *melody.Session) {
 		return
 	}
 
-	player := NewPlayerEntity(user.ID, user.Username)
+	player := NewPlayerEntity(userInfo.ID, userInfo.Username)
 
 	err = world.Join(player, newPlayerSession)
 	if err != nil {
@@ -99,7 +93,7 @@ func (h *WsHandler) HandleConnect(newPlayerSession *melody.Session) {
 	// store session info
 	newPlayerSession.Set(userInfoKey, player)
 	newPlayerSession.Set(worldKey, world)
-	newPlayerSession.Set(userInfKey, user)
+	newPlayerSession.Set(userInfKey, userInfo)
 	newPlayerSession.Set(lobbyIdKey, lobbyInfo.ID)
 
 	// we now have the new player, with lobby joined
@@ -116,7 +110,7 @@ func (h *WsHandler) HandleConnect(newPlayerSession *melody.Session) {
 		return
 	}
 
-	log.Info().Any("user", *user).Any("lobby", lobbyInfo).Msgf("New player joined lobby")
+	log.Info().Any("user", *userInfo).Any("lobby", lobbyInfo).Msgf("New player joined lobby")
 
 	// add new player count
 	broadCastSessions := world.ConnectedPlayers.GetValues()
@@ -141,13 +135,13 @@ func (h *WsHandler) HandleDisconnect(s *melody.Session) {
 	exitingPlayer.Type = "dis"
 
 	// inform other players
-	jsonData, err := exitingPlayer.ToJSON()
+	marshal, err := exitingPlayer.ToJSON()
 	if err != nil {
 		log.Error().Err(err).Any("other entity", exitingPlayer).Msg("Failed to convert PlayerEntity to JSON")
 		return
 	}
 	// inform active players about player that left
-	_ = h.manager.broadcastAll(world, jsonData)
+	pkg.Elog(h.manager.broadcastAll(world, marshal))
 
 	log.Info().Any("player", *exitingPlayer).Msg("client disconnected")
 
@@ -171,18 +165,18 @@ func (h *WsHandler) HandleMessage(s *melody.Session, msg []byte) {
 		return
 	}
 
-	secretToken := msgInfo["secretToken"].(string)
+	secretToken, _ := msgInfo["secretToken"].(string)
 	if secretToken != playerSession.secretToken {
 		log.Error().Msg("unable to verify secret token")
 		return
 	}
 
-	lobbyInfo, err := getWorldFromSession(s)
+	world, err := getWorldFromSession(s)
 	if err != nil {
 		log.Error().Err(err).Msg("Unable to find lobby info")
 		return
 	}
-	msgType := msgInfo["type"].(string)
+	msgType, _ := msgInfo["type"].(string)
 
 	msgHandler, ok := h.msgHandlerFuncs[msgType]
 	if !ok {
@@ -190,7 +184,7 @@ func (h *WsHandler) HandleMessage(s *melody.Session, msg []byte) {
 		return
 	}
 
-	data := msgHandler(MessageData{msgInfo, lobbyInfo, playerSession})
+	data := msgHandler(MessageData{msgInfo, world, playerSession})
 	if data == nil {
 		log.Debug().Msg("null message, something went wrong while handling message")
 		return
@@ -204,9 +198,9 @@ func (h *WsHandler) HandleMessage(s *melody.Session, msg []byte) {
 
 	if msgType == "pos" {
 		// player self does not need the pos update adds lag
-		_ = h.manager.broadcastExceptPlayer(s, marshal)
+		pkg.Elog(h.manager.broadcastExceptPlayer(s, marshal))
 	} else {
-		_ = h.manager.broadcastAll(lobbyInfo, marshal)
+		pkg.Elog(h.manager.broadcastAll(world, marshal))
 	}
 }
 

@@ -38,7 +38,7 @@ func setupServer(baseUrl string) error {
 	registerHandlers(router, authSrv, lobSrv)
 	registerFrontend(router)
 
-	corsHandler := cors.New(cors.Options{
+	cor := cors.New(cors.Options{
 		AllowedOrigins:      []string{"*"},
 		AllowPrivateNetwork: true,
 		AllowedMethods:      connectcors.AllowedMethods(),
@@ -50,14 +50,15 @@ func setupServer(baseUrl string) error {
 	// Use h2c to serve HTTP/2 without TLS
 	return http.ListenAndServe(
 		baseUrl,
-		corsHandler.Handler(h2c.NewHandler(router, &http2.Server{
-			IdleTimeout: 0, // disable max timeout
-		})),
+		cor.Handler(h2c.NewHandler(router,
+			&http2.Server{
+				IdleTimeout: 0, // disable max timeout
+			},
+		)),
 	)
 }
 
 func initServices() (*user.Service, *lobby.Service) {
-	config.Load()
 	db := database.InitDB()
 
 	// setup service structs
@@ -94,6 +95,5 @@ func registerFrontend(router *http.ServeMux) {
 	}
 
 	// serve frontend dir
-	log.Info().Msgf("Setting up ui files")
 	router.Handle("/", http.FileServer(http.FS(subFS)))
 }

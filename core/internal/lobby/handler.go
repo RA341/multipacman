@@ -85,9 +85,12 @@ func (l Handler) AddLobby(ctx context.Context, req *connect.Request[v1.AddLobbie
 
 func (l Handler) DeleteLobby(ctx context.Context, req *connect.Request[v1.DelLobbiesRequest]) (*connect.Response[v1.DelLobbiesResponse], error) {
 	lobbyName := req.Msg.GetLobby()
-	userInfo := user.GetUserFromCtx(ctx)
+	userInfo, err := user.GetUserContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	err := l.lobbyService.DeleteLobby(lobbyName.ID, userInfo.ID)
+	err = l.lobbyService.DeleteLobby(lobbyName.ID, userInfo.ID)
 	if err != nil {
 		return nil, err
 	}
