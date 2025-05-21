@@ -7,6 +7,8 @@ on:
     tags:
       - 'v*'
 
+  workflow_dispatch:
+
   # called by the semantic-bot once it pushes new tag
   workflow_run:
     workflows: [ tag-release ]
