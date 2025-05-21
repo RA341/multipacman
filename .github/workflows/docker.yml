@@ -42,9 +42,6 @@ jobs:
         id: meta # Assign an ID to this step to refer to its outputs later
         uses: docker/metadata-action@v5
         with:
-          # Defines the image name in GHCR. Uses the repository owner and name.
-          # e.g., ghcr.io/your-username/your-repo-name
-          # The action automatically lowercases the repository name part, matching your script's 'tr' command.
           images: ghcr.io/${{ github.repository }}
 
           # Defines how tags are generated. This setup aims to replicate common tagging strategies
@@ -63,7 +60,6 @@ jobs:
             type=ref,event=tag
 
             # For Git tags that are semantic versions (e.g., v1.0.0, v1.2.3-alpha.1),
-            # create more specific semver tags. This handles your 'v*' tag logic.
             type=semver,pattern={{version}} # Full version: e.g., v1.2.3
             type=semver,pattern={{major}}.{{minor}} # Major.minor: e.g., v1.2
             type=semver,pattern={{major}} # Major only: e.g., v1
