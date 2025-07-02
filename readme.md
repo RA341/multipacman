@@ -20,7 +20,20 @@ A real-time multiplayer Pacman game built using Flutter, Phaser game engine, and
 Ensure Docker is installed.
 
 ```bash
-docker run -p 11200:11200 ghcr.io/ra341/multipacman:main
+docker run -p 11200:11200 ghcr.io/ra341/multipacman:release
+```
+
+### Compose
+
+```yaml
+multipacman:
+ container_name: multipacman
+ image: ghcr.io/ra341/multipacman:release
+ ports: 
+    - "11200:11200"
+ volumes:
+  - /appdata/:/app/appdata/
+ restart: unless-stopped
 ```
 
 Then open your browser and navigate to `http://localhost:11200`
