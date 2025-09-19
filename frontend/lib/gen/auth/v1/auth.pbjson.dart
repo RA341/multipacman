@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: auth/v1/auth.proto
-//
-// @dart = 2.12
+// Generated from auth/v1/auth.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -19,8 +20,8 @@ const Empty$json = {
 };
 
 /// Descriptor for `Empty`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List emptyDescriptor = $convert.base64Decode(
-    'CgVFbXB0eQ==');
+final $typed_data.Uint8List emptyDescriptor =
+    $convert.base64Decode('CgVFbXB0eQ==');
 
 @$core.Deprecated('Use authRequestDescriptor instead')
 const AuthRequest$json = {
@@ -71,8 +72,8 @@ const TestResponse$json = {
 };
 
 /// Descriptor for `TestResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List testResponseDescriptor = $convert.base64Decode(
-    'CgxUZXN0UmVzcG9uc2U=');
+final $typed_data.Uint8List testResponseDescriptor =
+    $convert.base64Decode('CgxUZXN0UmVzcG9uc2U=');
 
 @$core.Deprecated('Use registerUserRequestDescriptor instead')
 const RegisterUserRequest$json = {
@@ -96,22 +97,43 @@ const RegisterUserResponse$json = {
 };
 
 /// Descriptor for `RegisterUserResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List registerUserResponseDescriptor = $convert.base64Decode(
-    'ChRSZWdpc3RlclVzZXJSZXNwb25zZQ==');
+final $typed_data.Uint8List registerUserResponseDescriptor =
+    $convert.base64Decode('ChRSZWdpc3RlclVzZXJSZXNwb25zZQ==');
 
 const $core.Map<$core.String, $core.dynamic> AuthServiceBase$json = {
   '1': 'AuthService',
   '2': [
-    {'1': 'Login', '2': '.auth.v1.AuthRequest', '3': '.auth.v1.UserResponse', '4': {}},
-    {'1': 'Register', '2': '.auth.v1.RegisterUserRequest', '3': '.auth.v1.RegisterUserResponse', '4': {}},
-    {'1': 'Test', '2': '.auth.v1.AuthResponse', '3': '.auth.v1.UserResponse', '4': {}},
-    {'1': 'GuestLogin', '2': '.auth.v1.Empty', '3': '.auth.v1.UserResponse', '4': {}},
+    {
+      '1': 'Login',
+      '2': '.auth.v1.AuthRequest',
+      '3': '.auth.v1.UserResponse',
+      '4': {}
+    },
+    {
+      '1': 'Register',
+      '2': '.auth.v1.RegisterUserRequest',
+      '3': '.auth.v1.RegisterUserResponse',
+      '4': {}
+    },
+    {
+      '1': 'Test',
+      '2': '.auth.v1.AuthResponse',
+      '3': '.auth.v1.UserResponse',
+      '4': {}
+    },
+    {
+      '1': 'GuestLogin',
+      '2': '.auth.v1.Empty',
+      '3': '.auth.v1.UserResponse',
+      '4': {}
+    },
     {'1': 'Logout', '2': '.auth.v1.Empty', '3': '.auth.v1.Empty', '4': {}},
   ],
 };
 
 @$core.Deprecated('Use authServiceDescriptor instead')
-const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> AuthServiceBase$messageJson = {
+const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
+    AuthServiceBase$messageJson = {
   '.auth.v1.AuthRequest': AuthRequest$json,
   '.auth.v1.UserResponse': UserResponse$json,
   '.auth.v1.RegisterUserRequest': RegisterUserRequest$json,
@@ -128,4 +150,3 @@ final $typed_data.Uint8List authServiceDescriptor = $convert.base64Decode(
     'hSZXNwb25zZRoVLmF1dGgudjEuVXNlclJlc3BvbnNlIgASNQoKR3Vlc3RMb2dpbhIOLmF1dGgu'
     'djEuRW1wdHkaFS5hdXRoLnYxLlVzZXJSZXNwb25zZSIAEioKBkxvZ291dBIOLmF1dGgudjEuRW'
     '1wdHkaDi5hdXRoLnYxLkVtcHR5IgA=');
-

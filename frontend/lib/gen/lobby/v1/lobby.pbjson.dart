@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: lobby/v1/lobby.proto
-//
-// @dart = 2.12
+// Generated from lobby/v1/lobby.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -19,14 +20,21 @@ const ListLobbiesRequest$json = {
 };
 
 /// Descriptor for `ListLobbiesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List listLobbiesRequestDescriptor = $convert.base64Decode(
-    'ChJMaXN0TG9iYmllc1JlcXVlc3Q=');
+final $typed_data.Uint8List listLobbiesRequestDescriptor =
+    $convert.base64Decode('ChJMaXN0TG9iYmllc1JlcXVlc3Q=');
 
 @$core.Deprecated('Use listLobbiesResponseDescriptor instead')
 const ListLobbiesResponse$json = {
   '1': 'ListLobbiesResponse',
   '2': [
-    {'1': 'lobbies', '3': 1, '4': 3, '5': 11, '6': '.lobby.v1.Lobby', '10': 'lobbies'},
+    {
+      '1': 'lobbies',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.lobby.v1.Lobby',
+      '10': 'lobbies'
+    },
   ],
 };
 
@@ -53,14 +61,21 @@ const AddLobbiesResponse$json = {
 };
 
 /// Descriptor for `AddLobbiesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List addLobbiesResponseDescriptor = $convert.base64Decode(
-    'ChJBZGRMb2JiaWVzUmVzcG9uc2U=');
+final $typed_data.Uint8List addLobbiesResponseDescriptor =
+    $convert.base64Decode('ChJBZGRMb2JiaWVzUmVzcG9uc2U=');
 
 @$core.Deprecated('Use delLobbiesRequestDescriptor instead')
 const DelLobbiesRequest$json = {
   '1': 'DelLobbiesRequest',
   '2': [
-    {'1': 'lobby', '3': 1, '4': 1, '5': 11, '6': '.lobby.v1.Lobby', '10': 'lobby'},
+    {
+      '1': 'lobby',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.lobby.v1.Lobby',
+      '10': 'lobby'
+    },
   ],
 };
 
@@ -75,8 +90,8 @@ const DelLobbiesResponse$json = {
 };
 
 /// Descriptor for `DelLobbiesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List delLobbiesResponseDescriptor = $convert.base64Decode(
-    'ChJEZWxMb2JiaWVzUmVzcG9uc2U=');
+final $typed_data.Uint8List delLobbiesResponseDescriptor =
+    $convert.base64Decode('ChJEZWxMb2JiaWVzUmVzcG9uc2U=');
 
 @$core.Deprecated('Use lobbyDescriptor instead')
 const Lobby$json = {
@@ -101,14 +116,31 @@ final $typed_data.Uint8List lobbyDescriptor = $convert.base64Decode(
 const $core.Map<$core.String, $core.dynamic> LobbyServiceBase$json = {
   '1': 'LobbyService',
   '2': [
-    {'1': 'ListLobbies', '2': '.lobby.v1.ListLobbiesRequest', '3': '.lobby.v1.ListLobbiesResponse', '4': {}, '6': true},
-    {'1': 'AddLobby', '2': '.lobby.v1.AddLobbiesRequest', '3': '.lobby.v1.AddLobbiesResponse', '4': {}},
-    {'1': 'DeleteLobby', '2': '.lobby.v1.DelLobbiesRequest', '3': '.lobby.v1.DelLobbiesResponse', '4': {}},
+    {
+      '1': 'ListLobbies',
+      '2': '.lobby.v1.ListLobbiesRequest',
+      '3': '.lobby.v1.ListLobbiesResponse',
+      '4': {},
+      '6': true
+    },
+    {
+      '1': 'AddLobby',
+      '2': '.lobby.v1.AddLobbiesRequest',
+      '3': '.lobby.v1.AddLobbiesResponse',
+      '4': {}
+    },
+    {
+      '1': 'DeleteLobby',
+      '2': '.lobby.v1.DelLobbiesRequest',
+      '3': '.lobby.v1.DelLobbiesResponse',
+      '4': {}
+    },
   ],
 };
 
 @$core.Deprecated('Use lobbyServiceDescriptor instead')
-const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> LobbyServiceBase$messageJson = {
+const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
+    LobbyServiceBase$messageJson = {
   '.lobby.v1.ListLobbiesRequest': ListLobbiesRequest$json,
   '.lobby.v1.ListLobbiesResponse': ListLobbiesResponse$json,
   '.lobby.v1.Lobby': Lobby$json,
@@ -125,4 +157,3 @@ final $typed_data.Uint8List lobbyServiceDescriptor = $convert.base64Decode(
     'YmJ5LnYxLkFkZExvYmJpZXNSZXF1ZXN0GhwubG9iYnkudjEuQWRkTG9iYmllc1Jlc3BvbnNlIg'
     'ASSgoLRGVsZXRlTG9iYnkSGy5sb2JieS52MS5EZWxMb2JiaWVzUmVxdWVzdBocLmxvYmJ5LnYx'
     'LkRlbExvYmJpZXNSZXNwb25zZSIA');
-
