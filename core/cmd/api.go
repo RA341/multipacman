@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+
 	"connectrpc.com/connect"
 	connectcors "connectrpc.com/cors"
-	"embed"
-	"fmt"
 	authrpc "github.com/RA341/multipacman/generated/auth/v1/v1connect"
 	lobbyrpc "github.com/RA341/multipacman/generated/lobby/v1/v1connect"
 	"github.com/RA341/multipacman/internal/config"
@@ -16,27 +19,21 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
-	"io/fs"
-	"net/http"
-	"strconv"
 )
 
-//go:embed web
-var frontendDir embed.FS
-
-func StartServer() {
+func StartServer(frontendPath string) {
 	baseUrl := fmt.Sprintf(":%s", strconv.Itoa(config.Opts.ServerPort))
-	if err := setupServer(baseUrl); err != nil {
+	if err := setupServer(baseUrl, frontendPath); err != nil {
 		log.Fatal().Err(err).Msg("Failed to start server")
 	}
 }
 
-func setupServer(baseUrl string) error {
+func setupServer(baseUrl, frontendPath string) error {
 	authSrv, lobSrv := initServices()
 
 	router := http.NewServeMux()
 	registerHandlers(router, authSrv, lobSrv)
-	registerFrontend(router)
+	registerFrontend(router, frontendPath)
 
 	cor := cors.New(cors.Options{
 		AllowedOrigins:      []string{"*"},
@@ -46,14 +43,11 @@ func setupServer(baseUrl string) error {
 		ExposedHeaders:      connectcors.ExposedHeaders(),
 	})
 
-	log.Info().Str("Listening on:", baseUrl).Msg("")
-	// Use h2c to serve HTTP/2 without TLS
+	log.Info().Str("port", baseUrl).Msg("listening on:")
 	return http.ListenAndServe(
 		baseUrl,
 		cor.Handler(h2c.NewHandler(router,
-			&http2.Server{
-				IdleTimeout: 0, // disable max timeout
-			},
+			&http2.Server{},
 		)),
 	)
 }
@@ -88,12 +82,29 @@ func registerHandlers(mux *http.ServeMux, as *user.Service, ls *lobby.Service) {
 	game.RegisterGameWSHandler(mux, as, ls)
 }
 
-func registerFrontend(router *http.ServeMux) {
-	subFS, err := fs.Sub(frontendDir, "web")
-	if err != nil {
-		log.Fatal().Err(err).Msgf("Failed to load frontend directory")
+func registerFrontend(router *http.ServeMux, frontEndPath string) {
+	if frontEndPath == "" {
+		log.Warn().Msg("Empty frontend frontend path, no UI will be served")
+		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			if _, err := w.Write([]byte("No Ui configured")); err != nil {
+				log.Warn().Err(err).Msg("Failed to write response")
+				return
+			}
+		})
+		return
 	}
 
-	// serve frontend dir
-	router.Handle("/", http.FileServer(http.FS(subFS)))
+	root, err := os.OpenRoot(frontEndPath)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Unable to open frontend dir")
+	}
+	defer func(root *os.Root) {
+		err := root.Close()
+		if err != nil {
+			log.Warn().Err(err).Msg("Failed to close frontend dir")
+		}
+	}(root)
+
+	router.Handle("/", http.FileServer(http.FS(root.FS())))
+
 }
