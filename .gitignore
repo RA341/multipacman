@@ -6,3 +6,4 @@ multipacman.db
 spec/generated
 /**/web*
 appdata
+/core/cmd/server/dist/
