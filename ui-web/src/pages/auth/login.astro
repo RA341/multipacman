@@ -1,16 +1,14 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Register">
+<Layout title="Login">
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="flex flex-col items-center w-full max-w-md">
-            <!-- Title outside the box -->
             <h1 class="text-gray-300 text-5xl font-bold mb-8 text-center tracking-wider drop-shadow-lg">
-                Register
+                MULTI-PACMAN
             </h1>
 
-            <!-- Opaque box containing form -->
             <div class="bg-gray-900 bg-opacity-95 border-4 border-gray-400 rounded-lg p-8 w-full shadow-2xl backdrop-blur-sm">
                 <form id="login-form" class="space-y-6">
                     <div class="space-y-2">
@@ -41,41 +39,36 @@ import Layout from "../layouts/Layout.astro";
                         >
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="block text-gray-300 text-xl font-bold text-center" for="password">
-                            Verify Password
-                        </label>
-                        <input
-                                class="w-full px-4 py-3 text-lg font-semibold text-center border-2 border-gray-400 rounded bg-gray-400 text-black focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
-                                type="password"
-                                id="password-verify"
-                                name="password-verify"
-                                maxlength="50"
-                                required
-                        >
-                    </div>
-
                     <div class="pt-4">
                         <button
                                 type="submit"
                                 class="w-full bg-black text-gray-300 border-4 border-gray-400 text-2xl font-bold py-4 px-8 rounded hover:bg-gray-800 hover:text-gray-100 hover:border-gray-300 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                         >
-                            REGISTER
+                            LOGIN
                         </button>
                     </div>
                 </form>
 
                 <div class="mt-8 text-center">
-                    <a href="/register">
+                    <a href="/auth/register">
                         <button
                                 type="button"
                                 class="bg-black text-gray-300 border-4 border-gray-400 text-2xl font-bold py-4 px-8 rounded hover:bg-gray-800 hover:text-gray-100 hover:border-gray-300 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                         >
-                            LOGIN
+                            REGISTER
                         </button>
                     </a>
                 </div>
 
+                <div class="mt-8 text-center">
+                    <button
+                            type="button"
+                            class="bg-black text-gray-300 border-4 border-gray-400 text-2xl font-bold py-4 px-8 rounded hover:bg-gray-800 hover:text-gray-100 hover:border-gray-300 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    >
+                        GUEST LOGIN
+                    </button>
+
+                </div>
             </div>
         </div>
     </div>
@@ -92,9 +85,8 @@ import Layout from "../layouts/Layout.astro";
                 // Retrieve the username and password from the form
                 const usernameInput = document.getElementById('username');
                 const passwordInput = document.getElementById('password');
-                const passwordVerifyInput = document.getElementById('password-verify');
 
-                if (!usernameInput || !passwordInput || !passwordVerifyInput) {
+                if (!usernameInput || !passwordInput) {
                     alert('Form elements not found');
                     return;
                 }
