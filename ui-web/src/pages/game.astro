@@ -1,0 +1,23 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+import "../../public/game-assets/game.css"
+---
+
+<Layout title="FIGHT !!!!!">
+    <div id="errorPopupOverlay" class="error-popup-overlay">
+        <div class="error-popup-content">
+            <p id="errorMessage"></p>
+            <button id="closePopupButton">Close</button>
+        </div>
+    </div>
+    <div>
+        <a href="/" class="nav-button" id="homeLinkButton">Back to Lobby</a>
+    </div>
+
+    <div id="the-game"></div>
+</Layout>
+
+<script>
+    import "../lib/game/app.ts"
+</script>
