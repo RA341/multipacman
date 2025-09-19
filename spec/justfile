@@ -21,7 +21,7 @@ go:
     cp -r generated/go/* {{goDir}}/
     rm -r generated/go
 
-frontendDir := "../frontend/lib/gen"
+frontendDir := "../ui-native/lib/gen"
 dart:
     clear
     echo 'moving dart files'
