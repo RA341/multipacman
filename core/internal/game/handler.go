@@ -2,13 +2,14 @@ package game
 
 import (
 	"encoding/json"
+	"net/http"
+	"time"
+
 	"github.com/RA341/multipacman/internal/lobby"
 	"github.com/RA341/multipacman/internal/user"
 	"github.com/RA341/multipacman/pkg"
 	"github.com/olahol/melody"
 	"github.com/rs/zerolog/log"
-	"net/http"
-	"time"
 )
 
 const (
@@ -115,7 +116,6 @@ func (h *WsHandler) HandleConnect(newPlayerSession *melody.Session) {
 	// add new player count
 	broadCastSessions := world.ConnectedPlayers.GetValues()
 	h.lobbyService.UpdateLobbyPlayerCount(lobbyInfo.ID, len(broadCastSessions))
-	h.lobbyService.UpdateLobbies()
 }
 
 func (h *WsHandler) HandleDisconnect(s *melody.Session) {
@@ -148,7 +148,6 @@ func (h *WsHandler) HandleDisconnect(s *melody.Session) {
 	lobbyId, exist := s.Get(lobbyIdKey)
 	if exist {
 		h.lobbyService.UpdateLobbyPlayerCount(lobbyId.(uint), len(world.ConnectedPlayers.GetValues()))
-		h.lobbyService.UpdateLobbies()
 	}
 }
 

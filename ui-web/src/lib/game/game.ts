@@ -236,7 +236,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     private loadAssets() {
-        const assetsPath = "../../assets/game/"
+        const assetsPath = "/gassets"
         this.load.spritesheet("pacman", `${assetsPath}/pacmanSpriteSheet.png`, {
             frameWidth: 50,
             frameHeight: 50,

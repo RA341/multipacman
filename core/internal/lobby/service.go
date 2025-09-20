@@ -1,26 +1,24 @@
 package lobby
 
 import (
-	"encoding/json"
 	"fmt"
+	"sync"
+
 	v1 "github.com/RA341/multipacman/generated/lobby/v1"
 	"github.com/RA341/multipacman/internal/config"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
-	"sync"
 )
 
 type Service struct {
 	Db          *gorm.DB
 	Mu          *sync.RWMutex
-	Connections map[uint]chan bool
 	PlayerCount sync.Map
 }
 
 func NewLobbyService(db *gorm.DB) *Service {
 	return &Service{
 		Db:          db,
-		Connections: map[uint]chan bool{},
 		Mu:          &sync.RWMutex{},
 		PlayerCount: sync.Map{},
 	}
@@ -97,20 +95,6 @@ func (lobbyService *Service) GetGrpcLobbies() ([]*v1.Lobby, error) {
 	return grpcLobbies, nil
 }
 
-func (lobbyService *Service) GetAndParseLobbies() ([]byte, error) {
-	lobbies, err := lobbyService.RetrieveLobbies()
-	if err != nil {
-		log.Error().Err(err).Msg("error retrieving lobbies")
-	}
-
-	jsonData, err := json.Marshal(lobbies)
-	if err != nil {
-		log.Error().Err(err).Msg("error marshalling lobbies")
-	}
-
-	return jsonData, err
-}
-
 func (lobbyService *Service) countUserLobbies(uid uint) error {
 	var count int64
 	result := lobbyService.Db.
@@ -128,29 +112,6 @@ func (lobbyService *Service) countUserLobbies(uid uint) error {
 	} else {
 		return fmt.Errorf("user has reached max lobby limit of %d", config.Opts.LobbyLimit)
 	}
-}
-
-func (lobbyService *Service) UpdateLobbies() {
-	for _, chn := range lobbyService.Connections {
-		chn <- true
-	}
-}
-
-func (lobbyService *Service) NewUpdateChannel(channelId uint) chan bool {
-	channel := make(chan bool)
-
-	lobbyService.Mu.Lock()
-	lobbyService.Connections[channelId] = channel
-	lobbyService.Mu.Unlock()
-
-	//log.Debug().Msg("Added to lobby list")
-	return channel
-}
-
-func (lobbyService *Service) RemoveUpdateChannel(channelIndex uint) {
-	lobbyService.Mu.Lock()
-	delete(lobbyService.Connections, channelIndex)
-	lobbyService.Mu.Unlock()
 }
 
 func (lobbyService *Service) GetLobbyPlayerCount(lobbyId uint) uint64 {
