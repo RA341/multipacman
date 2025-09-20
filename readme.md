@@ -1,82 +1,63 @@
 # Multiplayer Pacman
 
-A real-time multiplayer Pacman game built using Flutter, Phaser game engine, and Go.
+A real-time multiplayer Pacman game built with Phaser.js and Go WebSocket backend. 
+
+Experience the classic arcade game with friends in an exciting multiplayer format!
 
 🎮 **[Play Now](https://multipacman.radn.dev/)** 🎮
 
 <div align="center">
-  <img src="img/lobby.png" alt="Game Lobby" width="400" />
-  <img src="img/game.png" alt="Gameplay Screenshot" width="400" />
+  <img src=".github/img/lobby.png" alt="Game Lobby" width="400" />
+  <img src=".github/img/game.png" alt="Gameplay Screenshot" width="400" />
 </div>
 
-## Stack
+### Features
 
-- **Flutter**: Cross-platform UI framework for the game client
-- **Phaser**: game engine for javascript
-- **Go**: backend server handling game logic and state management
+- **Real-time multiplayer gameplay** - Compete with friends online
+- **WebSocket-powered** - Low-latency communication for smooth gameplay
+- **Classic Pacman mechanics** - Familiar gameplay with a multiplayer twist
+- **Easy deployment** - Docker support for quick self-hosting
 
-## Selfhost
+## Quick Start
 
-Ensure Docker is installed.
+### Play Online
+Visit [multipacman.radn.dev](https://multipacman.radn.dev/) to start playing immediately!
 
+### Self-Hosting
+
+#### Using Docker (Recommended)
 ```bash
-docker run -p 11200:11200 ghcr.io/ra341/multipacman:release
+docker run -p 11300:11300 ghcr.io/ra341/multipacman:release
 ```
 
-### Compose
-
+#### Using Docker Compose
 ```yaml
-multipacman:
- container_name: multipacman
- image: ghcr.io/ra341/multipacman:release
- ports: 
-    - "11200:11200"
- volumes:
-  - /appdata/:/app/appdata/
- restart: unless-stopped
+version: '3.8'
+services:
+  multipacman:
+    container_name: multipacman
+    image: ghcr.io/ra341/multipacman:release
+    ports: 
+      - "11300:11300"
+    volumes:
+      - ./appdata:/app/appdata/
+    restart: unless-stopped
 ```
 
-Then open your browser and navigate to `http://localhost:11200`
+Then navigate to `http://localhost:11300` in your browser.
 
-## Build
+## License
 
-### Prerequisites
-
-- Flutter SDK and Go installed locally
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/multipacman.git
-cd multipacman/server
-
-# Run the Go server
-go run core/main.go
-```
-
-#### Frontend
-
-```bash
-cd client
-
-# Get Flutter dependencies
-flutter pub get
-
-# Run in development mode
-flutter run -d chrome  # For web
-# Or
-flutter run  # For mobile devices
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+This project is open source and available under the [GPL3](LICENSE).
 
 ## Disclaimer
 
-This project is a fan-made implementation of Pacman for educational and portfolio purposes only. Pacman and all related
-characters, sounds, and assets are trademarks of Bandai Namco Entertainment (formerly Namco). This project is not
-affiliated with, endorsed by, or connected to Bandai Namco Entertainment in any way.
+This project is a fan-made implementation of Pacman created for educational and portfolio purposes only. Pacman and all related characters, sounds, and assets are trademarks of Bandai Namco Entertainment. 
 
-All game mechanics, visual styles, and character designs inspired by the original Pacman are used under fair use for
-educational purposes. No copyright infringement is intended.
+This project is not affiliated with, endorsed by, or connected to Bandai Namco Entertainment in any way. All game mechanics, visual styles, and character designs inspired by the original Pacman are used under fair use for educational purposes. No copyright infringement is intended.
 
+## Acknowledgments
+
+- Original Pacman game by Namco
+- Phaser.js community for the excellent game framework
+- Go community for libraries and tools
