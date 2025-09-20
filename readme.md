@@ -1,6 +1,6 @@
 # Multiplayer Pacman
 
-A real-time multiplayer Pacman game built with Phaser.js and Go WebSocket backend. 
+A real-time multiplayer Pacman game built with Phaser.js and Go.
 
 Experience the classic arcade game with friends in an exciting multiplayer format!
 
