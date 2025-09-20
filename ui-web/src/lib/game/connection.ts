@@ -46,7 +46,8 @@ export function connectToWebSocket() {
         throw new Error("lobbyId must be provided");
     }
 
-    const url = wssProtocol + getBaseUrl() + `/api/game?lobby=${lobbyId}`;
+    const base = new URL(getBaseUrl())
+    const url = wssProtocol + base.host + `/api/game?lobby=${lobbyId}`;
     ws = new WebSocket(url);
 
     ws.onmessage = (ev) => handleMessage(ev);
@@ -165,7 +166,7 @@ function handlePellet(json: any) {
 
     gameScene?.pelletLayer.removeTileAt(x, y)
     console.log(gameScene?.pelletLayer.tilesDrawn)
-    
+
     if (gameScene?.pelletLayer.tilesDrawn === 0) {
         gameScene!.gameOver = true
         gameScene!.gameOverText.setText("Pacman wins")

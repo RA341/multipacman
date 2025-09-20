@@ -96,7 +96,7 @@ func (manager *Manager) getWorld(lobby *lobby.Lobby) (*World, error) {
 }
 
 func (manager *Manager) getUserAndLobbyInfo(newPlayerSession *melody.Session) (*user.User, *lobby.Lobby, error) {
-	userInfo, err := user.GetUserContext(newPlayerSession.Request.Context())
+	userInfo, err := user.UserDataFromContext(newPlayerSession.Request.Context())
 	if err != nil {
 		log.Error().Err(err).Msg("User context error")
 		return nil, nil, fmt.Errorf("no userInfo info found")
