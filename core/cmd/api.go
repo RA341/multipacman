@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"connectrpc.com/connect"
 	connectcors "connectrpc.com/cors"
@@ -32,14 +34,22 @@ func setupServer(baseUrl, frontendPath string) error {
 	authSrv, lobSrv := initServices()
 
 	router := http.NewServeMux()
+
 	registerHandlers(router, authSrv, lobSrv)
-	registerFrontend(router, frontendPath)
+
+	rootCloser := registerFrontend(router, frontendPath, authSrv)
+	defer func(rootCloser io.Closer) {
+		err := rootCloser.Close()
+		if err != nil {
+			log.Warn().Err(err).Msg("Failed to close dist dir root")
+		}
+	}(rootCloser)
 
 	cor := cors.New(cors.Options{
 		AllowedOrigins:      []string{"*"},
 		AllowPrivateNetwork: true,
 		AllowedMethods:      connectcors.AllowedMethods(),
-		AllowedHeaders:      append(connectcors.AllowedHeaders(), user.AuthHeader),
+		AllowedHeaders:      append(connectcors.AllowedHeaders(), user.AuthHeaderKey),
 		ExposedHeaders:      connectcors.ExposedHeaders(),
 	})
 
@@ -55,8 +65,7 @@ func setupServer(baseUrl, frontendPath string) error {
 func initServices() (*user.Service, *lobby.Service) {
 	db := database.InitDB()
 
-	// setup service structs
-	authService := &user.Service{Db: db}
+	authService := user.NewService(db, config.Opts.DisableAuth)
 	lobSrv := lobby.NewLobbyService(db)
 
 	return authService, lobSrv
@@ -82,7 +91,7 @@ func registerHandlers(mux *http.ServeMux, as *user.Service, ls *lobby.Service) {
 	game.RegisterGameWSHandler(mux, as, ls)
 }
 
-func registerFrontend(router *http.ServeMux, frontEndPath string) {
+func registerFrontend(router *http.ServeMux, frontEndPath string, auth *user.Service) io.Closer {
 	if frontEndPath == "" {
 		log.Warn().Msg("Empty frontend frontend path, no UI will be served")
 		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -91,20 +100,48 @@ func registerFrontend(router *http.ServeMux, frontEndPath string) {
 				return
 			}
 		})
-		return
+		return nil
 	}
 
 	root, err := os.OpenRoot(frontEndPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Unable to open frontend dir")
 	}
-	defer func(root *os.Root) {
-		err := root.Close()
-		if err != nil {
-			log.Warn().Err(err).Msg("Failed to close frontend dir")
+
+	srvFs := http.FS(root.FS())
+
+	router.Handle("/", FrontendAuthMiddleware(
+		http.FileServer(srvFs),
+		auth,
+	))
+
+	return root
+}
+
+func FrontendAuthMiddleware(next http.Handler, auth *user.Service) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
+		isAuthPage := strings.HasPrefix(path, "/auth")
+		isAsset := !(strings.HasSuffix(path, ".html") ||
+			strings.HasSuffix(path, "/"))
+
+		if isAuthPage || isAsset {
+			next.ServeHTTP(w, r)
+			return
 		}
-	}(root)
 
-	router.Handle("/", http.FileServer(http.FS(root.FS())))
+		_, err := auth.VerifyAuthHeader(r.Header)
+		if err != nil {
+			http.Redirect(w, r, "/auth/login", http.StatusFound)
+			return
+		}
 
+		if path == "/" {
+			http.Redirect(w, r, "/lobby", http.StatusFound)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

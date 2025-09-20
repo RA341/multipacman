@@ -2,7 +2,7 @@ import {connectToWebSocket, setGame, waitForGameState} from "./connection.ts";
 import {GameScene} from "./game.ts";
 import {showError} from "./utils.ts";
 
-async function initGame() {
+export async function initGame() {
     connectToWebSocket()
     console.log("Waiting for game state")
     await waitForGameState()
@@ -40,4 +40,3 @@ initGame().then(() => {
     console.error(err);
     showError(err)
 })
-

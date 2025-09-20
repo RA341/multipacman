@@ -9,9 +9,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.13",
+    "@bufbuild/protobuf": "^2.5.2",
+    "@connectrpc/connect": "^2.0.2",
+    "@connectrpc/connect-web": "^2.0.2",
     "astro": "^5.13.9",
     "phaser": "^3.90.0",
     "tailwindcss": "^4.1.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.13"
   }
 }

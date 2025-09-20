@@ -1,12 +1,14 @@
 package user
 
 import (
-	"connectrpc.com/connect"
 	"context"
 	"fmt"
+	"net/http"
+
+	"connectrpc.com/connect"
 )
 
-const AuthHeader = "Authorization"
+const AuthHeaderKey = "Authorization"
 const CtxUserKey = "user"
 
 type Interceptor struct {
@@ -22,12 +24,7 @@ func (i *Interceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) co
 		ctx context.Context,
 		conn connect.StreamingHandlerConn,
 	) error {
-		token := conn.RequestHeader().Get(AuthHeader)
-		if token == "" {
-			return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("no auth header found"))
-		}
-
-		ctx, err := verifyAuthHeader(ctx, i.authService, token)
+		ctx, err := i.verifyUser(ctx, conn.RequestHeader())
 		if err != nil {
 			return err
 		}
@@ -41,9 +38,7 @@ func (i *Interceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		ctx context.Context,
 		req connect.AnyRequest,
 	) (connect.AnyResponse, error) {
-		clientToken := req.Header().Get(AuthHeader)
-
-		ctx, err := verifyAuthHeader(ctx, i.authService, clientToken)
+		ctx, err := i.verifyUser(ctx, req.Header())
 		if err != nil {
 			return nil, err
 		}
@@ -61,14 +56,15 @@ func (*Interceptor) WrapStreamingClient(next connect.StreamingClientFunc) connec
 	}
 }
 
-func verifyAuthHeader(ctx context.Context, authService *Service, clientToken string) (context.Context, error) {
-	user, err := authService.VerifyToken(clientToken)
+func (i *Interceptor) verifyUser(ctx context.Context, headers http.Header) (context.Context, error) {
+	user, err := i.authService.VerifyAuthHeader(headers)
 	if err != nil {
 		return nil, connect.NewError(
 			connect.CodeUnauthenticated,
 			err,
 		)
 	}
+
 	// add user value to subsequent requests
 	ctx = context.WithValue(ctx, CtxUserKey, user)
 	return ctx, nil

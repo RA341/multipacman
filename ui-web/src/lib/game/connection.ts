@@ -1,7 +1,7 @@
 import {showError} from "./utils.ts";
 import type {AnimDir, GameMessage} from "./models.ts";
 import {GameScene} from "./game.ts";
-import {getBaseUrl} from "../utils.ts";
+import {getBaseUrl} from "../api.ts";
 
 let ws: WebSocket;
 let resolvePromise: ((value: string | PromiseLike<string>) => void) | undefined;

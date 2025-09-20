@@ -11,6 +11,7 @@ geno:
 gen:
     just geno
     just go
+    just ts
     just dart
 
 goDir := "../core/generated"
@@ -29,7 +30,7 @@ dart:
     cp -r generated/dart/* {{frontendDir}}/
     rm -r generated/dart
 
-tsDir:="../ui-web/src/generated"
+tsDir:="../ui-web/src/lib/generated"
 ts:
     clear
     echo 'moving ts files'

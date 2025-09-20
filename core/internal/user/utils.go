@@ -1,20 +1,21 @@
 package user
 
 import (
-	"connectrpc.com/connect"
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
+	"math/big"
+	"net/http"
+
+	"connectrpc.com/connect"
 	v1 "github.com/RA341/multipacman/generated/auth/v1"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
-	"math/big"
-	"net/http"
 )
 
 func setCookie(user *User, response *connect.Response[v1.UserResponse]) {
 	cookie := http.Cookie{
-		Name:     AuthHeader,
+		Name:     AuthHeaderKey,
 		Value:    user.Token,
 		Path:     "/",
 		HttpOnly: true,
