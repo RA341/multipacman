@@ -3,7 +3,7 @@ version: '3'
 vars:
   CORE_DIR: core/
   UI_DIR: ui/
-  DOCKMAN_IMAGE_BASE: dockman
+  IMAGE_BASE: multipacman
   # Directory for Go source commands
   GO_CMD_DIR: cmd
   # Directory for build output
@@ -15,32 +15,9 @@ tasks:
     cmds:
       - task --list --sort=alphanumeric
 
-  init:
-    desc: "Setup dockman dev environment should be run only once after cloning the project."
-    deps:
-      - init:build
-      - init:ui
-      - tidy
-
-  init:build:
-    desc: "Creates the build dir"
-    cmd: mkdir -p {{.BUILD_DIR}}
-    status:
-      # This command checks if the directory exists. If it does, the task is considered "up-to-date" and won't run.
-      - test -d {{.BUILD_DIR}}
-
-  init:ui:
-    desc: "calls npm i and builds the ui"
-    dir: "{{.UI_DIR}}"
-    cmds:
-      - task: ui:dep
-      - task: ui
-
   ui:
     desc: "Build the latest web ui in {{.UI_DIR}}"
     dir: "{{.UI_DIR}}"
-    sources:
-      - "*.tsx"
     cmds:
       - npm run build
 
@@ -50,40 +27,22 @@ tasks:
     cmds:
       - npm i
 
-  #  ui:native:
-  #    dir: "{{.UI_DIR}}"
-  #    sources:
-  #      - "*.tsx"
-  #    desc: "Builds ui for embed binary. Usage: task ui:native"
-  #    cmds:
-  #      - vite build --outDir=../core/cmd/native/dist
-  #    generates:
-  #      - "../core/cmd/native/dist"
-  #    summary: |
-  #      Builds native ui for native binary target
-
-  # todo pending cross platform shell utils: https://github.com/go-task/task/issues/197#issuecomment-3014045749
-  #  clean:
-  #    desc: "Removes all files in {{.BUILD_DIR}}."
-  #    cmds:
-  #      - task: clean-dir
-  #
-  #  clean-dir:
-  #    internal: true
-  #    cmds:
-  #      - |
-  #        {{if eq OS "windows"}}
-  #        Remove-Item -Path "{{.BUILD_DIR}}" -Recurse -Force
-  #        {{else}}
-  #        rm -rf "{{.BUILD_DIR}}"
-  #        mkdir -p "{{.BUILD_DIR}}"
-  #        {{end}}
-
   tidy:
     desc: "Calls go mod tidy in {{.CORE_DIR}}"
     dir: "{{.CORE_DIR}}"
     cmds:
       - go mod tidy -v -x
+
+  go:*:
+    dir: "{{.BUILD_DIR}}"
+    desc: "Builds and runs a Go target. Usage: task go:r:<target>"
+    vars:
+      CMD_NAME: "{{index .MATCH 0}}"
+      EXE_EXT: '{{if eq OS "windows"}}.exe{{end}}'
+      ARGS: '{{if eq .CMD_NAME "updater"}} -cr={{.CMD_NAME}}/compose {{else}} -conf={{.CMD_NAME}}/config -cr={{.CMD_NAME}}/compose{{end}}'
+    cmds:
+      - task: go:b:{{.CMD_NAME}}
+      - ../{{.BUILD_DIR}}/{{.CMD_NAME}}{{.EXE_EXT}}{{.ARGS}}
 
   go:b:*:
     dir: "{{.CORE_DIR}}"
@@ -103,57 +62,21 @@ tasks:
       Builds the '{{.CMD_NAME}}' Go command.
       Source: '{{.GO_CMD_DIR}}/{{.CMD_NAME}}'
       Output: '{{.BUILD_DIR}}/{{.CMD_NAME}}{{.EXE_EXT}}'
-  go:*:
-    dir: "{{.BUILD_DIR}}"
-    desc: "Builds and runs a Go target. Usage: task go:r:<target>"
-    vars:
-      CMD_NAME: "{{index .MATCH 0}}"
-      EXE_EXT: '{{if eq OS "windows"}}.exe{{end}}'
-      ARGS: '{{if eq .CMD_NAME "updater"}} -cr={{.CMD_NAME}}/compose {{else}} -conf={{.CMD_NAME}}/config -cr={{.CMD_NAME}}/compose{{end}}'
-    cmds:
-      - task: go:b:{{.CMD_NAME}}
-      - ../{{.BUILD_DIR}}/{{.CMD_NAME}}{{.EXE_EXT}}{{.ARGS}}
-
-  dk:b:*:
-    desc: "Builds the main dockman image for a specific target. Usage: task dk:<target>"
-    vars:
-      TARGET: "{{index .MATCH 0}}"
-    cmds:
-      - docker build . -t {{.DOCKMAN_IMAGE_BASE}}:{{.TARGET}} --target {{.TARGET}}
-    preconditions:
-      - sh: 'test -n "{{.TARGET}}"'
-        msg: "The 'target' variable must be provided. Usage: task dk.<target-name>"
 
   dk:*:
-    desc: "Builds and runs the main dockman image for a specific target. Usage: task dk:r:<target>"
+    desc: "Builds and runs the main multipacman image for a specific target. Usage: task dk:r:<target>"
     vars:
       TARGET: "{{index .MATCH 0}}"
     cmds:
       - task dk:b:{{.TARGET}}
-      - docker run -v /var/run/docker.sock:/var/run/docker.sock -p 8221:8866 {{.DOCKMAN_IMAGE_BASE}}:{{.TARGET}}
+      - docker run --rm -p 11300:11300 {{.IMAGE_BASE}}:{{.TARGET}}
+
+  dk:b:*:
+    desc: "Builds the main multipacman image for a specific target. Usage: task dk:<target>"
+    vars:
+      TARGET: "{{index .MATCH 0}}"
+    cmds:
+      - docker build . -t {{.IMAGE_BASE}}:{{.TARGET}}
     preconditions:
       - sh: 'test -n "{{.TARGET}}"'
-        msg: "The 'target' variable must be provided. Usage: task dk:r.<target-name>"
-
-  dk:up:
-    desc: "Builds the updater image. Usage: task dk:<target>"
-    vars:
-      UPDATER: "Dockerfile.updater"
-      IMAGE: "updater"
-      TARGET: "dev"
-    cmds:
-      - docker build -f {{.UPDATER}} . -t {{.DOCKMAN_IMAGE_BASE}}/{{.IMAGE}}:{{.TARGET}}
-
-  dk:upr:
-    desc: "Builds and runs the updater image. Usage: task dk:<target>"
-    vars:
-      UPDATER: "Dockerfile.updater"
-      IMAGE: "updater"
-      TARGET: "dev"
-    cmds:
-      - docker run -p 8869:8869 {{.DOCKMAN_IMAGE_BASE}}/{{.IMAGE}}:{{.TARGET}}
-
-  dk:prune:
-    desc: "Prune docker images."
-    cmds:
-      - docker image prune -f
+        msg: "The 'target' variable must be provided. Usage: task dk.<target-name>"
