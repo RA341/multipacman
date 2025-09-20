@@ -120,8 +120,7 @@ const $core.Map<$core.String, $core.dynamic> LobbyServiceBase$json = {
       '1': 'ListLobbies',
       '2': '.lobby.v1.ListLobbiesRequest',
       '3': '.lobby.v1.ListLobbiesResponse',
-      '4': {},
-      '6': true
+      '4': {}
     },
     {
       '1': 'AddLobby',
@@ -152,8 +151,8 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
 
 /// Descriptor for `LobbyService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
 final $typed_data.Uint8List lobbyServiceDescriptor = $convert.base64Decode(
-    'CgxMb2JieVNlcnZpY2USTgoLTGlzdExvYmJpZXMSHC5sb2JieS52MS5MaXN0TG9iYmllc1JlcX'
-    'Vlc3QaHS5sb2JieS52MS5MaXN0TG9iYmllc1Jlc3BvbnNlIgAwARJHCghBZGRMb2JieRIbLmxv'
-    'YmJ5LnYxLkFkZExvYmJpZXNSZXF1ZXN0GhwubG9iYnkudjEuQWRkTG9iYmllc1Jlc3BvbnNlIg'
-    'ASSgoLRGVsZXRlTG9iYnkSGy5sb2JieS52MS5EZWxMb2JiaWVzUmVxdWVzdBocLmxvYmJ5LnYx'
-    'LkRlbExvYmJpZXNSZXNwb25zZSIA');
+    'CgxMb2JieVNlcnZpY2USTAoLTGlzdExvYmJpZXMSHC5sb2JieS52MS5MaXN0TG9iYmllc1JlcX'
+    'Vlc3QaHS5sb2JieS52MS5MaXN0TG9iYmllc1Jlc3BvbnNlIgASRwoIQWRkTG9iYnkSGy5sb2Ji'
+    'eS52MS5BZGRMb2JiaWVzUmVxdWVzdBocLmxvYmJ5LnYxLkFkZExvYmJpZXNSZXNwb25zZSIAEk'
+    'oKC0RlbGV0ZUxvYmJ5EhsubG9iYnkudjEuRGVsTG9iYmllc1JlcXVlc3QaHC5sb2JieS52MS5E'
+    'ZWxMb2JiaWVzUmVzcG9uc2UiAA==');

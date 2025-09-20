@@ -9,14 +9,14 @@ import "lobby.connect.spec.dart" as specs;
 
 extension type LobbyServiceClient (connect.Transport _transport) {
   /// todo figure out lobby streaming
-  Stream<lobbyv1lobby.ListLobbiesResponse> listLobbies(
+  Future<lobbyv1lobby.ListLobbiesResponse> listLobbies(
     lobbyv1lobby.ListLobbiesRequest input, {
     connect.Headers? headers,
     connect.AbortSignal? signal,
     Function(connect.Headers)? onHeader,
     Function(connect.Headers)? onTrailer,
   }) {
-    return connect.Client(_transport).server(
+    return connect.Client(_transport).unary(
       specs.LobbyService.listLobbies,
       input,
       signal: signal,

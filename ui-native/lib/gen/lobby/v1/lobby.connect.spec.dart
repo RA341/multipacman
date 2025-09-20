@@ -13,7 +13,7 @@ abstract final class LobbyService {
   /// todo figure out lobby streaming
   static const listLobbies = connect.Spec(
     '/$name/ListLobbies',
-    connect.StreamType.server,
+    connect.StreamType.unary,
     lobbyv1lobby.ListLobbiesRequest.new,
     lobbyv1lobby.ListLobbiesResponse.new,
   );

@@ -368,9 +368,9 @@ const file_lobby_v1_lobby_proto_rawDesc = "" +
 	"\aownerId\x18\x05 \x01(\x04R\aownerId\x12\x1d\n" +
 	"\n" +
 	"created_at\x18\x03 \x01(\tR\tcreatedAt\x12 \n" +
-	"\vplayerCount\x18\x06 \x01(\x04R\vplayerCount2\xf3\x01\n" +
-	"\fLobbyService\x12N\n" +
-	"\vListLobbies\x12\x1c.lobby.v1.ListLobbiesRequest\x1a\x1d.lobby.v1.ListLobbiesResponse\"\x000\x01\x12G\n" +
+	"\vplayerCount\x18\x06 \x01(\x04R\vplayerCount2\xf1\x01\n" +
+	"\fLobbyService\x12L\n" +
+	"\vListLobbies\x12\x1c.lobby.v1.ListLobbiesRequest\x1a\x1d.lobby.v1.ListLobbiesResponse\"\x00\x12G\n" +
 	"\bAddLobby\x12\x1b.lobby.v1.AddLobbiesRequest\x1a\x1c.lobby.v1.AddLobbiesResponse\"\x00\x12J\n" +
 	"\vDeleteLobby\x12\x1b.lobby.v1.DelLobbiesRequest\x1a\x1c.lobby.v1.DelLobbiesResponse\"\x00B\x8c\x01\n" +
 	"\fcom.lobby.v1B\n" +
