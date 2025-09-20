@@ -9,7 +9,10 @@ export function getBaseUrl() {
         console.log(`Application is running in Debug mode using ${devUrl}`);
         return devUrl
     } else {
-        const url = "/"
+        const url = typeof window !== 'undefined' ?
+            window.location.protocol + "//" + window.location.host.toString() :
+            "/"
+
         console.log(`Application is running in Production mode using ${url}`);
         return url
     }

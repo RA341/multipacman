@@ -63,14 +63,6 @@ tasks:
       Source: '{{.GO_CMD_DIR}}/{{.CMD_NAME}}'
       Output: '{{.BUILD_DIR}}/{{.CMD_NAME}}{{.EXE_EXT}}'
 
-  dk:*:
-    desc: "Builds and runs the main multipacman image for a specific target. Usage: task dk:r:<target>"
-    vars:
-      TARGET: "{{index .MATCH 0}}"
-    cmds:
-      - task dk:b:{{.TARGET}}
-      - docker run --rm -p 11300:11300 {{.IMAGE_BASE}}:{{.TARGET}}
-
   dk:b:*:
     desc: "Builds the main multipacman image for a specific target. Usage: task dk:<target>"
     vars:
@@ -80,3 +72,11 @@ tasks:
     preconditions:
       - sh: 'test -n "{{.TARGET}}"'
         msg: "The 'target' variable must be provided. Usage: task dk.<target-name>"
+
+  dk:*:
+    desc: "Builds and runs the main multipacman image for a specific target. Usage: task dk:r:<target>"
+    vars:
+      TARGET: "{{index .MATCH 0}}"
+    cmds:
+      - task dk:b:{{.TARGET}}
+      - docker run --rm -p 11300:11300 {{.IMAGE_BASE}}:{{.TARGET}}
