@@ -3,12 +3,26 @@ package user
 import (
 	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
 type Service struct {
-	Db *gorm.DB
+	Db         *gorm.DB
+	BypassAuth bool
+}
+
+func NewService(db *gorm.DB, bypassAuth bool) *Service {
+	if bypassAuth {
+		log.Warn().Msg("AUTH IS DISABLED DUMB DUMB, HOPE YOU KNOW WHAT YOU ARE DOING")
+	}
+
+	return &Service{
+		Db:         db,
+		BypassAuth: bypassAuth,
+	}
 }
 
 func (auth *Service) Register(username, password string, isGuest bool) error {
@@ -25,7 +39,7 @@ func (auth *Service) Register(username, password string, isGuest bool) error {
 		return res.Error
 	}
 
-	log.Info().Any("user", user).Msg("Created user")
+	log.Info().Any("user", user.Username).Msg("Created user")
 
 	return nil
 }
@@ -86,7 +100,39 @@ func (auth *Service) updateUserAuthToken(userId uint, token string) (*User, erro
 	return &user, nil
 }
 
-func (auth *Service) VerifyToken(token string) (*User, error) {
+// VerifyAuthHeader will check for direct auth header then cookie
+func (auth *Service) VerifyAuthHeader(headers http.Header) (*User, error) {
+	if auth.BypassAuth {
+		// development test user
+		return &User{
+			Username: "test-user",
+			Password: "",
+			Token:    "",
+			Guest:    false,
+		}, nil
+	}
+
+	clientToken := headers.Get(AuthHeaderKey)
+	if clientToken != "" {
+		return auth.verifyToken(clientToken)
+	}
+
+	// for flutter clients
+	clientToken = headers.Get("Sec-Websocket-Protocol")
+	if clientToken != "" {
+		return auth.verifyToken(clientToken)
+	}
+
+	req := http.Request{Header: headers}
+	authCookie, err := req.Cookie(AuthHeaderKey)
+	if err != nil {
+		return nil, fmt.Errorf("cookie: %s not found", AuthHeaderKey)
+	}
+
+	return auth.verifyToken(authCookie.Value)
+}
+
+func (auth *Service) verifyToken(token string) (*User, error) {
 	user := User{}
 
 	result := auth.Db.
@@ -99,7 +145,6 @@ func (auth *Service) VerifyToken(token string) (*User, error) {
 	}
 
 	if user.ID == 0 || user.Username == "" {
-		log.Error().Msg("Invalid token")
 		return &User{}, errors.New("invalid token")
 	}
 

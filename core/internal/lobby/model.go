@@ -1,9 +1,10 @@
 package lobby
 
 import (
+	"time"
+
 	v1 "github.com/RA341/multipacman/generated/lobby/v1"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Lobby struct {
