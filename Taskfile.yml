@@ -1,0 +1,82 @@
+version: '3'
+
+vars:
+  CORE_DIR: core/
+  UI_DIR: ui/
+  IMAGE_BASE: multipacman
+  # Directory for Go source commands
+  GO_CMD_DIR: cmd
+  # Directory for build output
+  BUILD_DIR: build
+
+tasks:
+  default:
+    desc: "Lists all available tasks"
+    cmds:
+      - task --list --sort=alphanumeric
+
+  ui:
+    desc: "Build the latest web ui in {{.UI_DIR}}"
+    dir: "{{.UI_DIR}}"
+    cmds:
+      - npm run build
+
+  ui:dep:
+    desc: "calls npm install in {{.UI_DIR}}"
+    dir: "{{.UI_DIR}}"
+    cmds:
+      - npm i
+
+  tidy:
+    desc: "Calls go mod tidy in {{.CORE_DIR}}"
+    dir: "{{.CORE_DIR}}"
+    cmds:
+      - go mod tidy -v -x
+
+  go:*:
+    dir: "{{.BUILD_DIR}}"
+    desc: "Builds and runs a Go target. Usage: task go:r:<target>"
+    vars:
+      CMD_NAME: "{{index .MATCH 0}}"
+      EXE_EXT: '{{if eq OS "windows"}}.exe{{end}}'
+      ARGS: '{{if eq .CMD_NAME "updater"}} -cr={{.CMD_NAME}}/compose {{else}} -conf={{.CMD_NAME}}/config -cr={{.CMD_NAME}}/compose{{end}}'
+    cmds:
+      - task: go:b:{{.CMD_NAME}}
+      - ../{{.BUILD_DIR}}/{{.CMD_NAME}}{{.EXE_EXT}}{{.ARGS}}
+
+  go:b:*:
+    dir: "{{.CORE_DIR}}"
+    desc: "Builds a Go target. Usage: task go:<target>"
+    vars:
+      CMD_NAME: "{{index .MATCH 0}}"
+      EXE_EXT: '{{if eq OS "windows"}}.exe{{end}}'
+    deps:
+      - task: init:build
+    sources:
+      - "**/*.go"
+    generates:
+      - "{{.BUILD_DIR}}/{{.CMD_NAME}}{{.EXE_EXT}}"
+    cmds:
+      - go build -v -o ../{{.BUILD_DIR}}/{{.CMD_NAME}}{{.EXE_EXT}} ./{{.GO_CMD_DIR}}/{{.CMD_NAME}}
+    summary: |
+      Builds the '{{.CMD_NAME}}' Go command.
+      Source: '{{.GO_CMD_DIR}}/{{.CMD_NAME}}'
+      Output: '{{.BUILD_DIR}}/{{.CMD_NAME}}{{.EXE_EXT}}'
+
+  dk:*:
+    desc: "Builds and runs the main multipacman image for a specific target. Usage: task dk:r:<target>"
+    vars:
+      TARGET: "{{index .MATCH 0}}"
+    cmds:
+      - task dk:b:{{.TARGET}}
+      - docker run --rm -p 11300:11300 {{.IMAGE_BASE}}:{{.TARGET}}
+
+  dk:b:*:
+    desc: "Builds the main multipacman image for a specific target. Usage: task dk:<target>"
+    vars:
+      TARGET: "{{index .MATCH 0}}"
+    cmds:
+      - docker build . -t {{.IMAGE_BASE}}:{{.TARGET}}
+    preconditions:
+      - sh: 'test -n "{{.TARGET}}"'
+        msg: "The 'target' variable must be provided. Usage: task dk.<target-name>"

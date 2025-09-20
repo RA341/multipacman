@@ -1,0 +1,47 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Lobby">
+    <div class="relative flex justify-center items-center pt-10 pb-6 px-6">
+        <h1 class="text-gray-300 text-5xl font-bold tracking-wider drop-shadow-lg">
+            Lobby
+        </h1>
+
+        <div class="absolute right-20 flex flex-col items-center">
+            <div id="welcome-message" class="text-gray-300 font-medium text-lg mb-5">
+                Let's play a game
+            </div>
+            <button
+                    id="logout-btn"
+                    class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200 ease-in-out"
+            >
+                Logout
+            </button>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import {getUserInfo, logout} from "../../lib/auth";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const username = await getUserInfo();
+            const welcomeElement = document.getElementById('welcome-message');
+            if (welcomeElement && username) {
+                welcomeElement.textContent = `Let's play a game ${username}`;
+            }
+        } catch (error) {
+            console.error('Failed to get user info:', error);
+        }
+    });
+
+    document.getElementById('logout-btn')?.addEventListener('click', () => {
+        logout().finally(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/auth/login';
+        });
+    });
+</script>

@@ -1,0 +1,106 @@
+---
+import '../styles/global.css'
+
+import ghostOrange from "../assets/ghost-orange.png"
+import ghostRed from "../assets/ghost-red.png"
+import ghostBlue from "../assets/ghost-blue.png"
+import ghostPink from "../assets/ghost-pink.png"
+import pacman from "../assets/pacman.png"
+
+import {Image} from 'astro:assets';
+
+const {title = ""} = Astro.props;
+let pageTitle = "Multipacman"
+
+if (title) {
+    pageTitle += ` | ${title}`
+}
+---
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width"/>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+    <meta name="generator" content={Astro.generator}/>
+    <title>{pageTitle}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<slot/>
+
+<Image id="orange-ghost" src={ghostOrange} alt="ghost Orange" width="150" height="150"/>
+<Image id="red-ghost" src={ghostRed} alt="ghost Red" width="150" height="150"/>
+<Image id="pink-ghost" src={ghostPink} alt="ghost Pink" width="150" height="150"/>
+<Image id="blue-ghost" src={ghostBlue} alt="ghost Blue" width="150" height="150"/>
+<Image id="pacman" src={pacman} alt="Pacman" width="175" height="175"/>
+
+</body>
+
+</html>
+
+<style>
+    * {
+        font-family: "Play", sans-serif !important;
+    }
+
+    body {
+        background-color: #000;
+    }
+
+    h2 {
+        font-family: "Press Start 2P", system-ui;
+        font-weight: 400;
+        font-style: normal;
+        color: #FFF;
+        z-index: 1;
+    }
+
+
+    #pacman {
+        position: absolute;
+        bottom: 400px;
+        left: 300px;
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+        z-index: -1;
+    }
+
+    #red-ghost {
+        position: absolute;
+        top: 100px;
+        left: 200px;
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+        z-index: -1;
+    }
+
+    #orange-ghost {
+        position: absolute;
+        top: 150px;
+        right: 300px;
+        z-index: -1;
+    }
+
+    #blue-ghost {
+        position: absolute;
+        bottom: 50px;
+        left: 100px;
+        -webkit-transform: scaleX(-1);
+        transform: scaleX(-1);
+        z-index: -1;
+    }
+
+    #pink-ghost {
+        position: absolute;
+        bottom: 100px;
+        right: 50px;
+        z-index: -1;
+    }
+
+</style>

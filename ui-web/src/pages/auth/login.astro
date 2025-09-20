@@ -1,0 +1,202 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Login">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="flex flex-col items-center w-full max-w-md">
+            <h1 class="text-gray-300 text-5xl font-bold mb-8 text-center tracking-wider drop-shadow-lg">
+                MULTI-PACMAN
+            </h1>
+
+            <div class="bg-gray-900 bg-opacity-95 border-4 border-gray-400 rounded-lg p-8 w-full shadow-2xl backdrop-blur-sm">
+                <form id="login-form" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-gray-300 text-xl font-bold text-center" for="username">
+                            Username
+                        </label>
+                        <input
+                                class="w-full px-4 py-3 text-lg font-semibold text-center border-2 border-gray-400 rounded bg-gray-400 text-black focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
+                                type="text"
+                                id="username"
+                                name="username"
+                                maxlength="50"
+                                required
+                        >
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-gray-300 text-xl font-bold text-center" for="password">
+                            Password
+                        </label>
+                        <input
+                                class="w-full px-4 py-3 text-lg font-semibold text-center border-2 border-gray-400 rounded bg-gray-400 text-black focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
+                                type="password"
+                                id="password"
+                                name="password"
+                                maxlength="50"
+                                required
+                        >
+                    </div>
+
+                    <div class="pt-4">
+                        <button
+                                type="submit"
+                                id="login-btn"
+                                class="w-full bg-black text-gray-300 border-4 border-gray-400 text-2xl font-bold py-4 px-8 rounded hover:bg-gray-800 hover:text-gray-100 hover:border-gray-300 transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        >
+                            <span id="login-text">LOGIN</span>
+                            <span id="login-spinner" class="hidden">
+                                <svg class="animate-spin h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-8 text-center">
+                    <a href="/auth/register">
+                        <button
+                                type="button"
+                                class="bg-black text-gray-300 border-4 border-gray-400 text-2xl font-bold py-4 px-8 rounded hover:bg-gray-800 hover:text-gray-100 hover:border-gray-300 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                        >
+                            REGISTER
+                        </button>
+                    </a>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button
+                            type="button"
+                            id="guest-btn"
+                            class="bg-black text-gray-300 border-4 border-gray-400 text-2xl font-bold py-4 px-8 rounded hover:bg-gray-800 hover:text-gray-100 hover:border-gray-300 transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            onclick="onGuestLogin()"
+                    >
+                        <span id="guest-text">GUEST LOGIN</span>
+                        <span id="guest-spinner" class="hidden">
+                            <svg class="animate-spin h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import {guestLogin, login} from "../../lib/auth";
+
+    let isLoginLoading = false;
+    let isGuestLoading = false;
+
+    const setLoginLoading = (loading: boolean) => {
+        isLoginLoading = loading;
+        const btn = document.getElementById('login-btn') as HTMLButtonElement;
+        const text = document.getElementById('login-text');
+        const spinner = document.getElementById('login-spinner');
+        const usernameInput = document.getElementById('username') as HTMLInputElement;
+        const passwordInput = document.getElementById('password') as HTMLInputElement;
+
+        if (btn && text && spinner && usernameInput && passwordInput) {
+            btn.disabled = loading;
+            usernameInput.disabled = loading;
+            passwordInput.disabled = loading;
+
+            if (loading) {
+                text.classList.add('hidden');
+                spinner.classList.remove('hidden');
+            } else {
+                text.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        }
+    };
+
+    const setGuestLoading = (loading: boolean) => {
+        isGuestLoading = loading;
+        const btn = document.getElementById('guest-btn') as HTMLButtonElement;
+        const text = document.getElementById('guest-text');
+        const spinner = document.getElementById('guest-spinner');
+
+        if (btn && text && spinner) {
+            btn.disabled = loading;
+
+            if (loading) {
+                text.classList.add('hidden');
+                spinner.classList.remove('hidden');
+            } else {
+                text.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        }
+    };
+
+    const onLogin = async (e: Event) => {
+        e.preventDefault();
+
+        if (isLoginLoading) return;
+        setLoginLoading(true);
+
+        const usernameInput = document.getElementById('username') as HTMLInputElement;
+        const passwordInput = document.getElementById('password') as HTMLInputElement;
+
+        if (!usernameInput || !passwordInput) {
+            alert('Form elements not found');
+            return;
+        }
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!username || !password) {
+            alert('Please enter both username and password');
+            return;
+        }
+
+        const {err} = await login(username, password);
+
+        if (err) {
+            alert('Login failed. Please try again.');
+            return;
+        } else {
+            window.location.assign("/lobby");
+        }
+
+        setLoginLoading(false);
+    };
+
+    async function onGuestLogin() {
+        if (isGuestLoading) return;
+        setGuestLoading(true);
+
+        const {val, err} = await guestLogin();
+
+        console.log("guest login err: ", err, "val", val);
+        if (err) {
+            alert('Guest Login failed. Please try again.');
+        } else {
+            window.location.assign("/lobby");
+        }
+
+        setGuestLoading(false);
+    }
+
+    (window as any).onGuestLogin = onGuestLogin;
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const form = document.getElementById('login-form');
+        if (form) {
+            form.addEventListener('submit', onLogin);
+        }
+    });
+</script>

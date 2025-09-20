@@ -1,0 +1,173 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Register">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="flex flex-col items-center w-full max-w-md">
+            <!-- Title outside the box -->
+            <h1 class="text-gray-300 text-5xl font-bold mb-8 text-center tracking-wider drop-shadow-lg">
+                Register
+            </h1>
+
+            <!-- Opaque box containing form -->
+            <div class="bg-gray-900 bg-opacity-95 border-4 border-gray-400 rounded-lg p-8 w-full shadow-2xl backdrop-blur-sm">
+                <form id="register-form" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-gray-300 text-xl font-bold text-center" for="username">
+                            Username
+                        </label>
+                        <input
+                                class="w-full px-4 py-3 text-lg font-semibold text-center border-2 border-gray-400 rounded bg-gray-400 text-black focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
+                                type="text"
+                                id="username"
+                                name="username"
+                                maxlength="50"
+                                required
+                        >
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-gray-300 text-xl font-bold text-center" for="password">
+                            Password
+                        </label>
+                        <input
+                                class="w-full px-4 py-3 text-lg font-semibold text-center border-2 border-gray-400 rounded bg-gray-400 text-black focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
+                                type="password"
+                                id="password"
+                                name="password"
+                                maxlength="50"
+                                required
+                        >
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-gray-300 text-xl font-bold text-center" for="password-verify">
+                            Verify Password
+                        </label>
+                        <input
+                                class="w-full px-4 py-3 text-lg font-semibold text-center border-2 border-gray-400 rounded bg-gray-400 text-black focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
+                                type="password"
+                                id="password-verify"
+                                name="password-verify"
+                                maxlength="50"
+                                required
+                        >
+                    </div>
+
+                    <div class="pt-4">
+                        <button
+                                type="submit"
+                                id="register-btn"
+                                class="w-full bg-black text-gray-300 border-4 border-gray-400 text-2xl font-bold py-4 px-8 rounded hover:bg-gray-800 hover:text-gray-100 hover:border-gray-300 transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        >
+                            <span id="register-text">REGISTER</span>
+                            <div id="register-spinner" class="hidden flex items-center justify-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-gray-300"
+                                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Registering...
+                            </div>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-8 text-center">
+                    <a href="/auth/login">
+                        <button
+                                type="button"
+                                class="bg-black text-gray-300 border-4 border-gray-400 text-2xl font-bold py-4 px-8 rounded hover:bg-gray-800 hover:text-gray-100 hover:border-gray-300 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                        >
+                            LOGIN
+                        </button>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import {register} from "../../lib/auth";
+
+    let isRegisterLoading = false;
+
+    const setRegisterLoading = (loading: boolean) => {
+        isRegisterLoading = loading;
+        const btn = document.getElementById('register-btn') as HTMLButtonElement;
+        const text = document.getElementById('register-text');
+        const spinner = document.getElementById('register-spinner');
+        const usernameInput = document.getElementById('username') as HTMLInputElement;
+        const passwordInput = document.getElementById('password') as HTMLInputElement;
+        const passwordVerifyInput = document.getElementById('password-verify') as HTMLInputElement;
+
+        if (btn && text && spinner && usernameInput && passwordInput && passwordVerifyInput) {
+            btn.disabled = loading;
+            usernameInput.disabled = loading;
+            passwordInput.disabled = loading;
+            passwordVerifyInput.disabled = loading;
+
+            if (loading) {
+                text.classList.add('hidden');
+                spinner.classList.remove('hidden');
+            } else {
+                text.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        }
+    };
+
+    const onRegister = async (e: Event) => {
+        e.preventDefault();
+
+        if (isRegisterLoading) return;
+        setRegisterLoading(true);
+
+        const usernameInput = document.getElementById('username') as HTMLInputElement;
+        const passwordInput = document.getElementById('password') as HTMLInputElement;
+        const passwordVerifyInput = document.getElementById('password-verify') as HTMLInputElement;
+
+        if (!usernameInput || !passwordInput || !passwordVerifyInput) {
+            alert('Form elements not found');
+            setRegisterLoading(false);
+            return;
+        }
+
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        const passwordVerify = passwordVerifyInput.value.trim();
+
+        if (!username || !password || !passwordVerify) {
+            alert('Please enter all required fields');
+            setRegisterLoading(false);
+            return;
+        }
+
+        if (password !== passwordVerify) {
+            alert('Passwords do not match');
+            setRegisterLoading(false);
+            return;
+        }
+
+        const {err} = await register(username, password, passwordVerify);
+        if (err) {
+            alert('Registration failed. Please try again.');
+        } else {
+            window.location.assign("/auth/login");
+        }
+
+        setRegisterLoading(false);
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('register-form');
+        if (form) {
+            form.addEventListener('submit', onRegister);
+        }
+    });
+</script>

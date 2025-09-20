@@ -2,13 +2,15 @@ package config
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"os"
 	"strconv"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Options struct {
 	ServerPort  int
+	DisableAuth bool
 	LobbyLimit  int
 	DbPath      string
 	LogFilePath string
@@ -27,6 +29,8 @@ func Load() {
 	var opts Options
 	opts.ServerPort = loadServerPort()
 	opts.LobbyLimit = loadLobbyLimit()
+	opts.DisableAuth = os.Getenv("MP_DISABLE_AUTH") == "true"
+
 	opts.DbPath = fmt.Sprintf("%s/multipacman.db", configDir)
 	opts.LogFilePath = fmt.Sprintf("%s/multipacman.log", configDir)
 
@@ -60,7 +64,7 @@ func loadLobbyLimit() int {
 }
 
 func loadServerPort() int {
-	const defaultPort = 11200
+	const defaultPort = 11300
 	envVal, ok := os.LookupEnv("SERVER_PORT")
 	if !ok {
 		return defaultPort

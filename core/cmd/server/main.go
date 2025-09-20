@@ -10,5 +10,7 @@ func main() {
 	pkg.ConsoleLogger()
 	config.Load()
 	pkg.FileConsoleLogger(config.Opts.LogFilePath)
-	cmd.StartServer()
+
+	path := "dist"
+	cmd.StartServer(path)
 }

@@ -1,9 +1,10 @@
 package user
 
 import (
-	"connectrpc.com/connect"
 	"context"
 	"fmt"
+
+	"connectrpc.com/connect"
 	"github.com/Pallinder/go-randomdata"
 	v1 "github.com/RA341/multipacman/generated/auth/v1"
 	"github.com/rs/zerolog/log"
@@ -38,16 +39,10 @@ func (a *Handler) Register(_ context.Context, c *connect.Request[v1.RegisterUser
 	return connect.NewResponse(&v1.RegisterUserResponse{}), nil
 }
 
-func (a *Handler) Logout(ctx context.Context, req *connect.Request[v1.Empty]) (*connect.Response[v1.Empty], error) {
-	clientToken := req.Header().Get(AuthHeader)
-	ctx, err := verifyAuthHeader(ctx, a.auth, clientToken)
+func (a *Handler) Logout(_ context.Context, req *connect.Request[v1.Empty]) (*connect.Response[v1.Empty], error) {
+	user, err := a.auth.VerifyAuthHeader(req.Header())
 	if err != nil {
-		log.Warn().Err(err).Msg("Logout failed, user info not found in request")
-		return connect.NewResponse(&v1.Empty{}), nil
-	}
-	user, err := GetUserContext(ctx)
-	if err != nil {
-		log.Warn().Err(err).Msg("Logout failed, user info not found in context")
+		log.Warn().Err(err).Msg("Logout failed, unauthenticated user")
 		return connect.NewResponse(&v1.Empty{}), nil
 	}
 
@@ -67,15 +62,7 @@ func (a *Handler) GuestLogin(_ context.Context, _ *connect.Request[v1.Empty]) (*
 		return nil, err
 	}
 
-	user, err := a.auth.Login(username, password)
-	if err != nil {
-		return nil, err
-	}
-
-	response := connect.NewResponse(user.ToRPC())
-	setCookie(user, response)
-
-	return response, nil
+	return a.loginWithCookie(username, password)
 }
 
 func (a *Handler) Login(_ context.Context, c *connect.Request[v1.AuthRequest]) (*connect.Response[v1.UserResponse], error) {
@@ -84,21 +71,23 @@ func (a *Handler) Login(_ context.Context, c *connect.Request[v1.AuthRequest]) (
 		return nil, fmt.Errorf("empty username or password")
 	}
 
-	user, err := a.auth.Login(username, password)
+	return a.loginWithCookie(username, password)
+}
+
+func (a *Handler) loginWithCookie(user, pass string) (*connect.Response[v1.UserResponse], error) {
+	userData, err := a.auth.Login(user, pass)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
 	}
 
-	response := connect.NewResponse(user.ToRPC())
-	setCookie(user, response)
+	response := connect.NewResponse(userData.ToRPC())
+	setCookie(userData, response)
 
 	return response, nil
 }
 
 func (a *Handler) Test(_ context.Context, c *connect.Request[v1.AuthResponse]) (*connect.Response[v1.UserResponse], error) {
-	clientToken := c.Msg.GetAuthToken()
-
-	user, err := a.auth.VerifyToken(clientToken)
+	user, err := a.auth.VerifyAuthHeader(c.Header())
 	if err != nil {
 		return nil, err
 	}
